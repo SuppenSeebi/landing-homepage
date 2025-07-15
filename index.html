@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 <body>
+    <div class="scroll-progress" id="progress-bar"></div>
     <section class="header">
         <nav>
             <a href="index.html"><img src="images/logo.png"></a>
@@ -27,40 +28,42 @@
             <h1>My Homepage</h1>
             <p>This is my personal homepage. This page and all the subdomains are still under construction.
             </p>
-            <a href="" class="hero-btn">Learn more about me.</a>
+            <a href="#description" class="hero-btn">Learn more about me.</a>
         </div>
     </section>
 
-<!-----Description-->
-<section class="description">
-    <h1>Subdomains and Links</h1>
-    <p>These are my subdomains and other important links.</p>
-    <div class="row">
-        <div class="course-col firstpart">
-            <a href="https://kb.sschw.dev">
-                <h1>Knowledge Base</h1>
-                <p>My private Wiki, filled with a whole lot of<br>information and knowledge</p>
-            </a>
+    <!-----Description-->
+    <section class="description" id="description">
+        <h1>Subdomains and Links</h1>
+        <p>These are my subdomains and other important links.</p>
+        <div class="row">
+            <div class="course-col firstpart">
+                <a href="https://kb.sschw.dev">
+                    <h1>Knowledge Base</h1>
+                    <p>My private Wiki, filled with a whole lot of<br>information and knowledge</p>
+                </a>
+            </div>
+            <div class="course-col secondpart">
+                <a href="https://todo.sschw.dev">
+                    <h1>To-Do List</h1>
+                    <p>A simple ToDo list<br>that is based on kanban boards</p>
+                </a>
+            </div>
+            <div class="course-col thirdpart">
+                <a href="https://kb.sschw.dev">
+                    <h1>Mealie</h1>
+                    <p>Cooking related recipes<br>including shopping lists and tracking</p>
+                </a>
+            </div>
         </div>
-        <div class="course-col secondpart">
-            <a href="https://todo.sschw.dev">
-                <h1>To-Do List</h1>
-                <p>A simple ToDo list<br>that is based on kanban boards</p>
-            </a>
-        </div>
-        <div class="course-col thirdpart">
-            <a href="https://kb.sschw.dev">
-                <h1>Mealie</h1>
-                <p>Cooking related recipes<br>including shopping lists and tracking</p>
-            </a>
-        </div>
-    </div>
-</section>
+    </section>
 
-<section class=""
+    <a href="#" class="back-to-top">
+      <span class="material-symbols-outlined">arrow_upward</span>
+    </a>
 
-<!-----JavaScript for Toggle Menu-->
 <script>
+<!-----JavaScript for Toggle Menu-->
     var navLinks =document.getElementById("navLinks");
     function showMenu(){
         navLinks.style.right="0";
@@ -68,6 +71,35 @@
     function hideMenu(){
         navLinks.style.right="-200px";
     }
+
+
+<!-----JavaScript for Scroll Bar-->
+    window.addEventListener('scroll', function() {
+        const scrollProgress = document.querySelector(".scroll-progress");
+        const scrollTop = window.scrollY || window.pageYOffset;
+        const docHeight = document.documentElement.scrollHeight;
+        const winHeight = window.innerHeight;
+        const scrollable = docHeight - winHeight;
+        const scrolled = scrollable > 0 ? (scrollTop / scrollable) * 100 : 0;
+        scrollProgress.style.width = scrolled + "%";
+        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        console.log(scrollable)
+        console.log(winHeight)
+        console.log(docHeight)
+        console.log(scrollTop)
+        console.log(scrolled)
+    });
+
+<!-----Hide the Back To Top Arrow-->
+  const backToTop = document.querySelector(".back-to-top");
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      backToTop.style.display = "block";
+    } else {
+      backToTop.style.display = "none";
+    }
+  });
 </script>
 </body>
 </html>
