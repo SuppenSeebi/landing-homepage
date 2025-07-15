@@ -9,7 +9,7 @@
 .header{
     min-height: 100vh;
     width: 100%;
-    background-image: linear-gradient(rgba(4,9,30,0.7),rgba(4,9,30,0.7)),url(images/background.png);
+    background-image: linear-gradient(rgba(50,50,100,0.7),rgba(50,50,100,0.7)),url(images/background.png);
     background-position: center;
     background-size: cover;
     position: relative;
@@ -22,6 +22,11 @@ nav{
 }
 nav img{
     width: 75px;
+    filter: drop-shadow(0 0 15px white);
+    position: fixed;
+    top: 20px; /* Abstand vom oberen Rand */
+    left: 20px; /* Abstand vom linken Rand */
+    z-index: 1000;
 }
 .nav-links{
     flex: 1;
@@ -156,7 +161,22 @@ p{
     padding: 20px 12px;
     box-sizing: border-box;
     transition: 0.3s;
+    background-size: cover;
+    background-position: center;
 }
+
+.course-col.firstpart:hover {
+  background-image: linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url('images/kb-hover.png');
+}
+
+.course-col.secondpart:hover {
+  background-image: linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url('images/todo-hover.png');
+}
+
+.course-col.thirdpart:hover {
+  background-image: linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url('images/mealie-hover.png');
+}
+
 h3{
     font-size: 32px;
     text-align: center;
@@ -164,12 +184,42 @@ h3{
     margin: 10px;
 }
 .course-col p{
-    font-size: 22;
+    font-size: 32;
     font-weight: 400;
+    line-height: 1.1;
 }
+.course-col h1,
+.course-col p {
+    text-shadow: none;
+    transition: text-shadow 0.5s ease;
+}
+
+.course-col:hover h1,
+.course-col:hover p {
+    text-shadow: 0 0 10px #91caff, 0 0 20px #91caff, 0 0 30px #91caff, 0 0 40px #91caff;
+}
+
 .course-col:hover{
     box-shadow: 0 0 20px 0px rgba(0, 0, 0, 0.4);
 }
+
+.course-col img.hover-img {
+  display: none;
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.course-col:hover img.hover-img {
+  display: block;
+}
+
+.course-col a {
+  text-decoration: none;
+  color: inherit; /* falls du die Textfarbe vom Eltern-Element behalten möchtest */
+  display: block; /* damit das gesamte <a> die Box füllt */
+}
+
 @media(max-width: 768px){
     .row{
         flex-direction: column;
