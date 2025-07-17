@@ -195,7 +195,7 @@ p {
     position: fixed;
     top: auto;
     bottom: 9px;
-    height: 52px;
+    height: 54px;
     width: 50px;
     pointer-events: none;
     z-index: 9999;
