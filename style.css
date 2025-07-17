@@ -93,14 +93,15 @@ p {
 }
 
 .logo-wrapper-spotlight {
-  width: 1px;
-  height: 1px;
-  box-shadow: 0 0 100px 100px var(--blue-mid);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: -1; /* hinter dem Logo */
+    width: 1px;
+    height: 1px;
+    box-shadow: 0 0 100px 100px var(--blue-mid);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    /* hinter dem Logo */
 }
 
 .logo-wrapper svg,
@@ -194,6 +195,7 @@ p {
         position: fixed;
         left: 0;
         right: 0;
+        bottom: 10px;
         margin: 0 auto;
         width: 100%;
         overflow-x: auto;
@@ -202,37 +204,64 @@ p {
         justify-content: flex-start;
     }
 
-  .bottom-nav {
-    display: flex;
-    position: relative;
-    flex-wrap: nowrap;
-    min-width: max-content;
-  }
+    .bottom-nav-positioner::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 50px;
+        /* breiter */
+        pointer-events: none;
+        background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.4));
+        /* stärker */
+        z-index: 10;
+    }
 
-  .nav-box {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
+    .bottom-nav-positioner::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 50px;
+        /* breiter */
+        pointer-events: none;
+        background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.4));
+        /* stärker */
+        z-index: 10;
+    }
 
-  .bottom-nav::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 30px;
-    pointer-events: none;
-    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1));
-  }
+    .bottom-nav {
+        display: flex;
+        position: relative;
+        flex-wrap: nowrap;
+        min-width: max-content;
+        z-index: 1;
+    }
+
+    .nav-box {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .bottom-nav::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        width: 30px;
+        pointer-events: none;
+    }
 
     .bottom-nav::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 30px;
-    pointer-events: none;
-    background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.1));
-  }
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 30px;
+        pointer-events: none;
+    }
 }
