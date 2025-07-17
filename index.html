@@ -13,6 +13,7 @@
 </head>
 
 <body>
+    <!-- Logo on top. Text as plain SVG cause of font-family -->
     <div class="logo-wrapper">
         <div class="rotating-text">
             <svg width="300" height="300" viewBox="0 0 300 300">
@@ -25,7 +26,7 @@
                         Sebastian Schwinn
                     </textPath>
                 </text>
-                
+
                 <!-- Note: The angles are not as expected cause of the rotation of the text. -->
                 <!-- StartAngle: 73, EndAngle: 96 -->
                 <path d="M 179.24,245.63 A 100,100 0 0,1139.55,249.45" stroke="#A3BBF7" stroke-width="1" fill="none" />
@@ -64,6 +65,52 @@
             <img src="images/logo.svg" alt="Logo">
         </div>
     </div>
+
+    <!-- Navigation on the bottom -->
+    <nav class="bottom-nav">
+        <button class="nav-box active" data-section="top">main()</button>
+        <button class="nav-box" data-section="about-me">this->info</button>
+        <button class="nav-box" data-section="work">volatile workload;</button>
+        <button class="nav-box" data-section="links">goto services;</button>
+        <button class="nav-box" data-section="impressum">assert(compliance);</button>
+    </nav>
+
+    <!-- ~~~~~~~~~~~~ -->
+    <!-- Main content -->
+    <section id="top">
+        <h1>1</h1>
+        <div style="height: 800px;"></div>
+    </section>
+
+    <!-- ~~~~~~~~ -->
+    <!-- About Me -->
+    <section id="about-me">
+        <h1>2</h1>
+        <div style="height: 800px;"></div>
+    </section>
+
+    <!-- ~~~~ -->
+    <!-- Work -->
+    <section id="work">
+        <h1>3</h1>
+        <div style="height: 800px;"></div>
+    </section>
+
+    <!-- ~~~~~ -->
+    <!-- Links -->
+    <section id="links">
+        <h1>4</h1>
+        <div style="height: 800px;"></div>
+    </section>
+
+    <!-- ~~~~~~~~~ -->
+    <!-- Impressum -->
+    <section id="impressum">
+        <h1>5</h1>
+        <div style="height: 800px;"></div>
+    </section>
+
+
 </body>
 
 </html>

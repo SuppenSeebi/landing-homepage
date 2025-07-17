@@ -1,4 +1,5 @@
-/* Import Smooch Sans */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~ COMMON DEFINITIONS ~~~~~~~~~~~~ */
 @import url('https://fonts.googleapis.com/css2?family=Smooch+Sans:wght@400;600;700&display=swap');
 
 /* CSS Reset & Base */
@@ -23,7 +24,7 @@ body {
     font-size: 16px;
 }
 
-/* Farbpalette als CSS Variablen */
+/* Colors */
 :root {
     --blue-light: #EAF3FF;
     --blue-bg: #DDEEFF;
@@ -75,95 +76,6 @@ p {
     text-align: center;
 }
 
-/* Buttons */
-.button {
-    display: inline-block;
-    background-color: var(--blue-primary);
-    color: var(--white);
-    text-decoration: none;
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: 600;
-    text-align: center;
-    transition: background-color 0.3s ease;
-}
-
-.button:hover {
-    background-color: var(--blue-dark);
-}
-
-/* Footer */
-footer {
-    margin-top: 60px;
-    padding: 20px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-}
-
-/* Utility Classes */
-.text-center {
-    text-align: center;
-}
-
-.mt-20 {
-    margin-top: 20px;
-}
-
-.mt-40 {
-    margin-top: 40px;
-}
-
-.mb-20 {
-    margin-bottom: 20px;
-}
-
-.container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* Logo Header Styles */
-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background-color: var(--blue-light);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 999;
-}
-
-header img#logo {
-    height: 60px;
-    cursor: pointer;
-}
-
-.logo-text {
-    background-color: var(--blue-primary);
-    color: var(--white);
-    border-radius: 0 0 50px 50px;
-    text-align: center;
-    padding: 10px 20px;
-    margin-top: 10px;
-}
-
-.logo-text h1 {
-    margin-bottom: 5px;
-    font-size: 1.5rem;
-    color: var(--white);
-}
-
-.logo-text p {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--white);
-}
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~ LOGO AND ROTATING TEXT ~~~~~~~~ */
 .logo-wrapper {
@@ -206,4 +118,52 @@ header img#logo {
     to {
         transform: rotate(0deg);
     }
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~ NAVBAR ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+.bottom-nav {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0px;
+    background: transparent;
+    padding: 5px 10px;
+    border-radius: 0px;
+    overflow: hidden;
+}
+
+.nav-box {
+    padding: 12px 22px;
+    border-radius: 0px;
+    background-color: var(--blue-mid);
+    color: var(--text-primary);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+    user-select: none;
+    border: 2px solid var(--blue-mid);
+    transition: background-color 0.5s, color 0.5s;
+    white-space: nowrap;
+}
+
+.nav-box.active {
+    background-color: var(--blue-darker-2);
+    color: var(--blue-mid);
+    font-weight: 800;
+}
+
+.nav-box.top {
+    background-color: var(--text-primary);
+    color: var(--blue-mid);
+    font-weight: 800;
+}
+
+.nav-box:not(.active):hover {
+    background-color: var(--blue-mid-light);
 }
