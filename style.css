@@ -93,15 +93,15 @@ p {
 }
 
 .logo-wrapper-spotlight {
-    width: 1px;
-    height: 1px;
-    box-shadow: 0 0 100px 100px var(--blue-mid);
+    width: 0px;
+    height: 0px;
+    color: var(--blue-mid);
+    box-shadow: 0 0 120px 120px var(--blue-mid);
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: -1;
-    /* hinter dem Logo */
 }
 
 .logo-wrapper svg,
@@ -116,7 +116,7 @@ p {
     position: absolute;
     top: 0;
     left: 0;
-    animation: rotate 30s linear infinite;
+    animation: rotate 300s linear infinite;
 }
 
 .static-logo {
