@@ -204,12 +204,12 @@ p {
 
 .bottom-nav-shadow-left {
     left: 0;
-    background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.8));
+    background: linear-gradient(to left, transparent, rgba(21, 21, 21, 0.6));
 }
 
 .bottom-nav-shadow-right {
     right: 0;
-    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.8));
+    background: linear-gradient(to right, transparent, rgba(21, 21, 21, 0.6));
 }
 
 
