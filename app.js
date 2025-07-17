@@ -2,6 +2,7 @@
    ~~ NavBar Coloring ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 const navBoxes = document.querySelectorAll('.nav-box');
 const sections = document.querySelectorAll('section');
+const logo = document.querySelector('.logo-wrapper');
 
 function onScroll() {
     let currentSectionId = 'top'; // Default
@@ -17,17 +18,22 @@ function onScroll() {
         }
     });
 
+    // Default: Logo is expected to be top and box is default. Evaluate all boxes and update them accordingly
+    logo.classList.add('top');
     navBoxes.forEach(box => {
         box.classList.remove('active', 'top');
-        console.log(currentSectionId)
 
         // If this is the current nav. activate the box
-        if (box.getAttribute('data-section') === currentSectionId) {
+        if (box.getAttribute('href') === '#' + currentSectionId) {
             box.classList.add('active');
         }
-        // If box is top and current is not top, then update top box
-        if((box.getAttribute('data-section') === 'top') && (currentSectionId !== 'top')) {
-            box.classList.add('top');
+        // If box is top
+        if (box.getAttribute('href') === '#top') {
+            // ... and current is not top, then update top box and logo
+            if ('#' + currentSectionId !== '#top') {
+                box.classList.add('top');
+                logo.classList.remove('top');
+            }
         }
     });
 }

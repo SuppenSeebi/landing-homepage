@@ -80,11 +80,27 @@ p {
 /* ~~~ LOGO AND ROTATING TEXT ~~~~~~~~ */
 .logo-wrapper {
     position: fixed;
-    top: calc(-12%);
+    top: calc(-15%);
     left: 50%;
     transform: translateX(-50%);
     width: 250px;
     height: 250px;
+    transition: top 0.3s ease;
+}
+
+.logo-wrapper.top {
+    top: calc(-3%);
+}
+
+.logo-wrapper-spotlight {
+  width: 1px;
+  height: 1px;
+  box-shadow: 0 0 100px 100px var(--blue-mid);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1; /* hinter dem Logo */
 }
 
 .logo-wrapper svg,
@@ -122,34 +138,39 @@ p {
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~ NAVBAR ~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-.bottom-nav {
+.bottom-nav-positioner {
     position: fixed;
     bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
+    width: 100%;
     display: flex;
-    gap: 0px;
+    justify-content: center;
     background: transparent;
-    padding: 5px 10px;
-    border-radius: 0px;
-    overflow: hidden;
+}
+
+.bottom-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    background: transparent;
 }
 
 .nav-box {
     padding: 12px 22px;
     border-radius: 0px;
+    font-family: Consolas, monospace;
     background-color: var(--blue-mid);
     color: var(--text-primary);
     border: none;
     cursor: pointer;
     font-weight: 600;
-    flex: 1;
     text-align: center;
     user-select: none;
     border: 2px solid var(--blue-mid);
     transition: background-color 0.5s, color 0.5s;
     white-space: nowrap;
+    text-decoration: none;
+    color: inherit;
 }
 
 .nav-box.active {
@@ -166,4 +187,52 @@ p {
 
 .nav-box:not(.active):hover {
     background-color: var(--blue-mid-light);
+}
+
+@media (max-width: 768px) {
+    .bottom-nav-positioner {
+        position: fixed;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        transform: none;
+        justify-content: flex-start;
+    }
+
+  .bottom-nav {
+    display: flex;
+    position: relative;
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+
+  .nav-box {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .bottom-nav::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 30px;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1));
+  }
+
+    .bottom-nav::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 30px;
+    pointer-events: none;
+    background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.1));
+  }
 }

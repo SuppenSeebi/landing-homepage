@@ -15,6 +15,7 @@
 <body>
     <!-- Logo on top. Text as plain SVG cause of font-family -->
     <div class="logo-wrapper">
+        <div class="logo-wrapper-spotlight"></div>
         <div class="rotating-text">
             <svg width="300" height="300" viewBox="0 0 300 300">
                 <defs>
@@ -67,13 +68,15 @@
     </div>
 
     <!-- Navigation on the bottom -->
-    <nav class="bottom-nav">
-        <button class="nav-box active" data-section="top">main()</button>
-        <button class="nav-box" data-section="about-me">this->info</button>
-        <button class="nav-box" data-section="work">volatile workload;</button>
-        <button class="nav-box" data-section="links">goto services;</button>
-        <button class="nav-box" data-section="impressum">assert(compliance);</button>
-    </nav>
+    <div class="bottom-nav-positioner">
+        <nav class="bottom-nav">
+            <a class="nav-box active" href="#top">main()</a>
+            <a class="nav-box" href="#aboutme">this->info</a>
+            <a class="nav-box" href="#work">volatile workload;</a>
+            <a class="nav-box" href="#links">goto services;</a>
+            <a class="nav-box" href="#impressum">assert(compliance);</a>
+        </nav>
+    </div>
 
     <!-- ~~~~~~~~~~~~ -->
     <!-- Main content -->
@@ -84,7 +87,7 @@
 
     <!-- ~~~~~~~~ -->
     <!-- About Me -->
-    <section id="about-me">
+    <section id="aboutme">
         <h1>2</h1>
         <div style="height: 800px;"></div>
     </section>
