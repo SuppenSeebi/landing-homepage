@@ -194,8 +194,8 @@ p {
 .bottom-nav-shadow-right {
     position: fixed;
     top: auto;
-    bottom: 10px;
-    height: 50px;
+    bottom: 9px;
+    height: 52px;
     width: 50px;
     pointer-events: none;
     z-index: 9999;
