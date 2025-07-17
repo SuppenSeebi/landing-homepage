@@ -196,10 +196,10 @@ p {
     top: auto;
     bottom: 9px;
     height: 54px;
-    width: 50px;
+    width: 30px;
     pointer-events: none;
     z-index: 9999;
-    opacity: 1;
+    opacity: 0;
 }
 
 .bottom-nav-shadow-left {
