@@ -190,6 +190,29 @@ p {
     background-color: var(--blue-mid-light);
 }
 
+.bottom-nav-shadow-left,
+.bottom-nav-shadow-right {
+    position: fixed;
+    top: auto;
+    bottom: 10px;
+    height: 50px;
+    width: 50px;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 1;
+}
+
+.bottom-nav-shadow-left {
+    left: 0;
+    background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.8));
+}
+
+.bottom-nav-shadow-right {
+    right: 0;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.8));
+}
+
+
 @media (max-width: 768px) {
     .bottom-nav-positioner {
         position: fixed;
@@ -204,32 +227,9 @@ p {
         justify-content: flex-start;
     }
 
-    .bottom-nav-positioner::after {
-        content: "";
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 100%;
-        width: 50px;
-        /* breiter */
-        pointer-events: none;
-        background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.4));
-        /* stärker */
-        z-index: 10;
-    }
-
-    .bottom-nav-positioner::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 50px;
-        /* breiter */
-        pointer-events: none;
-        background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.4));
-        /* stärker */
-        z-index: 10;
+    .bottom-nav-shadow-right,
+    .bottom-nav-shadow-left {
+        opacity: 1;
     }
 
     .bottom-nav {
@@ -240,28 +240,20 @@ p {
         z-index: 1;
     }
 
-    .nav-box {
-        flex: 0 0 auto;
-        white-space: nowrap;
-    }
-
-    .bottom-nav::after {
-        content: "";
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 100%;
-        width: 30px;
-        pointer-events: none;
-    }
-
     .bottom-nav::before {
         content: "";
         position: absolute;
         left: 0;
         top: 0;
         height: 100%;
-        width: 30px;
+        width: 50px;
         pointer-events: none;
+        background: linear-gradient(to left, transparent, rgba(0, 0, 0, 0.4));
+        z-index: 10;
+    }
+
+    .nav-box {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 }
