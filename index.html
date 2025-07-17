@@ -1,67 +1,69 @@
 <html>
+
 <head>
     <meta name="viewport" content="with=device-width, initial-scale=1.0">
-    <title>Sebastian Schwinn</title>
+    <title>SSchw.Dev</title>
     <link rel="stylesheet" href="style.css">
     <script defer src="app.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Smooch+Sans:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
+
 <body>
-    <div class="scroll-progress" id="progress-bar"></div>
-    <section class="header">
-        <nav>
-            <a href="index.html"><img src="images/logo.png"></a>
-            <div class="nav-links" id="navLinks">
-                <span class="icon-small-screen material-symbols-outlined" onclick="hideMenu()">close</span>
-                <ul>
-                    <li><a href="">Home</a></li>
-                    <li><a href="">About me</a></li>
-                    <li><a href="">Projects</a></li>
-                    <li><a href="">Contact</a></li>
-                </ul>
-            </div>
-            <span class="icon-small-screen material-symbols-outlined" onclick="showMenu()">menu</span>
-        </nav>
-        <div class="text-box">
-            <h1>My Homepage</h1>
-            <p>This is my personal homepage. This page and all the subdomains are still under construction.
-            </p>
-            <a href="#description" class="hero-btn">Learn more about me.</a>
+    <div class="logo-wrapper">
+        <div class="rotating-text">
+            <svg width="300" height="300" viewBox="0 0 300 300">
+                <defs>
+                    <path id="circlePath" d="M 150,150 m -100,0 a 100,100 0 1,0 200,0 a 100,100 0 1,0 -200,0" />
+                </defs>
+
+                <text font-family="Smooch Sans" font-size="24" fill="#2542A3" dominant-baseline="middle">
+                    <textPath href="#circlePath" startOffset="0%">
+                        Sebastian Schwinn
+                    </textPath>
+                </text>
+                
+                <!-- Note: The angles are not as expected cause of the rotation of the text. -->
+                <!-- StartAngle: 73, EndAngle: 96 -->
+                <path d="M 179.24,245.63 A 100,100 0 0,1139.55,249.45" stroke="#A3BBF7" stroke-width="1" fill="none" />
+
+                <text font-family="Smooch Sans" font-size="24" fill="#2542A3" dominant-baseline="middle">
+                    <textPath href="#circlePath" startOffset="30%">
+                        M.Sc.
+                    </textPath>
+                </text>
+
+                <!-- StartAngle: 31, EndAngle: 48 -->
+                <path d="M 235.72,201.50 A 100,100 0 0,1216.91,224.31" stroke="#A3BBF7" stroke-width="1" fill="none" />
+
+                <text font-family="Smooch Sans" font-size="24" fill="#2542A3" dominant-baseline="middle">
+                    <textPath href="#circlePath" startOffset="42%">
+                        Electrical Engineer
+                    </textPath>
+                </text>
+
+                <!-- StartAngle: 290, EndAngle: 308 -->
+                <path d="M 184.20,56.03 A 100,100 0 0,1211.57,71.20" stroke="#A3BBF7" stroke-width="1" fill="none" />
+
+                <text font-family="Smooch Sans" font-size="24" fill="#2542A3" dominant-baseline="middle">
+                    <textPath href="#circlePath" startOffset="70%">
+                        Software Developer
+                    </textPath>
+                </text>
+
+                <!-- StartAngle: 182, EndAngle: 203 -->
+                <path d="M 50.06,146.51 A 100,100 0 0,157.95,110.93" stroke="#A3BBF7" stroke-width="1" fill="none" />
+
+            </svg>
+
         </div>
-    </section>
-
-    <!-----Description-->
-    <section class="description" id="description">
-        <h1>Subdomains and Links</h1>
-        <p>These are my subdomains and other important links.</p>
-        <div class="row">
-            <div class="course-col firstpart">
-                <a href="https://kb.sschw.dev">
-                    <h1>Knowledge Base</h1>
-                    <p>My private Wiki, filled with a whole lot of<br>information and knowledge</p>
-                </a>
-            </div>
-            <div class="course-col secondpart">
-                <a href="https://todo.sschw.dev">
-                    <h1>To-Do List</h1>
-                    <p>A simple ToDo list<br>that is based on kanban boards</p>
-                </a>
-            </div>
-            <div class="course-col thirdpart">
-                <a href="https://kb.sschw.dev">
-                    <h1>Mealie</h1>
-                    <p>Cooking related recipes<br>including shopping lists and tracking</p>
-                </a>
-            </div>
+        <div class="static-logo">
+            <img src="images/logo.svg" alt="Logo">
         </div>
-    </section>
-
-    <a href="#" class="back-to-top">
-      <span class="material-symbols-outlined">arrow_upward</span>
-    </a>
-
+    </div>
 </body>
+
 </html>

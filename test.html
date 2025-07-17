@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SVGs übereinander</title>
+<style>
+  /* Äußerstes div definiert Größe und relative Position */
+  .container {
+    position: relative;
+    width: 512px;
+    height: 512px;
+    margin: 0 auto; /* Zentriert das Container-Div auf der Seite */
+    border: 1px solid #ccc; /* nur zur Visualisierung */
+  }
+
+  /* Inneres div, absolut positioniert für Überlagerung */
+  .svg-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* zentriert horizontal und vertikal */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Größe des einzelnen svg-wrappers kann je nach SVG angepasst werden */
+  .svg-small {
+    width: 300px;
+    height: 300px;
+  }
+
+  .svg-large {
+    width: 512px;
+    height: 512px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="svg-wrapper svg-small">
+    <!-- Hier SVG mit 300x300 einfügen -->
+    <svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="150" cy="150" r="100" fill="red" />
+    </svg>
+  </div>
+  <div class="svg-wrapper svg-large">
+    <!-- Hier SVG mit 512x512 einfügen -->
+    <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" fill="blue" opacity="0.5"/>
+    </svg>
+  </div>
+</div>
+
+</body>
+</html>
