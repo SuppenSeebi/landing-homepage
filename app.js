@@ -41,8 +41,8 @@ function onScroll() {
         /* If box is top and current is not top, then update top box and logo */
         if ((box.getAttribute('href') === '#top') &&
             ('#' + currentSectionId !== '#top')) {
-                box.classList.add('top');
-                logo.classList.remove('top');
+            box.classList.add('top');
+            logo.classList.remove('top');
         }
     });
 }
