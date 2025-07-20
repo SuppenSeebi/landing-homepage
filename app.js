@@ -1,14 +1,14 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   ~~ NavBar Coloring ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+   ~~ Common Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 const navBoxes = document.querySelectorAll('.nav-box');
 const sections = document.querySelectorAll('section');
 const logo = document.querySelector('.logo-wrapper');
 
-function onScroll() {
-    let currentSectionId = 'top'; // Default
-
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   ~~ Get Current Action ID ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+function getCurrentActionId() {
+    let currentSectionId = 'top'; /* Default is top */
     const scrollPos = window.scrollY || window.pageYOffset;
-
     sections.forEach(section => {
         const offsetTop = section.offsetTop;
         const offsetHeight = section.offsetHeight;
@@ -18,22 +18,31 @@ function onScroll() {
         }
     });
 
-    // Default: Logo is expected to be top and box is default. Evaluate all boxes and update them accordingly
+    return currentSectionId;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   ~~ On Scroll Listener Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   - Colors the navbar with "active" and "top"
+   - updates the logo position with "top" */
+function onScroll() {
+    const currentSectionId = getCurrentActionId();
+
+    /* Default: Logo is expected to be top and each box is in its default state.
+     * Evaluate all boxes and update them accordingly */
     logo.classList.add('top');
     navBoxes.forEach(box => {
         box.classList.remove('active', 'top');
 
-        // If this is the current nav. activate the box
+        /* If this is the current nav activate the box */
         if (box.getAttribute('href') === '#' + currentSectionId) {
             box.classList.add('active');
         }
-        // If box is top
-        if (box.getAttribute('href') === '#top') {
-            // ... and current is not top, then update top box and logo
-            if ('#' + currentSectionId !== '#top') {
+        /* If box is top and current is not top, then update top box and logo */
+        if ((box.getAttribute('href') === '#top') &&
+            ('#' + currentSectionId !== '#top')) {
                 box.classList.add('top');
                 logo.classList.remove('top');
-            }
         }
     });
 }

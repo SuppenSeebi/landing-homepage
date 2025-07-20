@@ -7,7 +7,7 @@ Here are some thoughts I want to collect as some notes.
   - Shall be named as main()
   - Small and concise introduction with some JS+css animations
 - aboutme
-  - Shall be named this->info()
+  - Shall be named this->me()
   - JS+css animated informations. Maybe a PPT that has my milestones as a slide each?
 - work
   - Shall be named volatile workload; because this always changes
