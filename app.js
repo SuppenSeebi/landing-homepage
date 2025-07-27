@@ -43,26 +43,47 @@ function onScrollMain() {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   ~~ Section Transitioning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+function transitionToSection(activeSectionId, currentSectionId) {
+    if(null != activeSectionId)
+    {
+        const activeSection = document.getElementById(activeSectionId);
+        activeSection.classList.remove("active");
+        activeSection.classList.add("exit-up");
+    
+        setTimeout(() => {
+            activeSection.classList.remove("exit-up");
+        }, 800);
+    }
+
+    if(null != currentSectionId)
+    {
+        const currentSection = document.getElementById(currentSectionId);
+        currentSection.classList.add("active");
+    }
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    ~~ Statemachine Handler ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+const sectionStatemachines = new Map();
+sectionStatemachines.set('top', statemachineTopRun);
+sectionStatemachines.set('aboutme', statemachineAboutMeRun);
+sectionStatemachines.set('work', statemachineWorkRun);
+sectionStatemachines.set('links', statemachineLinksRun);
+sectionStatemachines.set('impressum', statemachineImpressumRun);
+
+let activeSectionId = null;
 function statemachineHandler(currentSectionId) {
-    switch (currentSectionId) {
-        case 'top':
-            statemachineTopRun();
-            break;
-        case 'aboutme':
-            statemachineAboutMeRun();
-            break;
-        case 'work':
-            statemachineWorkRun();
-            break;
-        case 'links':
-            statemachineLinksRun();
-            break;
-        case 'impressum':
-            statemachineImpressumRun();
-            break;
-        default:
-            break;
+    console.log("active: " + activeSectionId + "; current: " + currentSectionId);
+    if (sectionStatemachines.has(currentSectionId)) {
+        console.log("Section found.")
+        if (currentSectionId !== activeSectionId) {
+            console.log("Section change required.")
+            transitionToSection(activeSectionId, currentSectionId)
+        }
+
+        sectionStatemachines.get(currentSectionId)();
+        activeSectionId = currentSectionId;
     }
 }
 
