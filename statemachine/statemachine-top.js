@@ -3,9 +3,17 @@
 const dynamicTextContentDiv = document.getElementById("top-text-content");
 const dynamicTextPreembleDiv = document.getElementById("top-text-preemble");
 
+let scrambleInterval = null;
+
 function updateTopMeText(newPreemble, newContent) {
     dynamicTextPreembleDiv.innerHTML = newPreemble;
-    scramblePartialText(dynamicTextContentDiv, '<i class="bi bi-caret-right-fill"></i> ' + newContent);
+
+    if (scrambleInterval !== null) {
+        clearInterval(scrambleInterval);
+        scrambleInterval = null;
+    }
+
+    scrambleInterval = scramblePartialText( dynamicTextContentDiv, '<i class="bi bi-caret-right-fill"></i> ' + newContent );
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,6 +94,8 @@ function scramblePartialText(target, text, revealStartRatio = 0.4, animationDura
 
         frame++;
     }, frameDelay);
+
+    return interval;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,7 +104,7 @@ const scrollContainer = document.getElementById("scroll-space-top-aboutme");
 const mobileIntervals = 250;
 const defaultIntervals = 250;
 
-function getIntervalHeight(){
+function getIntervalHeight() {
     const isMobile = window.innerWidth <= 768;
     return isMobile ? mobileIntervals : defaultIntervals;
 }
