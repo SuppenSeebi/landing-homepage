@@ -329,7 +329,7 @@ p {
     max-width: 50%;
 }
 
-@media (max-width: 844px) {
+@media (max-width: 768px) {
     .top-text-wrapper {
         margin-left: 2%;
         max-width: 48%;
@@ -367,7 +367,7 @@ p {
     opacity: 1;
 }
 
-@media (max-width: 844px) {
+@media (max-width: 768px) {
     .top-image {
         top: -20%;
         margin-right: 5%;

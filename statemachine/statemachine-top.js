@@ -81,12 +81,31 @@ function scramblePartialText(target, text, revealStartRatio = 0.4, animationDura
 
         if (doneCount >= scramblePart.length || frame > animationDuration) {
             clearInterval(interval);
-            target.innerHTML = fullText;
+            target.innerHTML = text;
         }
 
         frame++;
     }, frameDelay);
 }
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   ~~ TOP: Define Scroll Height ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+const scrollContainer = document.getElementById("scroll-space-top-aboutme");
+const mobileIntervals = 250;
+const defaultIntervals = 250;
+
+function getIntervalHeight(){
+    const isMobile = window.innerWidth <= 768;
+    return isMobile ? mobileIntervals : defaultIntervals;
+}
+
+function setScrollHeight() {
+    const totalHeight = getIntervalHeight() * content.length;
+
+    scrollContainer.style.height = `${totalHeight}px`;
+}
+window.addEventListener("load", setScrollHeight);
+window.addEventListener("resize", setScrollHeight);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    ~~ TOP: Handling of Scrolling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -122,8 +141,7 @@ const content = [{
 export function statemachineTopRun() {
     let scrollY = window.scrollY;
 
-    const intervalHeight = window.innerHeight / contentHeightFactor;
-    const newSection = Math.floor(scrollY / intervalHeight) % content.length;
+    const newSection = Math.floor(scrollY / getIntervalHeight()) % content.length;
 
     if (newSection !== currentSection) {
         updateTopMeText(content[newSection].preemble, content[newSection].text);
