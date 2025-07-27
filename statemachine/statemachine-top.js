@@ -100,10 +100,9 @@ function getIntervalHeight(){
 }
 
 function setScrollHeight() {
-    const totalHeight = getIntervalHeight() * content.length;
-
-    scrollContainer.style.height = `${totalHeight}px`;
+    scrollContainer.style.height = `${getIntervalHeight() * (content.length - 1)}px`;
 }
+
 window.addEventListener("load", setScrollHeight);
 window.addEventListener("resize", setScrollHeight);
 
@@ -141,7 +140,7 @@ const content = [{
 export function statemachineTopRun() {
     let scrollY = window.scrollY;
 
-    const newSection = Math.floor(scrollY / getIntervalHeight()) % content.length;
+    const newSection = Math.min(Math.floor(scrollY / getIntervalHeight()), content.length - 1);
 
     if (newSection !== currentSection) {
         updateTopMeText(content[newSection].preemble, content[newSection].text);
