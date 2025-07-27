@@ -329,6 +329,22 @@ p {
     max-width: 50%;
 }
 
+@media (max-width: 844px) {
+    .top-text-wrapper {
+        margin-left: 2%;
+        max-width: 48%;
+    }
+
+    .top-text {
+        font-size: 1.5rem;
+    }
+
+    .top-text.large {
+        max-width: none;
+        width: 95vw;
+    }
+}
+
 .top-image {
     position: relative;
     top: -30%;
@@ -350,17 +366,29 @@ p {
     opacity: 1;
 }
 
+@media (max-width: 844px) {
+    .top-image {
+        top: -20%;
+        margin-right: 5%;
+    }
+
+    .top-image img {
+        position: absolute;
+        max-width: 95%;
+    }
+}
+
 .top-image img.profile {
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 98%, transparent 100%),
-                      linear-gradient(to top, black 0%, black 98%, transparent 100%),
-                      linear-gradient(to right, black 0%, black 98%, transparent 100%),
-                      linear-gradient(to left, black 0%, black 98%, transparent 100%);
-  -webkit-mask-composite: destination-in;
-  mask-image: linear-gradient(to bottom, black 0%, black 98%, transparent 100%),
-              linear-gradient(to top, black 0%, black 98%, transparent 100%),
-              linear-gradient(to right, black 0%, black 98%, transparent 100%),
-              linear-gradient(to left, black 0%, black 98%, transparent 100%);
-  mask-composite: intersect;
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 98%, transparent 100%),
+        linear-gradient(to top, black 0%, black 98%, transparent 100%),
+        linear-gradient(to right, black 0%, black 98%, transparent 100%),
+        linear-gradient(to left, black 0%, black 98%, transparent 100%);
+    -webkit-mask-composite: destination-in;
+    mask-image: linear-gradient(to bottom, black 0%, black 98%, transparent 100%),
+        linear-gradient(to top, black 0%, black 98%, transparent 100%),
+        linear-gradient(to right, black 0%, black 98%, transparent 100%),
+        linear-gradient(to left, black 0%, black 98%, transparent 100%);
+    mask-composite: intersect;
 }
 
 .top-image img.faded {
