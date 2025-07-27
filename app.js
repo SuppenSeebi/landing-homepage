@@ -28,6 +28,25 @@ function getCurrentActionId() {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   ~~ Get Scrolling Direction ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+var lastScrollTop = 0;
+var scrollDirection = null;
+function updateScrollDirection() {
+    var currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScrollTop > lastScrollTop) {
+        scrollDirection = 'down';
+    } else if (currentScrollTop < lastScrollTop) {
+        scrollDirection = 'up';
+    }
+    else {
+        scrollDirection = 'vert';
+    }
+
+    lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop; /* For Mobile or negative scrolling */
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    ~~ On Scroll Listener Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~
    - Colors the navbar with "active" and "top"
    - updates the logo position with "top" */
@@ -35,6 +54,7 @@ function onScrollMain() {
     const currentSectionId = getCurrentActionId();
 
     /* Do this always */
+    updateScrollDirection();
     updatelogoWrapper(currentSectionId);
     updateNavbarBoxes(currentSectionId);
 
@@ -44,23 +64,27 @@ function onScrollMain() {
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    ~~ Section Transitioning ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-function transitionToSection(activeSectionId, currentSectionId) {
-    if(null != activeSectionId)
-    {
-        const activeSection = document.getElementById(activeSectionId);
-        activeSection.classList.remove("active");
-        activeSection.classList.add("exit-up");
-    
+function transitionToSection(sectionId) {
+    const next = document.querySelector(`#${sectionId} .section-content-wrapper`);
+    const current = document.querySelector('.section-content-wrapper.active');
+
+    next.classList.remove('exit-up', 'exit-down', 'enter-up', 'enter-down', 'active');
+
+    next.classList.add(scrollDirection === 'down' ? 'enter-up' : 'enter-down');
+
+    void next.offsetWidth;
+
+    if (current) {
+        current.classList.remove('active');
+        current.classList.add(scrollDirection === 'down' ? 'exit-up' : 'exit-down');
+
         setTimeout(() => {
-            activeSection.classList.remove("exit-up");
-        }, 800);
+            current.classList.remove('exit-up', 'exit-down');
+        }, 2000);
     }
 
-    if(null != currentSectionId)
-    {
-        const currentSection = document.getElementById(currentSectionId);
-        currentSection.classList.add("active");
-    }
+    next.classList.remove('enter-up', 'enter-down');
+    next.classList.add('active');
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,12 +98,9 @@ sectionStatemachines.set('impressum', statemachineImpressumRun);
 
 let activeSectionId = null;
 function statemachineHandler(currentSectionId) {
-    console.log("active: " + activeSectionId + "; current: " + currentSectionId);
     if (sectionStatemachines.has(currentSectionId)) {
-        console.log("Section found.")
         if (currentSectionId !== activeSectionId) {
-            console.log("Section change required.")
-            transitionToSection(activeSectionId, currentSectionId)
+            transitionToSection(currentSectionId);
         }
 
         sectionStatemachines.get(currentSectionId)();

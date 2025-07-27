@@ -270,16 +270,54 @@ p {
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~ SECTION WRAPPER ~~~~~~~~~~~~~~~ */
+/* section-scroll-container allows the site to scroll */
 .section-scroll-container {
     position: relative;
     width: 100%;
     height: 100vh;
 }
 
+/* section-content-wrapper wraps the content into a fixed container */
 .section-content-wrapper {
     position: fixed;
     width: 100%;
     height: 100vh;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 1s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.section-content-wrapper.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.section-content-wrapper.exit-up {
+    transform: translateY(-80vh);
+    opacity: 0;
+    z-index: 1;
+}
+
+.section-content-wrapper.exit-down {
+    transform: translateY(80vh);
+    opacity: 0;
+    z-index: 1;
+}
+
+.section-content-wrapper.enter-up {
+    transform: translateY(80vh);
+    opacity: 0;
+}
+
+.section-content-wrapper.enter-down {
+    transform: translateY(-80vh);
+    opacity: 0;
 }
  
  .sections-scroll-space {
