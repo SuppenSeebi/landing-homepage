@@ -5,7 +5,7 @@ const dynamicTextPreembleDiv = document.getElementById("top-text-preemble");
 
 function updateTopMeText(newPreemble, newContent) {
     dynamicTextPreembleDiv.innerHTML = newPreemble;
-    dynamicTextContentDiv.innerHTML = '<i class="bi bi-caret-right-fill"></i> ' + newContent;
+    scramblePartialText(dynamicTextContentDiv, '<i class="bi bi-caret-right-fill"></i> ' + newContent);
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -15,7 +15,6 @@ function slideImageIn(imgId) {
     var img = document.getElementById(imgId);
     if (!img) return;
 
-    console.log(img);
     img.classList.remove('slide-out');
     img.classList.add("slide-in");
 }
@@ -36,10 +35,63 @@ function slideImageHideAll() {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   ~~ TOP: Text Scrambler ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+const randomChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789     ";
+const minScrambleLength = 2;
+const maxScrambleLength = 5;
+
+function getRandomString(length) {
+    return Array.from({ length }, () => randomChars[Math.floor(Math.random() * randomChars.length)]).join("");
+}
+
+function scramblePartialText(target, text, revealStartRatio = 0.4, animationDuration = 100, frameDelay = 75) {
+    const splitIndex = Math.floor(text.length * revealStartRatio);
+    const staticPart = text.slice(0, splitIndex);
+    const scramblePart = text.slice(splitIndex);
+
+    let revealed = Array(scramblePart.length).fill(false);
+    let display = Array.from(scramblePart);
+    let frame = 0;
+
+    const interval = setInterval(() => {
+        let doneCount = 0;
+
+        /* Set 2-4 chars per frame */
+        const toReveal = Math.floor(Math.random() * 5) + 3;
+        let count = 0;
+
+        for (let i = 0; i < scramblePart.length && count < toReveal; i++) {
+            if (!revealed[i]) {
+                revealed[i] = true;
+                count++;
+            }
+        }
+
+        for (let i = 0; i < scramblePart.length; i++) {
+            if (revealed[i]) {
+                display[i] = scramblePart[i];
+                doneCount++;
+            } else {
+                const len = Math.floor(Math.random() * (maxScrambleLength - minScrambleLength + 1)) + minScrambleLength;
+                display[i] = getRandomString(len)[0];
+            }
+        }
+
+        target.innerHTML = staticPart + display.join("");
+
+        if (doneCount >= scramblePart.length || frame > animationDuration) {
+            clearInterval(interval);
+            target.innerHTML = fullText;
+        }
+
+        frame++;
+    }, frameDelay);
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    ~~ TOP: Handling of Scrolling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-let lastScrollTop = -1
 let currentSection = 0;
-const contentHeightFactor = 4
+const contentHeightFactor = 6;
 const content = [{
     preemble: "I am",
     text: "Sebastian",
@@ -82,5 +134,4 @@ export function statemachineTopRun() {
     }
 
     currentSection = newSection;
-    lastScrollTop = scrollY <= 0 ? 0 : scrollY; /* iOS Bounce Fix */
 }
