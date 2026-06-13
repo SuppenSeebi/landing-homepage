@@ -12,14 +12,11 @@ apt-get install -y curl ca-certificates
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt-get install -y nodejs
 
-echo "==> Installing pnpm..."
-npm install -g pnpm
-
 echo "==> Installing project dependencies..."
-pnpm install --no-frozen-lockfile
+npm install
 
 echo "==> Building site..."
-pnpm run build
+npm run build
 
 echo "==> Configuring Apache to serve from dist/..."
 cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'

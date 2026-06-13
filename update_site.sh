@@ -9,9 +9,9 @@ echo "==> Pulling latest changes..."
 git pull origin main
 
 echo "==> Installing any new dependencies..."
-pnpm install --no-frozen-lockfile
+npm install
 
 echo "==> Rebuilding site..."
-pnpm run build
+npm run build
 
 echo "==> Done. Site updated."
