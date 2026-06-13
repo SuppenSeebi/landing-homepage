@@ -313,100 +313,95 @@ p {
 .top-image img.slide-in  { animation: slideInFade 1s ease forwards; }
 .top-image img.slide-out { animation: slideOutFade 1s ease forwards; }
 
-/* ── SECTION: ABOUT ME ────────────────────────── */
+/* ── SECTION: ABOUT ME (COBOL DATA DIVISION) ─── */
 .aboutme-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: flex-start;
     height: 100%;
-    padding: 0 10%;
-    gap: 40px;
+    padding: 0 8%;
 }
 
-.aboutme-header {
-    font-size: 2rem;
-    color: var(--blue-primary);
-    border-bottom: 2px solid var(--blue-mid);
-    padding-bottom: 10px;
-    width: 100%;
-}
-
-.aboutme-timeline {
+.cobol-block {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    max-width: 700px;
+    gap: 0;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    overflow-x: auto;
 }
 
-.timeline-item {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 16px;
-    align-items: start;
+.cobol-comment {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 10px;
     opacity: 0;
-    transform: translateX(-30px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    transition: opacity 0.5s ease;
 }
 
-.timeline-item.revealed {
+.cobol-comment.revealed { opacity: 1; }
+
+.cobol-spacer { height: 5px; }
+
+.cobol-line {
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-14px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.cobol-line.revealed {
     opacity: 1;
     transform: translateX(0);
 }
 
-.timeline-year {
-    font-size: 0.85rem;
-    color: var(--blue-darker-1);
-    font-weight: 600;
-    padding-top: 3px;
-    text-align: right;
-    border-right: 2px solid var(--blue-mid);
-    padding-right: 14px;
-}
+.l05 { padding-left: 2ch; }
+.l10 { padding-left: 4ch; }
+.l88 { padding-left: 4ch; }
 
-.timeline-content h3 {
-    font-size: 1rem;
-    color: var(--blue-darker-2);
-    margin-bottom: 2px;
-}
-
-.timeline-content p {
-    font-size: 0.9rem;
+.cobol-line .lvl {
     color: var(--text-muted);
-    margin: 0;
-    text-align: left;
+    min-width: 3ch;
+    margin-right: 1ch;
+    flex-shrink: 0;
 }
 
-.skills-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+.cobol-line .name {
+    color: var(--blue-darker-2);
+    margin-right: 1.2ch;
+    flex-shrink: 0;
 }
 
-.skill-chip {
-    padding: 4px 12px;
-    background-color: var(--blue-bg);
-    border: 1px solid var(--blue-mid);
-    border-radius: 4px;
-    font-size: 0.85rem;
+.l01 .name  { font-weight: 700; font-size: 1.05rem; }
+.l05 .name  { font-weight: 600; min-width: 16ch; }
+.l10 .name  { min-width: 12ch; }
+.l88 .name  { min-width: 14ch; }
+
+.cobol-line.primary .name {
+    color: var(--blue-darker-2);
+    font-weight: 700;
+}
+
+.cobol-line .pic {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-right: 1.5ch;
+    min-width: 11ch;
+    flex-shrink: 0;
+}
+
+.cobol-line .kw {
     color: var(--blue-darker-1);
-    font-family: Consolas, monospace;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
+    margin-right: 1ch;
+    flex-shrink: 0;
 }
 
-.skill-chip.revealed {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.skill-chip.primary {
-    background-color: var(--blue-darker-2);
-    color: var(--blue-mid);
-    border-color: var(--blue-darker-1);
-}
+.cobol-line .val  { color: var(--blue-primary); }
+.cobol-line .numval { color: var(--blue-mid); }
+.cobol-line .dot  { color: var(--text-muted); margin-left: 0.1ch; }
 
 /* ── SECTION: WORK ────────────────────────────── */
 .work-container {
