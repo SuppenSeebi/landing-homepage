@@ -1,6 +1,9 @@
-const navBoxes   = document.querySelectorAll<HTMLAnchorElement>(".nav-box");
-const sections   = document.querySelectorAll<HTMLElement>("section");
-const logoWrapper = document.getElementById("logo-wrapper")!;
+const navBoxes      = document.querySelectorAll<HTMLAnchorElement>(".nav-box");
+const navDivData    = document.getElementById("nav-div-data");
+const navDivProc    = document.getElementById("nav-div-proc");
+const sections      = document.querySelectorAll<HTMLElement>("section");
+const logoWrapper   = document.getElementById("logo-wrapper")!;
+const controlPrgrph = document.getElementById("control-prgrph");
 
 const sectionRunners: Record<string, () => void> = {
     top:       () => (window as any).__topRun?.(),
@@ -9,6 +12,8 @@ const sectionRunners: Record<string, () => void> = {
     links:     () => (window as any).__linksRun?.(),
     impressum: () => (window as any).__impressumRun?.(),
 };
+
+const DATA_DIV_SECTIONS = new Set(["top", "aboutme", "work"]);
 
 /* ── scroll direction ──────────────────────────── */
 let lastScrollY = 0;
@@ -40,7 +45,7 @@ function transitionTo(id: string) {
 
     next.classList.remove("exit-up", "exit-down", "enter-up", "enter-down", "active");
     next.classList.add(scrollDir === "down" ? "enter-up" : "enter-down");
-    void next.offsetWidth; /* force reflow */
+    void next.offsetWidth;
 
     if (current) {
         current.classList.remove("active");
@@ -52,18 +57,27 @@ function transitionTo(id: string) {
     next.classList.add("active");
 }
 
-/* ── navbar & logo ─────────────────────────────── */
+/* ── navbar, logo, control paragraph ──────────── */
 function updateNav(id: string) {
     navBoxes.forEach(box => {
         box.classList.remove("active", "top");
         if (box.getAttribute("href") === `#${id}`) box.classList.add("active");
         if (box.getAttribute("href") === "#top" && id !== "top") box.classList.add("top");
     });
+
+    const inData = DATA_DIV_SECTIONS.has(id);
+    navDivData?.classList.toggle("active-division", inData);
+    navDivProc?.classList.toggle("active-division", !inData);
 }
 
 function updateLogo(id: string) {
     if (id === "top") logoWrapper.classList.add("visible");
     else              logoWrapper.classList.remove("visible");
+}
+
+function updateControlPrgrph(id: string) {
+    const show = id === "links" || id === "impressum";
+    controlPrgrph?.classList.toggle("visible", show);
 }
 
 /* ── main scroll handler ───────────────────────── */
@@ -72,6 +86,7 @@ function onScroll() {
     const id = getActiveSection();
     updateNav(id);
     updateLogo(id);
+    updateControlPrgrph(id);
 
     if (id !== activeSectionId) {
         transitionTo(id);
@@ -79,7 +94,6 @@ function onScroll() {
         activeSectionId = id;
     }
 
-    /* Top section runner needs to run on every scroll for scroll-driven content */
     if (id === "top") sectionRunners["top"]?.();
 }
 

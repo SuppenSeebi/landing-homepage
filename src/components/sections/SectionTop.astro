@@ -5,10 +5,23 @@
         <div class="section-content-wrapper">
             <div class="top-container">
                 <div class="top-text-wrapper">
-                    <div class="top-text static">Hi there,<br />and welcome to my lab!</div>
-                    <div class="top-text dynamic" id="top-text-preamble">I am:</div>
-                    <div class="top-text dynamic large" id="top-text-content">
-                        <i class="bi bi-caret-right-fill"></i> Sebastian
+                    <!-- Static COBOL structure header -->
+                    <div class="cobol-division">DATA DIVISION.</div>
+                    <div class="cobol-section-hdr">WORKING-STORAGE SECTION.</div>
+                    <div class="cobol-line top-01-line">
+                        <span class="lvl">01</span><span class="name">SELF.</span>
+                    </div>
+                    <!-- Scroll-driven data field -->
+                    <div class="top-data-field">
+                        <div class="cobol-line l05">
+                            <span class="lvl">05</span>
+                            <span class="name top-dyn-name" id="top-field-name">NAME</span>
+                            <span class="pic top-dyn-pic">PIC X(50)</span><span class="dot">.</span>
+                        </div>
+                        <div class="top-value-row">
+                            <span class="kw">VALUE</span>
+                            <span class="val" id="top-text-content">SEBASTIAN SCHWINN</span><span class="dot">.</span>
+                        </div>
                     </div>
                 </div>
                 <div class="top-image">
@@ -28,26 +41,24 @@
 <div class="sections-scroll-space" id="scroll-space-top-aboutme"></div>
 
 <script>
-const preambleEl  = document.getElementById("top-text-preamble")!;
-const contentEl   = document.getElementById("top-text-content")!;
-const scrollSpace = document.getElementById("scroll-space-top-aboutme")!;
+const fieldEl     = document.getElementById("top-field-name") as HTMLElement;
+const contentEl   = document.getElementById("top-text-content") as HTMLElement;
+const scrollSpace = document.getElementById("scroll-space-top-aboutme") as HTMLElement;
 
 /* ── content items ─────────────────────────────── */
 const items = [
-    { preamble: "I am",              text: "Sebastian",                                                        imageId: "top-me" },
-    { preamble: "I hold",            text: "a Master's degree with distinction in Electrical Engineering",     imageId: "top-degree" },
-    { preamble: "I develop",         text: "COBOL at RetroCode in the financial sector",                       imageId: "top-cobol" },
-    { preamble: "I am experienced in", text: "C and C++ — embedded software and OPC UA in industrial automation", imageId: "top-opcua" },
-    { preamble: "I also know",       text: "Python, SQL, Shell, JCL, and JavaScript",                         imageId: "top-coding" },
-    { preamble: "I am passionate about", text: "3D printing and technical tinkering",                         imageId: "top-3d" },
-    { preamble: "I serve on the board of", text: "two sports clubs — tennis and table tennis",                imageId: "top-sports" },
+    { fieldName: "NAME",         value: "SEBASTIAN SCHWINN",                               imageId: "top-me"     },
+    { fieldName: "EDUCATION",    value: "MSC ELECTRICAL ENGINEERING WITH DISTINCTION",      imageId: "top-degree" },
+    { fieldName: "CURRENT-ROLE", value: "COBOL DEVELOPER AT RETROCODE",                     imageId: "top-cobol"  },
+    { fieldName: "PREV-ROLE",    value: "EMBEDDED C DEVELOPER - OPC UA",                    imageId: "top-opcua"  },
+    { fieldName: "LANGUAGES",    value: "PYTHON  SQL-DB2  JCL  SHELL  JAVASCRIPT",          imageId: "top-coding" },
+    { fieldName: "HOBBIES",      value: "3D PRINTING - TECHNICAL TINKERING",               imageId: "top-3d"     },
+    { fieldName: "AFFILIATIONS", value: "BOARD MEMBER - TENNIS + TABLE TENNIS CLUBS",      imageId: "top-sports" },
 ];
 
 const INTERVAL_HEIGHT = 120;
 
 function setScrollHeight() {
-    /* offsetTop of #aboutme = 100vh + this height; mid = scrollY + innerHeight/2 must
-       reach that to trigger section transition. One INTERVAL_HEIGHT of grace after item 6. */
     const h = Math.max(INTERVAL_HEIGHT, INTERVAL_HEIGHT * items.length - window.innerHeight / 2);
     scrollSpace.style.height = `${h}px`;
 }
@@ -55,7 +66,7 @@ window.addEventListener("load", setScrollHeight);
 window.addEventListener("resize", setScrollHeight);
 
 /* ── text scrambler ────────────────────────────── */
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789     ";
+const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-. ";
 let scrambleTimer: ReturnType<typeof setInterval> | null = null;
 
 function scramble(target: HTMLElement, text: string) {
@@ -64,7 +75,7 @@ function scramble(target: HTMLElement, text: string) {
     const split      = Math.floor(text.length * 0.4);
     const staticPart = text.slice(0, split);
     const dynPart    = text.slice(split);
-    const revealed   = Array(dynPart.length).fill(false);
+    const revealedArr = Array(dynPart.length).fill(false);
     const display    = Array.from(dynPart);
     let frame = 0;
 
@@ -72,18 +83,18 @@ function scramble(target: HTMLElement, text: string) {
         const toReveal = Math.floor(Math.random() * 5) + 3;
         let count = 0;
         for (let i = 0; i < dynPart.length && count < toReveal; i++) {
-            if (!revealed[i]) { revealed[i] = true; count++; }
+            if (!revealedArr[i]) { revealedArr[i] = true; count++; }
         }
         let done = 0;
         for (let i = 0; i < dynPart.length; i++) {
-            if (revealed[i]) { display[i] = dynPart[i]; done++; }
+            if (revealedArr[i]) { display[i] = dynPart[i]; done++; }
             else { display[i] = CHARS[Math.floor(Math.random() * CHARS.length)]; }
         }
-        target.innerHTML = '<i class="bi bi-caret-right-fill"></i> ' + staticPart + display.join("");
+        target.textContent = staticPart + display.join("");
         if (done >= dynPart.length || frame > 100) {
             clearInterval(scrambleTimer!);
             scrambleTimer = null;
-            target.innerHTML = '<i class="bi bi-caret-right-fill"></i> ' + text;
+            target.textContent = text;
         }
         frame++;
     }, 75);
@@ -107,13 +118,12 @@ let current = 0;
 export function statemachineTopRun() {
     const next = Math.min(Math.floor(window.scrollY / INTERVAL_HEIGHT), items.length - 1);
     if (next !== current) {
-        preambleEl.textContent = items[next].preamble;
-        scramble(contentEl, items[next].text);
+        fieldEl.textContent  = items[next].fieldName;
+        scramble(contentEl, items[next].value);
         if (items[next].imageId !== items[current].imageId) showImage(items[next].imageId);
         current = next;
     }
 }
 
-/* expose for app.ts */
 (window as any).__topRun = statemachineTopRun;
 </script>

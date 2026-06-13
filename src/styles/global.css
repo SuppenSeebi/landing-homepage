@@ -116,24 +116,64 @@ p {
     z-index: 9000;
 }
 
+/* Two-row CSS grid: row 1 = division headers, row 2 = section boxes */
 .bottom-nav {
-    display: flex;
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(130px, 1fr));
+    grid-template-rows: auto auto;
+    min-width: max-content;
 }
 
+/* ── Division headers (row 1) ─────────────────── */
+.nav-division {
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 16px;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    color: var(--text-muted);
+    background-color: rgba(27, 45, 115, 0.06);
+    border-bottom: 1px solid var(--blue-mid);
+    white-space: nowrap;
+    user-select: none;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.nav-division.data-div {
+    grid-column: 1 / 4;
+    border-right: 1px solid var(--blue-mid);
+}
+
+.nav-division.proc-div {
+    grid-column: 4 / 6;
+}
+
+.nav-division.active-division {
+    color: var(--blue-darker-2);
+    background-color: rgba(27, 45, 115, 0.14);
+}
+
+/* ── Section boxes (row 2) ────────────────────── */
 .nav-box {
-    padding: 12px 22px;
-    font-family: Consolas, monospace;
+    grid-row: 2;
+    padding: 10px 18px;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.78rem;
     background-color: var(--blue-mid);
     color: var(--text-primary);
-    border: 2px solid var(--blue-mid);
+    border-top: none;
     cursor: pointer;
     font-weight: 600;
     text-align: center;
     user-select: none;
     white-space: nowrap;
     text-decoration: none;
-    transition: background-color 0.5s, color 0.5s;
+    transition: background-color 0.4s, color 0.4s;
 }
 
 .nav-box.active {
@@ -152,7 +192,7 @@ p {
 .bottom-nav-shadow-right {
     position: fixed;
     bottom: 9px;
-    height: 54px;
+    height: 72px;
     width: 30px;
     pointer-events: none;
     z-index: 9999;
@@ -178,13 +218,51 @@ p {
 
     .bottom-nav {
         position: relative;
-        flex-wrap: nowrap;
         min-width: max-content;
         z-index: 1;
     }
-
-    .nav-box { flex: 0 0 auto; }
 }
+
+/* ── CONTROL-PRGRPH (fixed, PROCEDURE DIVISION) ─ */
+#control-prgrph {
+    position: fixed;
+    top: 24px;
+    left: 8%;
+    z-index: 50;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.82rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease 0.2s;
+}
+
+#control-prgrph.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.ctrl-para-hdr {
+    color: var(--blue-darker-1);
+    font-weight: 700;
+    font-size: 0.88rem;
+}
+
+a.ctrl-goback {
+    display: flex;
+    align-items: baseline;
+    gap: 1ch;
+    text-decoration: none;
+    color: inherit;
+    padding: 2px 0;
+}
+
+a.ctrl-goback .kw   { color: var(--blue-darker-1); }
+a.ctrl-goback .dot  { color: var(--text-muted); }
+a.ctrl-goback .call-comment { color: var(--text-muted); font-style: italic; }
+a.ctrl-goback:hover .kw { text-decoration: underline; }
 
 /* ── SECTION SCROLL SYSTEM ────────────────────── */
 .section-scroll-container {
@@ -234,29 +312,51 @@ p {
     justify-content: center;
     align-items: flex-start;
     margin-left: 10%;
-    max-width: 40%;
+    max-width: 52%;
 }
 
-.top-text {
-    width: 100%;
-    font-size: 2rem;
-    line-height: 1.2;
-    font-weight: 400;
-    white-space: normal;
+.top-01-line {
+    margin-top: 12px;
+    margin-bottom: 6px;
 }
 
-.top-text.static  { color: var(--blue-primary); margin-bottom: 20px; }
-.top-text.dynamic { font-weight: 600; color: var(--blue-darker-1); }
-.top-text.large   { min-height: 8lh; max-width: 100%; }
+.top-data-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.top-dyn-name {
+    min-width: 16ch !important;
+    font-size: 0.95rem !important;
+}
+
+.top-dyn-pic {
+    font-size: 0.8rem;
+}
+
+.top-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1ch;
+    padding-left: 6ch;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+#top-text-content {
+    color: var(--blue-primary);
+    font-weight: 700;
+    font-size: 1rem;
+}
 
 @media (max-width: 768px) {
     .top-text-wrapper {
-        margin-left: 2%;
-        max-width: 48%;
-        margin-top: 10%;
+        margin-left: 4%;
+        max-width: 56%;
+        margin-top: 12%;
     }
-    .top-text { font-size: 1.5rem; }
-    .top-text.large { max-width: none; width: 95vw; }
 }
 
 .top-image {
@@ -319,7 +419,7 @@ p {
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding: 0 8%;
+    padding: 40px 8% 90px;
 }
 
 .cobol-block {
@@ -483,7 +583,7 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding: 0 8%;
+    padding: 40px 8% 90px;
 }
 
 /* ── SECTION: LINKS ───────────────────────────── */
@@ -492,7 +592,7 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding: 0 8%;
+    padding: 40px 8% 90px;
 }
 
 /* ── SECTION: IMPRESSUM ───────────────────────── */
@@ -502,17 +602,13 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
     justify-content: center;
     align-items: flex-start;
     height: 100%;
-    padding: 50px 8% 30px;
-    gap: 12px;
+    padding: 40px 8% 90px;
+    gap: 10px;
     overflow-y: hidden;
 }
 
-.impressum-header {
-    font-size: 1.6rem;
-    color: var(--blue-primary);
-    border-bottom: 2px solid var(--blue-mid);
-    padding-bottom: 8px;
-    width: 100%;
+.impressum-para-hdr {
+    margin-bottom: 6px;
 }
 
 .impressum-grid {
