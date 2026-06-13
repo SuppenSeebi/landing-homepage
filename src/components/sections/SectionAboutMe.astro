@@ -1,0 +1,65 @@
+---
+---
+<section id="aboutme" style="min-height: 220vh;">
+    <div class="section-scroll-container">
+        <div class="section-content-wrapper">
+            <div class="aboutme-container">
+                <div class="aboutme-header">// about me</div>
+
+                <div class="aboutme-timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">2024 → now</div>
+                        <div class="timeline-content">
+                            <h3>COBOL Developer — RetroCode</h3>
+                            <p>Financial sector software development. COBOL on mainframe environments, JCL, DB2/SQL, and surrounding tooling.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">prev.</div>
+                        <div class="timeline-content">
+                            <h3>Embedded Software Developer</h3>
+                            <p>Industrial automation — OPC UA communication stacks, real-time C/C++ on embedded targets.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">MSc.</div>
+                        <div class="timeline-content">
+                            <h3>Electrical Engineering — with Distinction</h3>
+                            <p>Master's degree, focus on signal processing and embedded systems.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="skills-row" id="skills-row">
+                    <span class="skill-chip primary">COBOL</span>
+                    <span class="skill-chip primary">C</span>
+                    <span class="skill-chip">C++</span>
+                    <span class="skill-chip">Python</span>
+                    <span class="skill-chip">SQL / DB2</span>
+                    <span class="skill-chip">JCL</span>
+                    <span class="skill-chip">Shell</span>
+                    <span class="skill-chip">JavaScript</span>
+                    <span class="skill-chip">OPC UA</span>
+                    <span class="skill-chip">3D Printing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+let revealed = false;
+
+export function statemachineAboutMeRun() {
+    if (revealed) return;
+    revealed = true;
+
+    const items = document.querySelectorAll<HTMLElement>(".timeline-item");
+    const chips = document.querySelectorAll<HTMLElement>(".skill-chip");
+
+    items.forEach((el, i) => setTimeout(() => el.classList.add("revealed"), i * 150));
+    chips.forEach((el, i) => setTimeout(() => el.classList.add("revealed"), i * 60 + 500));
+}
+
+(window as any).__aboutMeRun = statemachineAboutMeRun;
+</script>

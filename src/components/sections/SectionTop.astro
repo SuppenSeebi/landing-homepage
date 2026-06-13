@@ -1,0 +1,116 @@
+---
+---
+<section id="top">
+    <div class="section-scroll-container">
+        <div class="section-content-wrapper">
+            <div class="top-container">
+                <div class="top-text-wrapper">
+                    <div class="top-text static">Hi there,<br />and welcome to my lab!</div>
+                    <div class="top-text dynamic" id="top-text-preamble">I am:</div>
+                    <div class="top-text dynamic large" id="top-text-content">
+                        <i class="bi bi-caret-right-fill"></i> Sebastian
+                    </div>
+                </div>
+                <div class="top-image">
+                    <img src="/me.jpg"           id="top-me"     class="profile shown" alt="Sebastian" />
+                    <img src="/top1-degree.png"  id="top-degree" alt="Degree" />
+                    <img src="/top4-cobol.png"   id="top-cobol"  alt="COBOL" />
+                    <img src="/top2-opcua.png"   id="top-opcua"  alt="Embedded / OPC UA" />
+                    <img src="/top3-coding.png"  id="top-coding" alt="Coding" />
+                    <img src="/top3-coding.png"  id="top-3d"     alt="3D Printing" />
+                    <img src="/top5-sports.png"  id="top-sports" alt="Sports" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="sections-scroll-space" id="scroll-space-top-aboutme"></div>
+
+<script>
+const preambleEl  = document.getElementById("top-text-preamble")!;
+const contentEl   = document.getElementById("top-text-content")!;
+const scrollSpace = document.getElementById("scroll-space-top-aboutme")!;
+
+/* ── content items ─────────────────────────────── */
+const items = [
+    { preamble: "I am",              text: "Sebastian",                                                        imageId: "top-me" },
+    { preamble: "I hold",            text: "a Master's degree with distinction in Electrical Engineering",     imageId: "top-degree" },
+    { preamble: "I develop",         text: "COBOL at RetroCode in the financial sector",                       imageId: "top-cobol" },
+    { preamble: "I am experienced in", text: "C and C++ — embedded software and OPC UA in industrial automation", imageId: "top-opcua" },
+    { preamble: "I also know",       text: "Python, SQL, Shell, JCL, and JavaScript",                         imageId: "top-coding" },
+    { preamble: "I am passionate about", text: "3D printing and technical tinkering",                         imageId: "top-3d" },
+    { preamble: "I serve on the board of", text: "two sports clubs — tennis and table tennis",                imageId: "top-sports" },
+];
+
+const INTERVAL_HEIGHT = 250;
+
+function setScrollHeight() {
+    scrollSpace.style.height = `${INTERVAL_HEIGHT * (items.length - 1)}px`;
+}
+window.addEventListener("load", setScrollHeight);
+window.addEventListener("resize", setScrollHeight);
+
+/* ── text scrambler ────────────────────────────── */
+const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789     ";
+let scrambleTimer: ReturnType<typeof setInterval> | null = null;
+
+function scramble(target: HTMLElement, text: string) {
+    if (scrambleTimer) { clearInterval(scrambleTimer); scrambleTimer = null; }
+
+    const split      = Math.floor(text.length * 0.4);
+    const staticPart = text.slice(0, split);
+    const dynPart    = text.slice(split);
+    const revealed   = Array(dynPart.length).fill(false);
+    const display    = Array.from(dynPart);
+    let frame = 0;
+
+    scrambleTimer = setInterval(() => {
+        const toReveal = Math.floor(Math.random() * 5) + 3;
+        let count = 0;
+        for (let i = 0; i < dynPart.length && count < toReveal; i++) {
+            if (!revealed[i]) { revealed[i] = true; count++; }
+        }
+        let done = 0;
+        for (let i = 0; i < dynPart.length; i++) {
+            if (revealed[i]) { display[i] = dynPart[i]; done++; }
+            else { display[i] = CHARS[Math.floor(Math.random() * CHARS.length)]; }
+        }
+        target.innerHTML = '<i class="bi bi-caret-right-fill"></i> ' + staticPart + display.join("");
+        if (done >= dynPart.length || frame > 100) {
+            clearInterval(scrambleTimer!);
+            scrambleTimer = null;
+            target.innerHTML = '<i class="bi bi-caret-right-fill"></i> ' + text;
+        }
+        frame++;
+    }, 75);
+}
+
+/* ── image transitions ─────────────────────────── */
+let currentImageId = "top-me";
+
+function showImage(newId: string) {
+    if (newId === currentImageId) return;
+    const prev = document.getElementById(currentImageId);
+    const next = document.getElementById(newId);
+    if (prev) { prev.classList.remove("shown", "slide-in"); prev.classList.add("slide-out"); }
+    if (next) { next.classList.remove("slide-out"); next.classList.add("slide-in"); }
+    currentImageId = newId;
+}
+
+/* ── scroll handling ───────────────────────────── */
+let current = 0;
+
+export function statemachineTopRun() {
+    const next = Math.min(Math.floor(window.scrollY / INTERVAL_HEIGHT), items.length - 1);
+    if (next !== current) {
+        preambleEl.textContent = items[next].preamble;
+        scramble(contentEl, items[next].text);
+        if (items[next].imageId !== items[current].imageId) showImage(items[next].imageId);
+        current = next;
+    }
+}
+
+/* expose for app.ts */
+(window as any).__topRun = statemachineTopRun;
+</script>

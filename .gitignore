@@ -1,0 +1,30 @@
+# dist/ is built on the server by setup.sh — do not commit it
+dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# Claude Code local settings
+.claude/
+
+# old site kept for reference — has its own git repo, exclude from this one
+landing-homepage/
