@@ -112,9 +112,32 @@ p {
     transform: translateX(-50%);
     width: 100%;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     z-index: 9000;
 }
+
+/* ── IDENTIFICATION DIVISION bar (row 0) ─────── */
+.nav-id-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8ch;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.68rem;
+    font-style: italic;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    width: 100%;
+    justify-content: center;
+    white-space: nowrap;
+    background: rgba(234, 243, 255, 0.8);
+    border-bottom: 1px solid rgba(163, 187, 247, 0.3);
+}
+
+.nav-id-kw  { color: var(--blue-darker-1); font-style: normal; font-weight: 600; }
+.nav-id-sep { color: var(--blue-mid); margin: 0 0.4ch; }
 
 /* Two-row CSS grid: row 1 = division headers, row 2 = section boxes */
 .bottom-nav {
@@ -192,7 +215,7 @@ p {
 .bottom-nav-shadow-right {
     position: fixed;
     bottom: 9px;
-    height: 72px;
+    height: 100px;
     width: 30px;
     pointer-events: none;
     z-index: 9999;
@@ -222,6 +245,29 @@ p {
         z-index: 1;
     }
 }
+
+/* ── FILE-SECTION-INDICATOR (fixed, DATA DIVISION) */
+#file-section-indicator {
+    position: fixed;
+    top: 24px;
+    left: 8%;
+    z-index: 50;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.82rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease 0.2s;
+}
+
+#file-section-indicator.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#file-section-indicator .ctrl-para-hdr { color: var(--blue-darker-1); font-weight: 700; font-size: 0.88rem; }
 
 /* ── CONTROL-PRGRPH (fixed, PROCEDURE DIVISION) ─ */
 #control-prgrph {
@@ -268,7 +314,7 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
 .section-scroll-container {
     position: relative;
     width: 100%;
-    height: 100vh;
+    height: 55vh;
 }
 
 .section-content-wrapper {
@@ -327,7 +373,7 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
 }
 
 .top-dyn-name {
-    min-width: 16ch !important;
+    min-width: 14ch !important;
     font-size: 0.95rem !important;
 }
 
@@ -339,7 +385,7 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
     display: flex;
     align-items: baseline;
     gap: 1ch;
-    padding-left: 6ch;
+    padding-left: 8ch;
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: 0.9rem;
     flex-wrap: wrap;
@@ -419,7 +465,7 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding: 40px 8% 90px;
+    padding: 20px 8% 110px;
 }
 
 .cobol-block {
@@ -427,8 +473,8 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
     flex-direction: column;
     gap: 0;
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.9rem;
-    line-height: 1.6;
+    font-size: 0.82rem;
+    line-height: 1.45;
     overflow-x: auto;
 }
 
@@ -442,7 +488,7 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
 
 .cobol-comment.revealed { opacity: 1; }
 
-.cobol-spacer { height: 5px; }
+.cobol-spacer { height: 3px; }
 
 .cobol-line {
     display: flex;
@@ -573,6 +619,46 @@ a.cobol-author-link.revealed { opacity: 1; }
 a.cobol-author-link:hover { color: var(--blue-primary); }
 a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
 
+/* Paragraph labels in PROCEDURE DIVISION */
+.cobol-para-label {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--blue-darker-1);
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+/* Indent CALL statements under a paragraph label */
+.para-body { padding-left: 4ch; }
+
+/* LAN comment note (no reveal animation) */
+.cobol-lan-note {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-style: italic;
+    padding-left: 0;
+    margin-bottom: 1px;
+}
+
+/* EXIT SECTION link at the bottom of impressum */
+a.cobol-exit-link {
+    display: flex;
+    align-items: baseline;
+    gap: 1ch;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: inherit;
+    margin-top: 14px;
+    padding: 3px 0;
+}
+a.cobol-exit-link .kw           { color: var(--blue-darker-1); }
+a.cobol-exit-link .dot          { color: var(--text-muted); }
+a.cobol-exit-link .call-comment { color: var(--text-muted); font-style: italic; }
+a.cobol-exit-link:hover .kw     { text-decoration: underline; }
+
 /* LAN-only group in links section */
 .lan-group.lan-only  { display: none; }
 .lan-group.lan-visible { display: block; }
@@ -583,7 +669,7 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding: 40px 8% 90px;
+    padding: 20px 8% 110px;
 }
 
 /* ── SECTION: LINKS ───────────────────────────── */
@@ -592,7 +678,7 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
     flex-direction: column;
     justify-content: center;
     height: 100%;
-    padding: 40px 8% 90px;
+    padding: 20px 8% 110px;
 }
 
 /* ── SECTION: IMPRESSUM ───────────────────────── */
@@ -602,7 +688,7 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
     justify-content: center;
     align-items: flex-start;
     height: 100%;
-    padding: 40px 8% 90px;
+    padding: 20px 8% 110px;
     gap: 10px;
     overflow-y: hidden;
 }

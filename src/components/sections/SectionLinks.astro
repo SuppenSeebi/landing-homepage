@@ -1,35 +1,28 @@
 ---
 ---
-<section id="links" style="min-height: 115vh;">
+<section id="links">
     <div class="section-scroll-container">
         <div class="section-content-wrapper">
             <div class="links-container">
                 <div class="cobol-block">
 
                     <div class="cobol-division">PROCEDURE DIVISION.</div>
-                    <div class="cobol-section-hdr">SERVICES-PARAGRAPH.</div>
+                    <div class="cobol-section-hdr">LINKS SECTION.</div>
+
                     <div class="cobol-spacer"></div>
 
-                    <a class="cobol-call reveal-item" href="https://kb.sschw.dev" target="_blank" rel="noopener">
+                    <!-- SERVICES-PARAGRAPH -->
+                    <div class="cobol-para-label">SERVICES-PARAGRAPH.</div>
+
+                    <a class="cobol-call para-body reveal-item" href="https://kb.sschw.dev" target="_blank" rel="noopener">
                         <span class="kw">CALL</span>
                         <span class="val">&apos;KB.SSCHW.DEV&apos;</span><span class="dot">.</span>
                         <span class="call-comment">*&gt; Personal wiki &amp; notes</span>
                     </a>
-                    <a class="cobol-call reveal-item" href="https://www.linkedin.com/in/sschwinn/" target="_blank" rel="noopener">
-                        <span class="kw">CALL</span>
-                        <span class="val">&apos;LINKEDIN&apos;</span><span class="dot">.</span>
-                        <span class="call-comment">*&gt; linkedin.com/in/sschwinn/</span>
-                    </a>
-                    <a class="cobol-call reveal-item" href="https://www.instagram.com/s.schwinni/" target="_blank" rel="noopener">
-                        <span class="kw">CALL</span>
-                        <span class="val">&apos;INSTAGRAM&apos;</span><span class="dot">.</span>
-                        <span class="call-comment">*&gt; instagram.com/s.schwinni/</span>
-                    </a>
 
                     <!-- LAN-only block, shown by JS when on local network -->
-                    <div class="lan-group lan-only">
-                        <div class="cobol-spacer"></div>
-                        <div class="cobol-comment">*&gt; local network only:</div>
+                    <div class="lan-group lan-only para-body">
+                        <div class="cobol-lan-note">*&gt; local network only:</div>
                         <a class="cobol-call" href="https://lldap.sschw.dev" target="_blank" rel="noopener">
                             <span class="kw">CALL</span>
                             <span class="val">&apos;LLDAP&apos;</span><span class="dot">.</span>
@@ -42,9 +35,29 @@
                         </a>
                     </div>
 
+                    <div class="cobol-line para-body reveal-item">
+                        <span class="kw">EXIT PARAGRAPH</span><span class="dot">.</span>
+                        <span class="call-comment">*&gt; → SOCIALS-PARAGRAPH</span>
+                    </div>
+
                     <div class="cobol-spacer"></div>
-                    <div class="cobol-line reveal-item">
-                        <span class="kw">STOP RUN</span><span class="dot">.</span>
+
+                    <!-- SOCIALS-PARAGRAPH -->
+                    <div class="cobol-para-label">SOCIALS-PARAGRAPH.</div>
+
+                    <a class="cobol-call para-body reveal-item" href="https://www.linkedin.com/in/sschwinn/" target="_blank" rel="noopener">
+                        <span class="kw">CALL</span>
+                        <span class="val">&apos;LINKEDIN&apos;</span><span class="dot">.</span>
+                        <span class="call-comment">*&gt; linkedin.com/in/sschwinn/</span>
+                    </a>
+                    <a class="cobol-call para-body reveal-item" href="https://www.instagram.com/s.schwinni/" target="_blank" rel="noopener">
+                        <span class="kw">CALL</span>
+                        <span class="val">&apos;INSTAGRAM&apos;</span><span class="dot">.</span>
+                        <span class="call-comment">*&gt; instagram.com/s.schwinni/</span>
+                    </a>
+                    <div class="cobol-line para-body reveal-item">
+                        <span class="kw">EXIT SECTION</span><span class="dot">.</span>
+                        <span class="call-comment">*&gt; end of LINKS SECTION</span>
                     </div>
 
                 </div>
@@ -65,16 +78,17 @@ async function checkLocalNetwork() {
                 el.classList.add("lan-visible");
             });
         }
-    } catch {
-        /* public visitor or request timed out — lan block stays hidden */
-    }
+    } catch { /* public visitor */ }
 }
 
 checkLocalNetwork();
 
+let revealed = false;
 export function statemachineLinksRun() {
+    if (revealed) return;
+    revealed = true;
     const items = document.querySelectorAll<HTMLElement>('#links .reveal-item');
-    items.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 60));
+    items.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 55));
 }
 (window as any).__linksRun = statemachineLinksRun;
 </script>

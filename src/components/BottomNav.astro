@@ -1,8 +1,17 @@
 ---
+const compiled = new Date().toISOString().slice(0, 10);
 ---
 <div class="bottom-nav-shadow-right"></div>
 <div class="bottom-nav-shadow-left"></div>
 <div class="bottom-nav-positioner">
+    <!-- Row 0: IDENTIFICATION DIVISION bar -->
+    <div class="nav-id-bar">
+        <span class="nav-id-item"><span class="nav-id-kw">PROGRAM-ID.</span> SSCHW-DEV.</span>
+        <span class="nav-id-sep">·</span>
+        <span class="nav-id-item"><span class="nav-id-kw">AUTHOR.</span> SEBASTIAN SCHWINN.</span>
+        <span class="nav-id-sep">·</span>
+        <span class="nav-id-item"><span class="nav-id-kw">DATE-COMPILED.</span> {compiled}.</span>
+    </div>
     <nav class="bottom-nav">
         <!-- Row 1: Division headers -->
         <a class="nav-division data-div" id="nav-div-data" href="#top">DATA DIVISION</a>
@@ -11,7 +20,7 @@
         <a class="nav-box active" href="#top">WORKING-STORAGE.</a>
         <a class="nav-box" href="#aboutme">LOCAL-STORAGE.</a>
         <a class="nav-box" href="#work">LINKAGE SECTION.</a>
-        <a class="nav-box" href="#links">SERVICES-PARAGRAPH.</a>
+        <a class="nav-box" href="#links">LINKS SECTION.</a>
         <a class="nav-box" href="#impressum">IMPRESSUM-PARAGRAPH.</a>
     </nav>
 </div>

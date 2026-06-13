@@ -3,7 +3,8 @@ const navDivData    = document.getElementById("nav-div-data");
 const navDivProc    = document.getElementById("nav-div-proc");
 const sections      = document.querySelectorAll<HTMLElement>("section");
 const logoWrapper   = document.getElementById("logo-wrapper")!;
-const controlPrgrph = document.getElementById("control-prgrph");
+const controlPrgrph    = document.getElementById("control-prgrph");
+const fileSectionEl    = document.getElementById("file-section-indicator");
 
 const sectionRunners: Record<string, () => void> = {
     top:       () => (window as any).__topRun?.(),
@@ -78,6 +79,7 @@ function updateLogo(id: string) {
 function updateControlPrgrph(id: string) {
     const show = id === "links" || id === "impressum";
     controlPrgrph?.classList.toggle("visible", show);
+    fileSectionEl?.classList.toggle("visible", id === "aboutme" || id === "work");
 }
 
 /* ── main scroll handler ───────────────────────── */
