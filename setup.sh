@@ -16,7 +16,7 @@ echo "==> Installing pnpm..."
 npm install -g pnpm
 
 echo "==> Installing project dependencies..."
-pnpm install
+pnpm install --no-frozen-lockfile
 
 echo "==> Building site..."
 pnpm run build
