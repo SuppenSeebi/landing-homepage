@@ -2,7 +2,7 @@
 ---
 <div class="logo-wrapper" id="logo-wrapper">
     <div class="logo-wrapper-spotlight"></div>
-    <div class="rotating-text" id="rotating-text">
+    <div class="rotating-text">
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
                 <path id="circlePath" d="M 150,150 m -100,0 a 100,100 0 1,0 200,0 a 100,100 0 1,0 -200,0" />
@@ -12,25 +12,21 @@
             <text font-family="Share Tech Mono" font-size="15" fill="#2542A3" dominant-baseline="middle">
                 <textPath href="#circlePath" startOffset="0%">Sebastian Schwinn</textPath>
             </text>
-            <path d="M 160.45,249.45 A 100,100 0 0,1 132.64,248.48" stroke="#2542A3" stroke-width="1" fill="none" />
 
-            <!-- Cycling label A (27%) -->
-            <text id="logo-label-a" font-family="Share Tech Mono" font-size="15" fill="#2542A3" dominant-baseline="middle">
-                <textPath href="#circlePath" startOffset="27%">COBOL Developer</textPath>
+            <!-- Fixed: COBOL (primary skill) -->
+            <text font-family="Share Tech Mono" font-size="15" fill="#1B2D73" font-weight="bold" dominant-baseline="middle">
+                <textPath href="#circlePath" startOffset="29%">COBOL</textPath>
             </text>
-            <path d="M 246.59,175.88 A 100,100 0 0,1 242.05,189.07" stroke="#2542A3" stroke-width="1" fill="none" />
 
-            <!-- Cycling label B (49%) -->
-            <text id="logo-label-b" font-family="Share Tech Mono" font-size="15" fill="#2542A3" dominant-baseline="middle">
-                <textPath href="#circlePath" startOffset="49%">Electrical Engineer</textPath>
+            <!-- Fixed: C (primary skill) -->
+            <text font-family="Share Tech Mono" font-size="15" fill="#1B2D73" font-weight="bold" dominant-baseline="middle">
+                <textPath href="#circlePath" startOffset="39%">C</textPath>
             </text>
-            <path d="M 162.19,50.75 A 100,100 0 0,1 177.56,53.87" stroke="#2542A3" stroke-width="1" fill="none" />
 
-            <!-- Cycling label C (73%) -->
-            <text id="logo-label-c" font-family="Share Tech Mono" font-size="15" fill="#2542A3" dominant-baseline="middle">
-                <textPath href="#circlePath" startOffset="73%">Software Developer</textPath>
+            <!-- Cycling label -->
+            <text id="logo-cycle" font-family="Share Tech Mono" font-size="15" fill="#2542A3" dominant-baseline="middle">
+                <textPath href="#circlePath" startOffset="46%">Electrical Engineer</textPath>
             </text>
-            <path d="M 50.00,150.00 A 100,100 0 0,1 52.56,127.50" stroke="#2542A3" stroke-width="1" fill="none" />
         </svg>
     </div>
     <div class="static-logo">
@@ -39,34 +35,22 @@
 </div>
 
 <script>
-const labelSets = [
-    ["COBOL Developer",       "Electrical Engineer", "Software Developer"],
-    ["C Developer",           "MSc. w/ dist.",       "3D Printing"],
-    ["Board Member",          "Tennis & Table Tennis","RetroCode"],
+const cycleLabels = [
+    "Electrical Engineer",
+    "Software Developer",
+    "MSc. w/ dist.",
+    "3D Printing",
+    "Board Member",
+    "RetroCode",
 ];
 
 let labelIndex = 0;
 
-function applyLabels(set: string[]) {
-    const a = document.getElementById("logo-label-a");
-    const b = document.getElementById("logo-label-b");
-    const c = document.getElementById("logo-label-c");
-    if (a) a.querySelector("textPath")!.textContent = set[0];
-    if (b) b.querySelector("textPath")!.textContent = set[1];
-    if (c) c.querySelector("textPath")!.textContent = set[2];
-}
-
-const logoWrapper = document.getElementById("logo-wrapper");
-
-// Cycle labels each time the logo leaves the visible (top) position
-const observer = new MutationObserver(() => {
-    if (logoWrapper && !logoWrapper.classList.contains("visible")) {
-        labelIndex = (labelIndex + 1) % labelSets.length;
-        applyLabels(labelSets[labelIndex]);
-    }
-});
-
-if (logoWrapper) {
-    observer.observe(logoWrapper, { attributes: true, attributeFilter: ["class"] });
+const cycleEl = document.getElementById("logo-cycle");
+if (cycleEl) {
+    setInterval(() => {
+        labelIndex = (labelIndex + 1) % cycleLabels.length;
+        cycleEl.querySelector("textPath")!.textContent = cycleLabels[labelIndex];
+    }, 8000);
 }
 </script>
