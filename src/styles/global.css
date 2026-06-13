@@ -268,8 +268,6 @@ p {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.4s ease 0.2s;
-    border-left: 2px solid var(--blue-mid);
-    padding-left: 10px;
 }
 
 #file-section-indicator.visible {
@@ -285,7 +283,7 @@ p {
     gap: 0.5ch;
     padding-left: 4ch;
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.75rem;
+    font-size: inherit;
 }
 .ctrl-data-record .kw           { color: var(--blue-darker-1); }
 .ctrl-data-record .name         { color: var(--blue-darker-2); font-weight: 600; }
@@ -306,8 +304,6 @@ p {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.4s ease 0.2s;
-    border-left: 2px solid var(--blue-mid);
-    padding-left: 10px;
 }
 
 #control-prgrph.visible {
@@ -327,9 +323,10 @@ p {
 
 /* Standalone dot terminator inside overlays */
 .ctrl-stmt-dot {
-    color: var(--text-muted);
+    color: var(--blue-darker-1);
+    font-weight: 700;
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     line-height: 1;
 }
 
@@ -339,7 +336,9 @@ a.ctrl-goback {
     gap: 1ch;
     text-decoration: none;
     color: inherit;
-    padding: 2px 0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    /* no padding-left here — ctrl-l1/ctrl-l2 classes provide it */
 }
 
 a.ctrl-goback .kw           { color: var(--blue-darker-1); }
@@ -396,6 +395,14 @@ a.ctrl-goback:hover .kw     { text-decoration: underline; }
     align-items: flex-start;
     margin-left: 10%;
     max-width: 52%;
+}
+
+/* Hero structural lines are always visible (not scroll-revealed) */
+.top-01-line,
+.top-data-field .cobol-line {
+    opacity: 1;
+    transform: none;
+    transition: none;
 }
 
 .top-01-line {
@@ -688,6 +695,17 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
 /* Section-level EXIT (same indent as paragraph labels) */
 .para-lvl  { padding-left: 2ch; }
 
+/* Specificity overrides: a.cobol-call has element+class specificity that beats .para-body/.para-lvl */
+a.cobol-call.para-body { padding-left: 4ch; }
+a.cobol-call.para-lvl  { padding-left: 2ch; }
+
+/* Standalone paragraph-terminating dot — more prominent than inline field dots */
+.lone-dot {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--blue-darker-1);
+}
+
 /* LAN comment note (no reveal animation) */
 .cobol-lan-note {
     font-family: "Share Tech Mono", Consolas, monospace;
@@ -715,8 +733,9 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
 /* Terminating dot after EXIT PRGRPH in impressum */
 .impressum-exit-dot {
     font-family: "Share Tech Mono", Consolas, monospace;
-    color: var(--text-muted);
-    font-size: 0.85rem;
+    color: var(--blue-darker-1);
+    font-weight: 700;
+    font-size: 1.1rem;
     padding-left: 2ch;
     margin-top: 1px;
 }
