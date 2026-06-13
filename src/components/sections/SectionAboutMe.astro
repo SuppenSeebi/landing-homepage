@@ -1,12 +1,13 @@
 ---
 ---
-<section id="aboutme" style="min-height: 130vh;">
+<section id="aboutme" style="min-height: 115vh;">
     <div class="section-scroll-container">
         <div class="section-content-wrapper">
             <div class="aboutme-container">
                 <div class="cobol-block">
 
-                    <div class="cobol-comment reveal-item">*&gt; DATA DIVISION.</div>
+                    <div class="cobol-division">DATA DIVISION.</div>
+                    <div class="cobol-section-hdr">WORKING-STORAGE SECTION.</div>
 
                     <div class="cobol-line l01 reveal-item">
                         <span class="lvl">01</span><span class="name">ABOUT-ME.</span>
@@ -36,10 +37,13 @@
                         <span class="lvl">05</span><span class="name">WORK-BFRE.</span>
                     </div>
                     <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">ROLE</span><span class="pic">PIC X(35)</span><span class="kw">VALUE</span><span class="val">&apos;EMBEDDED SOFTWARE DEVELOPER&apos;</span><span class="dot">.</span>
+                        <span class="lvl">10</span><span class="name">COMPANY</span><span class="pic">PIC X(30)</span><span class="kw">VALUE</span><span class="val">&apos;HILSCHER&apos;</span><span class="dot">.</span>
                     </div>
                     <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">TECH</span><span class="pic">PIC X(40)</span><span class="kw">VALUE</span><span class="val">&apos;C/C++ - OPC UA - INDUSTRIAL AUTOMATION&apos;</span><span class="dot">.</span>
+                        <span class="lvl">10</span><span class="name">ROLE</span><span class="pic">PIC X(30)</span><span class="kw">VALUE</span><span class="val">&apos;C DEVELOPER&apos;</span><span class="dot">.</span>
+                    </div>
+                    <div class="cobol-line l10 reveal-item">
+                        <span class="lvl">10</span><span class="name">TECH</span><span class="pic">PIC X(40)</span><span class="kw">VALUE</span><span class="val">&apos;OPC UA - INDUSTRIAL AUTOMATION&apos;</span><span class="dot">.</span>
                     </div>
 
                     <!-- STUDIES -->
@@ -105,6 +109,12 @@
                         <span class="lvl">88</span><span class="name">JAPANESE</span><span class="kw">VALUE</span><span class="val">&apos;BEGINNER&apos;</span><span class="dot">.</span>
                     </div>
 
+                    <!-- link to impressum -->
+                    <div class="cobol-spacer"></div>
+                    <a href="#impressum" class="cobol-author-link reveal-item">
+                        *&gt; <span class="kw">AUTHOR.</span> — Impressum &amp; Datenschutz
+                    </a>
+
                 </div>
             </div>
         </div>
@@ -118,7 +128,7 @@ export function statemachineAboutMeRun() {
     if (revealed) return;
     revealed = true;
 
-    const items = document.querySelectorAll<HTMLElement>('.cobol-comment, .cobol-line');
+    const items = document.querySelectorAll<HTMLElement>('#aboutme .reveal-item');
     items.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 35));
 }
 

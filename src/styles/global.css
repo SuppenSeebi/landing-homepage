@@ -399,87 +399,91 @@ p {
     flex-shrink: 0;
 }
 
-.cobol-line .val  { color: var(--blue-primary); }
+.cobol-line .val   { color: var(--blue-primary); }
 .cobol-line .numval { color: var(--blue-mid); }
-.cobol-line .dot  { color: var(--text-muted); margin-left: 0.1ch; }
+.cobol-line .dot   { color: var(--text-muted); margin-left: 0.1ch; }
+
+/* Clickable VALUE (e.g. LinkedIn profile URL in work section) */
+a.val-link {
+    color: var(--blue-primary);
+    text-decoration: none;
+}
+a.val-link:hover { text-decoration: underline; }
+
+/* Division and section-level COBOL headers */
+.cobol-division {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--blue-darker-2);
+    margin-bottom: 2px;
+}
+
+.cobol-section-hdr {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 1.1rem;
+    color: var(--blue-darker-1);
+    margin-bottom: 10px;
+}
+
+/* PROCEDURE DIVISION: clickable CALL statement lines */
+a.cobol-call {
+    display: flex;
+    align-items: baseline;
+    gap: 1ch;
+    padding: 4px 0.5ch;
+    border-radius: 2px;
+    text-decoration: none;
+    color: inherit;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    white-space: nowrap;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateX(-14px);
+    transition: opacity 0.35s ease, transform 0.35s ease, background 0.15s;
+}
+
+a.cobol-call.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+a.cobol-call:hover { background: rgba(135, 167, 247, 0.1); }
+
+a.cobol-call .call-comment {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-left: 1ch;
+}
+
+/* Impressum link inside about me */
+a.cobol-author-link {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-style: italic;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.4s ease, color 0.2s;
+}
+
+a.cobol-author-link.revealed { opacity: 1; }
+a.cobol-author-link:hover { color: var(--blue-primary); }
+a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
+
+/* LAN-only group in links section */
+.lan-group.lan-only  { display: none; }
+.lan-group.lan-visible { display: block; }
 
 /* ── SECTION: WORK ────────────────────────────── */
 .work-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: flex-start;
     height: 100%;
-    padding: 0 10%;
-    gap: 32px;
-}
-
-.work-header {
-    font-size: 2rem;
-    color: var(--blue-primary);
-    border-bottom: 2px solid var(--blue-mid);
-    padding-bottom: 10px;
-    width: 100%;
-}
-
-.work-card {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 24px 28px;
-    background-color: var(--blue-bg);
-    border-left: 4px solid var(--blue-primary);
-    max-width: 600px;
-    width: 100%;
-}
-
-.work-card-company {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--blue-darker-2);
-}
-
-.work-card-role {
-    font-size: 1rem;
-    color: var(--blue-darker-1);
-}
-
-.work-card-desc {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin: 0;
-    text-align: left;
-}
-
-.work-card-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 8px;
-    color: var(--blue-primary);
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.work-card-link:hover { text-decoration: underline; }
-
-.work-prev-header {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin-top: 8px;
-}
-
-.work-prev-item {
-    display: flex;
-    gap: 12px;
-    align-items: baseline;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.work-prev-item::before {
-    content: "›";
-    color: var(--blue-mid);
+    padding: 0 8%;
 }
 
 /* ── SECTION: LINKS ───────────────────────────── */
@@ -487,95 +491,9 @@ p {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: flex-start;
     height: 100%;
-    padding: 0 10%;
-    gap: 28px;
+    padding: 0 8%;
 }
-
-.links-header {
-    font-size: 2rem;
-    color: var(--blue-primary);
-    border-bottom: 2px solid var(--blue-mid);
-    padding-bottom: 10px;
-    width: 100%;
-}
-
-.links-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.service-card {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 16px 20px;
-    background-color: var(--blue-bg);
-    border: 1px solid var(--blue-mid);
-    min-width: 180px;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.service-card:hover {
-    border-color: var(--blue-primary);
-    background-color: var(--blue-light);
-}
-
-.service-card.lan-only { display: none; }
-.service-card.lan-only.lan-visible { display: flex; }
-
-.service-card-icon {
-    font-size: 1.6rem;
-    color: var(--blue-darker-1);
-}
-
-.service-card-name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--blue-darker-2);
-}
-
-.service-card-desc {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-.service-card-badge {
-    font-size: 0.7rem;
-    color: var(--blue-primary);
-    font-family: Consolas, monospace;
-    margin-top: 4px;
-}
-
-.links-social-header {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-}
-
-.social-row {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.social-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background-color: var(--blue-bg);
-    border: 1px solid var(--blue-mid);
-    color: var(--blue-darker-1);
-    text-decoration: none;
-    font-size: 0.95rem;
-    transition: border-color 0.2s;
-}
-
-.social-link:hover { border-color: var(--blue-primary); }
 
 /* ── SECTION: IMPRESSUM ───────────────────────── */
 .impressum-container {

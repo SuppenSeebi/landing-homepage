@@ -46,7 +46,10 @@ const items = [
 const INTERVAL_HEIGHT = 120;
 
 function setScrollHeight() {
-    scrollSpace.style.height = `${INTERVAL_HEIGHT * (items.length - 1)}px`;
+    /* offsetTop of #aboutme = 100vh + this height; mid = scrollY + innerHeight/2 must
+       reach that to trigger section transition. One INTERVAL_HEIGHT of grace after item 6. */
+    const h = Math.max(INTERVAL_HEIGHT, INTERVAL_HEIGHT * items.length - window.innerHeight / 2);
+    scrollSpace.style.height = `${h}px`;
 }
 window.addEventListener("load", setScrollHeight);
 window.addEventListener("resize", setScrollHeight);

@@ -4,50 +4,48 @@
     <div class="section-scroll-container">
         <div class="section-content-wrapper">
             <div class="links-container">
-                <div class="links-header">// goto services</div>
+                <div class="cobol-block">
 
-                <div class="links-grid" id="links-grid">
-                    <!-- Public services -->
-                    <a class="service-card" href="https://kb.sschw.dev" target="_blank" rel="noopener">
-                        <span class="service-card-icon"><i class="bi bi-journal-text"></i></span>
-                        <span class="service-card-name">Knowledge Base</span>
-                        <span class="service-card-desc">Personal wiki & notes</span>
-                        <span class="service-card-badge">kb.sschw.dev</span>
+                    <div class="cobol-division">PROCEDURE DIVISION.</div>
+                    <div class="cobol-spacer"></div>
+
+                    <a class="cobol-call reveal-item" href="https://kb.sschw.dev" target="_blank" rel="noopener">
+                        <span class="kw">CALL</span>
+                        <span class="val">&apos;KB.SSCHW.DEV&apos;</span><span class="dot">.</span>
+                        <span class="call-comment">*&gt; Personal wiki &amp; notes</span>
                     </a>
-
-                    <!-- Placeholder for future: tennis club -->
-                    <!--
-                    <a class="service-card" href="https://tennisc.example.com" target="_blank" rel="noopener">
-                        <span class="service-card-icon"><i class="bi bi-trophy"></i></span>
-                        <span class="service-card-name">Tennis Club</span>
-                        <span class="service-card-desc">Club homepage</span>
+                    <a class="cobol-call reveal-item" href="https://www.linkedin.com/in/sschwinn/" target="_blank" rel="noopener">
+                        <span class="kw">CALL</span>
+                        <span class="val">&apos;LINKEDIN&apos;</span><span class="dot">.</span>
+                        <span class="call-comment">*&gt; linkedin.com/in/sschwinn/</span>
                     </a>
-                    -->
-
-                    <!-- LAN-only services (hidden until network check passes) -->
-                    <a class="service-card lan-only" href="https://lldap.sschw.dev" target="_blank" rel="noopener">
-                        <span class="service-card-icon"><i class="bi bi-people"></i></span>
-                        <span class="service-card-name">LLDAP</span>
-                        <span class="service-card-desc">Directory management</span>
-                        <span class="service-card-badge">🔒 local only</span>
+                    <a class="cobol-call reveal-item" href="https://www.instagram.com/s.schwinni/" target="_blank" rel="noopener">
+                        <span class="kw">CALL</span>
+                        <span class="val">&apos;INSTAGRAM&apos;</span><span class="dot">.</span>
+                        <span class="call-comment">*&gt; instagram.com/s.schwinni/</span>
                     </a>
 
-                    <a class="service-card lan-only" href="https://bw.sschw.dev" target="_blank" rel="noopener">
-                        <span class="service-card-icon"><i class="bi bi-shield-lock"></i></span>
-                        <span class="service-card-name">Bitwarden</span>
-                        <span class="service-card-desc">Password manager</span>
-                        <span class="service-card-badge">🔒 local only</span>
-                    </a>
-                </div>
+                    <!-- LAN-only block, shown by JS when on local network -->
+                    <div class="lan-group lan-only">
+                        <div class="cobol-spacer"></div>
+                        <div class="cobol-comment">*&gt; local network only:</div>
+                        <a class="cobol-call" href="https://lldap.sschw.dev" target="_blank" rel="noopener">
+                            <span class="kw">CALL</span>
+                            <span class="val">&apos;LLDAP&apos;</span><span class="dot">.</span>
+                            <span class="call-comment">*&gt; Directory management</span>
+                        </a>
+                        <a class="cobol-call" href="https://bw.sschw.dev" target="_blank" rel="noopener">
+                            <span class="kw">CALL</span>
+                            <span class="val">&apos;BITWARDEN&apos;</span><span class="dot">.</span>
+                            <span class="call-comment">*&gt; Password manager</span>
+                        </a>
+                    </div>
 
-                <div class="links-social-header">// socials</div>
-                <div class="social-row">
-                    <a class="social-link" href="https://www.linkedin.com/in/sschwinn/" target="_blank" rel="noopener">
-                        <i class="bi bi-linkedin"></i> LinkedIn
-                    </a>
-                    <a class="social-link" href="https://www.instagram.com/s.schwinni/" target="_blank" rel="noopener">
-                        <i class="bi bi-instagram"></i> Instagram
-                    </a>
+                    <div class="cobol-spacer"></div>
+                    <div class="cobol-line reveal-item">
+                        <span class="kw">STOP RUN</span><span class="dot">.</span>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -62,17 +60,20 @@ async function checkLocalNetwork() {
         const res = await fetch("/api/network-check", { signal: controller.signal });
         clearTimeout(timeout);
         if (res.ok) {
-            document.querySelectorAll<HTMLElement>(".service-card.lan-only").forEach(el => {
+            document.querySelectorAll<HTMLElement>(".lan-group.lan-only").forEach(el => {
                 el.classList.add("lan-visible");
             });
         }
     } catch {
-        /* public visitor or request timed out — lan cards stay hidden */
+        /* public visitor or request timed out — lan block stays hidden */
     }
 }
 
 checkLocalNetwork();
 
-export function statemachineLinksRun() {}
+export function statemachineLinksRun() {
+    const items = document.querySelectorAll<HTMLElement>('#links .reveal-item');
+    items.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 60));
+}
 (window as any).__linksRun = statemachineLinksRun;
 </script>
