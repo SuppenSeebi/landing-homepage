@@ -112,25 +112,31 @@ p {
     transform: translateX(-50%);
     width: 100%;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
     z-index: 9000;
 }
 
-/* ── IDENTIFICATION DIVISION bar (row 0) ─────── */
-.nav-id-bar {
+/* Three-row CSS grid: row 1 = id bar, row 2 = division headers, row 3 = section boxes */
+.bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(130px, 1fr));
+    grid-template-rows: auto auto auto;
+    min-width: max-content;
+}
+
+/* ── Row 1: IDENTIFICATION DIVISION bar ─────── */
+.nav-id-row {
+    grid-row: 1;
+    grid-column: 1 / 6;
     display: flex;
-    flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 0.8ch;
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: 0.68rem;
     font-style: italic;
     color: var(--blue-darker-2);
     padding: 4px 8px;
-    width: 100%;
-    justify-content: center;
     white-space: nowrap;
     background-color: var(--blue-mid);
 }
@@ -138,17 +144,9 @@ p {
 .nav-id-kw  { color: var(--blue-darker-2); font-style: normal; font-weight: 700; }
 .nav-id-sep { color: var(--blue-dark); margin: 0 0.4ch; }
 
-/* Two-row CSS grid: row 1 = division headers, row 2 = section boxes */
-.bottom-nav {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(130px, 1fr));
-    grid-template-rows: auto auto;
-    min-width: max-content;
-}
-
-/* ── Division headers (row 1) ─────────────────── */
+/* ── Row 2: Division headers ──────────────────── */
 .nav-division {
-    grid-row: 1;
+    grid-row: 2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -176,13 +174,14 @@ p {
 }
 
 .nav-division.active-division {
-    color: var(--blue-darker-2);
-    background-color: rgba(27, 45, 115, 0.14);
+    color: var(--blue-mid);
+    background-color: var(--blue-darker-2);
+    font-weight: 800;
 }
 
-/* ── Section boxes (row 2) ────────────────────── */
+/* ── Row 3: Section boxes ─────────────────────── */
 .nav-box {
-    grid-row: 2;
+    grid-row: 3;
     padding: 10px 18px;
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: 0.78rem;
@@ -276,6 +275,19 @@ p {
 }
 
 #file-section-indicator .ctrl-para-hdr { color: var(--blue-darker-1); font-weight: 700; font-size: 0.88rem; }
+
+.ctrl-data-record {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5ch;
+    padding-left: 4ch;
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.75rem;
+}
+.ctrl-data-record .kw           { color: var(--blue-darker-1); }
+.ctrl-data-record .name         { color: var(--blue-darker-2); font-weight: 600; }
+.ctrl-data-record .dot          { color: var(--text-muted); }
+.ctrl-data-record .call-comment { color: var(--text-muted); font-style: italic; }
 
 /* ── CONTROL-PRGRPH (fixed, PROCEDURE DIVISION) ─ */
 #control-prgrph {
