@@ -247,10 +247,11 @@ p {
 /* ── Division label above fixed overlays ───────── */
 .ctrl-division {
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--blue-darker-2);
-    margin-bottom: 3px;
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
 }
 
 /* ── FILE-SECTION-INDICATOR (fixed, DATA DIVISION) */
@@ -260,13 +261,15 @@ p {
     left: 8%;
     z-index: 50;
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     display: flex;
     flex-direction: column;
     gap: 4px;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.4s ease 0.2s;
+    border-left: 2px solid var(--blue-mid);
+    padding-left: 10px;
 }
 
 #file-section-indicator.visible {
@@ -274,7 +277,7 @@ p {
     pointer-events: auto;
 }
 
-#file-section-indicator .ctrl-para-hdr { color: var(--blue-darker-1); font-weight: 700; font-size: 0.88rem; }
+#file-section-indicator .ctrl-para-hdr { color: var(--blue-darker-1); font-weight: 700; font-size: 0.98rem; }
 
 .ctrl-data-record {
     display: flex;
@@ -296,13 +299,15 @@ p {
     left: 8%;
     z-index: 50;
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     display: flex;
     flex-direction: column;
     gap: 4px;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.4s ease 0.2s;
+    border-left: 2px solid var(--blue-mid);
+    padding-left: 10px;
 }
 
 #control-prgrph.visible {
@@ -313,7 +318,19 @@ p {
 .ctrl-para-hdr {
     color: var(--blue-darker-1);
     font-weight: 700;
-    font-size: 0.88rem;
+    font-size: 0.98rem;
+}
+
+/* Indentation levels within overlays */
+.ctrl-l1 { padding-left: 1.5ch; }
+.ctrl-l2 { padding-left: 3ch; }
+
+/* Standalone dot terminator inside overlays */
+.ctrl-stmt-dot {
+    color: var(--text-muted);
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.9rem;
+    line-height: 1;
 }
 
 a.ctrl-goback {
@@ -325,10 +342,10 @@ a.ctrl-goback {
     padding: 2px 0;
 }
 
-a.ctrl-goback .kw   { color: var(--blue-darker-1); }
-a.ctrl-goback .dot  { color: var(--text-muted); }
+a.ctrl-goback .kw           { color: var(--blue-darker-1); }
+a.ctrl-goback .dot          { color: var(--text-muted); }
 a.ctrl-goback .call-comment { color: var(--text-muted); font-style: italic; }
-a.ctrl-goback:hover .kw { text-decoration: underline; }
+a.ctrl-goback:hover .kw     { text-decoration: underline; }
 
 /* ── SECTION SCROLL SYSTEM ────────────────────── */
 .section-scroll-container {
@@ -384,6 +401,15 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
 .top-01-line {
     margin-top: 12px;
     margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 0 1.5ch;
+}
+
+.top-record-comment {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-style: italic;
+    white-space: nowrap;
 }
 
 .top-data-field {
@@ -560,6 +586,9 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
     flex-shrink: 0;
 }
 
+/* l05 lines (group items) have no VALUE after PIC — remove the min-width gap */
+.l05 .pic { min-width: unset; margin-right: 0.3ch; }
+
 .cobol-line .kw {
     color: var(--blue-darker-1);
     margin-right: 1ch;
@@ -580,15 +609,17 @@ a.val-link:hover { text-decoration: underline; }
 /* Division and section-level COBOL headers */
 .cobol-division {
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: 700;
     color: var(--blue-darker-2);
-    margin-bottom: 2px;
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
 }
 
 .cobol-section-hdr {
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
     color: var(--blue-darker-1);
     margin-bottom: 10px;
 }
@@ -643,15 +674,19 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
 /* Paragraph labels in PROCEDURE DIVISION */
 .cobol-para-label {
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 1.0rem;
+    font-weight: 700;
     color: var(--blue-darker-1);
+    padding-left: 2ch;
     margin-top: 4px;
     margin-bottom: 2px;
 }
 
 /* Indent CALL statements under a paragraph label */
 .para-body { padding-left: 4ch; }
+
+/* Section-level EXIT (same indent as paragraph labels) */
+.para-lvl  { padding-left: 2ch; }
 
 /* LAN comment note (no reveal animation) */
 .cobol-lan-note {
@@ -663,20 +698,44 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
     margin-bottom: 1px;
 }
 
-/* EXIT SECTION link at the bottom of impressum */
+/* DISPLAY / END-DISPLAY wrapper in IMPRESSUM-SECTION */
+.impressum-display-kw {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--blue-darker-1);
+    padding-left: 2ch;
+    margin: 4px 0 2px;
+}
+
+.impressum-display-body {
+    padding-left: 4ch;
+}
+
+/* Terminating dot after EXIT PRGRPH in impressum */
+.impressum-exit-dot {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding-left: 2ch;
+    margin-top: 1px;
+}
+
+/* EXIT PRGRPH / EXIT SECTION link at the bottom of a section */
 a.cobol-exit-link {
     display: flex;
     align-items: baseline;
     gap: 1ch;
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 600;
     text-decoration: none;
     color: inherit;
-    margin-top: 14px;
-    padding: 3px 0;
+    margin-top: 10px;
+    padding: 2px 0;
+    padding-left: 2ch;
 }
 a.cobol-exit-link .kw           { color: var(--blue-darker-1); }
-a.cobol-exit-link .dot          { color: var(--text-muted); }
 a.cobol-exit-link .call-comment { color: var(--text-muted); font-style: italic; }
 a.cobol-exit-link:hover .kw     { text-decoration: underline; }
 
