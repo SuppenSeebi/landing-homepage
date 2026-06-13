@@ -127,17 +127,16 @@ p {
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: 0.68rem;
     font-style: italic;
-    color: var(--text-muted);
-    padding: 3px 8px;
+    color: var(--blue-darker-2);
+    padding: 4px 8px;
     width: 100%;
     justify-content: center;
     white-space: nowrap;
-    background: rgba(234, 243, 255, 0.8);
-    border-bottom: 1px solid rgba(163, 187, 247, 0.3);
+    background-color: var(--blue-mid);
 }
 
-.nav-id-kw  { color: var(--blue-darker-1); font-style: normal; font-weight: 600; }
-.nav-id-sep { color: var(--blue-mid); margin: 0 0.4ch; }
+.nav-id-kw  { color: var(--blue-darker-2); font-style: normal; font-weight: 700; }
+.nav-id-sep { color: var(--blue-dark); margin: 0 0.4ch; }
 
 /* Two-row CSS grid: row 1 = division headers, row 2 = section boxes */
 .bottom-nav {
@@ -244,6 +243,15 @@ p {
         min-width: max-content;
         z-index: 1;
     }
+}
+
+/* ── Division label above fixed overlays ───────── */
+.ctrl-division {
+    font-family: "Share Tech Mono", Consolas, monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--blue-darker-2);
+    margin-bottom: 3px;
 }
 
 /* ── FILE-SECTION-INDICATOR (fixed, DATA DIVISION) */
@@ -488,7 +496,8 @@ a.ctrl-goback:hover .kw { text-decoration: underline; }
 
 .cobol-comment.revealed { opacity: 1; }
 
-.cobol-spacer { height: 3px; }
+.cobol-spacer    { height: 3px; }
+.cobol-spacer-lg { height: 14px; }
 
 .cobol-line {
     display: flex;
@@ -604,18 +613,18 @@ a.cobol-call .call-comment {
     margin-left: 1ch;
 }
 
-/* Impressum link inside about me */
+/* Impressum link inline with 01 ABOUT-ME. */
 a.cobol-author-link {
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     color: var(--text-muted);
     font-style: italic;
     text-decoration: none;
-    opacity: 0;
-    transition: opacity 0.4s ease, color 0.2s;
+    margin-left: 2ch;
+    transition: color 0.2s;
+    white-space: nowrap;
 }
 
-a.cobol-author-link.revealed { opacity: 1; }
 a.cobol-author-link:hover { color: var(--blue-primary); }
 a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
 
