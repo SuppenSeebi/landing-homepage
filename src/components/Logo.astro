@@ -5,58 +5,18 @@
     <div class="rotating-text">
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
-                <!--
-                    60/40 split centred on the vertical axis.
-                    Seam points at θ=162° and θ=18° (both at y≈181, below centre):
-                      B = (55, 181)   A = (245, 181)
-
-                    topArc  : 216° CW  (B → top → A), extended by ~8° on each side
-                              to give the visual overlap into the marquee zone.
-                              Extended seam at θ=154° / θ=26°:
-                              B' ≈ (60, 194)   A' ≈ (240, 194)
-                              Arc length ≈ 232° / 360° × 2π × 100 ≈ 405 SVG units
-
-                    bottomArc: 144° CCW (B → bottom → A)
-                              Arc length ≈ 144° / 360° × 2π × 100 ≈ 251 SVG units
-                -->
-                <!-- CCW direction makes characters appear upside-down at the top -->
-                <path id="topArc"    d="M 240,194 A 100,100 0 1,0 60,194" />
-                <path id="bottomArc" d="M 55,181 A 100,100 0 0,0 245,181" />
-
-                <!--
-                    Horizontal gradient mask for the marquee:
-                    fades to transparent over ~22 SVG units on each end
-                    so the text appears to emerge from the noise at both seams.
-                -->
-                <linearGradient id="marqueeGrad"
-                    gradientUnits="userSpaceOnUse"
-                    x1="55" y1="181" x2="245" y2="181">
-                    <stop offset="0%"   stop-color="white" stop-opacity="0"/>
-                    <stop offset="4%"   stop-color="white" stop-opacity="1"/>
-                    <stop offset="96%"  stop-color="white" stop-opacity="1"/>
-                    <stop offset="100%" stop-color="white" stop-opacity="0"/>
-                </linearGradient>
-                <mask id="marqueeMask">
-                    <rect x="0" y="0" width="300" height="300" fill="url(#marqueeGrad)"/>
-                </mask>
+                <!-- CCW arc — makes noise characters appear upside-down at the top -->
+                <path id="topArc" d="M 240,194 A 100,100 0 1,0 60,194" />
             </defs>
 
-            <!-- Marquee rendered first (underneath noise) -->
-            <text id="logo-marquee"
-                font-family="Share Tech Mono" font-size="15" font-weight="bold"
-                fill="#2542A3" dominant-baseline="middle"
-                mask="url(#marqueeMask)">
-                <!--
-                    textLength forces the browser to treat the glyph block as one
-                    rigid unit. Only startOffset shifts between frames — no per-char
-                    layout recalc — so there is no split-frame inconsistency that
-                    manifests as a backward jump. 251 ≈ bottomArc length in SVG units.
-                -->
-                <textPath id="logo-marquee-path" href="#bottomArc" startOffset="0%"
-                    textLength="251" lengthAdjust="spacingAndGlyphs"></textPath>
-            </text>
+            <!-- Marquee: 29 pre-created <text> nodes, each positioned by JS per frame.
+                 No textPath / startOffset / textLength — no browser layout artifacts. -->
+            <g id="marquee-group"
+               font-family="Share Tech Mono" font-size="15" font-weight="bold"
+               fill="#2542A3" text-anchor="middle" dominant-baseline="central">
+            </g>
 
-            <!-- Noise rendered on top — its extended arc overlaps the marquee edges -->
+            <!-- Noise on top (z-order: after marquee, so it paints over the seam) -->
             <text id="logo-noise"
                 font-family="Share Tech Mono" font-size="15" font-weight="bold"
                 fill="#2542A3" dominant-baseline="middle">
@@ -75,22 +35,50 @@
 const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-// topArc  ≈ 405 SVG units → ~45 chars at 9 units/char
-// bottomArc ≈ 251 SVG units → ~28 chars at 9 units/char
-const NOISE_CHARS   = 45;
-const MARQUEE_CHARS = 28;
-const MARQUEE_CHAR_PCT = 100 / MARQUEE_CHARS; // arc-% per character on bottomArc
+const NOISE_CHARS      = 45;
+const MARQUEE_CHARS    = 28;   // characters visible across the 144° bottom arc
+const CHAR_INTERVAL_MS = 80;   // noise: ~12 Hz per character, FPS-independent
+const MARQUEE_SPEED    = 4 / 1000; // chars per ms
 
-// Noise: each character flickers independently at ~12 Hz (FPS-independent)
-const CHAR_INTERVAL_MS = 80;
+// ── Bottom arc: 144° CCW from left seam (θ=162°) to right seam (θ=18°) ──────
+// θ(p) = 162° + p × (−144°) = 162° → 18° as p goes 0 → 1
+const DEG       = Math.PI / 180;
+const ARC_START = 162 * DEG;
+const ARC_SPAN  = -144 * DEG; // CCW = decreasing θ
 
-// Marquee: 4 chars/sec smooth sub-character scroll (FPS-independent)
-const MARQUEE_SPEED = 4 / 1000; // chars per ms
+function arcPoint(arcFrac: number): { x: number; y: number; rot: number } {
+    const t   = ARC_START + arcFrac * ARC_SPAN;
+    const x   = 150 + 100 * Math.cos(t);
+    const y   = 150 + 100 * Math.sin(t);
+    // Tangent direction for CCW arc at θ: (sin θ, −cos θ)
+    // SVG rotate angle = atan2(vy, vx) of that tangent vector
+    const rot = Math.atan2(-Math.cos(t), Math.sin(t)) * (180 / Math.PI);
+    return { x, y, rot };
+}
 
-const noisePath   = document.getElementById("logo-noise-path")   as SVGTextPathElement;
-const marqueePath = document.getElementById("logo-marquee-path") as SVGTextPathElement;
+// Fade opacity: 0 at seam x-coordinates (55, 245), 1 beyond a short fade zone
+const FADE_PX = 7.6; // SVG units (~1.5 mm at display scale)
+function fadeOpacity(x: number): number {
+    if (x < 55  + FADE_PX) return Math.max(0, (x - 55)  / FADE_PX);
+    if (x > 245 - FADE_PX) return Math.max(0, (245 - x) / FADE_PX);
+    return 1;
+}
 
-// Initialise noise buffer
+// ── DOM setup ─────────────────────────────────────────────────────────────────
+const noisePath    = document.getElementById("logo-noise-path") as SVGTextPathElement;
+const marqueeGroup = document.getElementById("marquee-group")   as SVGGElement;
+
+// Pre-create MARQUEE_CHARS+1 <text> nodes (index 0 exits left; index CHARS enters right)
+const charEls: SVGTextElement[] = [];
+for (let i = 0; i <= MARQUEE_CHARS; i++) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    el.setAttribute("x", "0");
+    el.setAttribute("y", "0");
+    marqueeGroup.appendChild(el);
+    charEls.push(el);
+}
+
+// ── Noise init ────────────────────────────────────────────────────────────────
 const noiseChars = Array.from({ length: NOISE_CHARS }, () =>
     NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)]
 );
@@ -101,11 +89,10 @@ let subChar    = 0;
 let lastTime   = 0;
 
 function tick(now: number) {
-    // Clamp dt to [1, 50] ms — prevents tab-switch bursts corrupting subChar
     const dt = Math.min(50, Math.max(1, lastTime === 0 ? 16 : now - lastTime));
     lastTime = now;
 
-    // ── Noise: per-character independent flicker ───────────────────────
+    // ── Noise: per-character probabilistic flicker ────────────────────────
     const p = Math.min(1, dt / CHAR_INTERVAL_MS);
     let changed = false;
     for (let i = 0; i < NOISE_CHARS; i++) {
@@ -116,18 +103,25 @@ function tick(now: number) {
     }
     if (changed) noisePath.textContent = noiseChars.join("");
 
-    // ── Marquee: smooth sub-character scroll via positive startOffset ──
-    // Negative startOffset is clamped to 0 by most browsers — use positive
-    // offset (0 → MARQUEE_CHAR_PCT%) with the charWindow decrementing so
-    // new characters enter from the left (arc start) without any clamping.
+    // ── Marquee: right-to-left scroll, new chars enter from right seam ────
+    // arcFrac for char i = (i − subChar) / MARQUEE_CHARS
+    //   i=0            → exits past left seam as subChar → 1
+    //   i=MARQUEE_CHARS → enters from right seam as subChar → 0
     subChar += MARQUEE_SPEED * dt;
     while (subChar >= 1) {
-        charWindow = (charWindow - 1 + MARQUEE_TEXT.length) % MARQUEE_TEXT.length;
+        charWindow = (charWindow + 1) % MARQUEE_TEXT.length;
         subChar -= 1;
     }
-    marqueePath.textContent =
-        (MARQUEE_TEXT + MARQUEE_TEXT).slice(charWindow, charWindow + MARQUEE_CHARS);
-    marqueePath.setAttribute("startOffset", `${subChar * MARQUEE_CHAR_PCT}%`);
+
+    for (let i = 0; i <= MARQUEE_CHARS; i++) {
+        const { x, y, rot } = arcPoint((i - subChar) / MARQUEE_CHARS);
+        const op = fadeOpacity(x);
+        charEls[i].setAttribute("transform",
+            `translate(${x.toFixed(2)},${y.toFixed(2)}) rotate(${rot.toFixed(2)})`);
+        charEls[i].setAttribute("fill-opacity", op.toFixed(2));
+        charEls[i].textContent =
+            MARQUEE_TEXT[(charWindow + i) % MARQUEE_TEXT.length];
+    }
 
     requestAnimationFrame(tick);
 }
