@@ -50,8 +50,8 @@ new MutationObserver(() => {
 function tick() {
     frame++;
 
-    // Noise: update content ~10fps, lerp character count toward target
-    if (frame % 6 === 0) {
+    // Noise: update content ~3fps, lerp character count toward target
+    if (frame % 20 === 0) {
         noiseCur = Math.round(lerp(noiseCur, noiseTarget, 0.18));
         let s = "";
         for (let i = 0; i < noiseCur; i++)
@@ -59,8 +59,8 @@ function tick() {
         noisePath.textContent = s;
     }
 
-    // Marquee: advance one character every 3 frames (~20 chars/sec at 60fps)
-    if (frame % 3 === 0) {
+    // Marquee: advance one character every 12 frames (~5 chars/sec at 60fps)
+    if (frame % 12 === 0) {
         marqueePos = (marqueePos + 1) % MARQUEE_TEXT.length;
         marqueePath.textContent = (MARQUEE_TEXT + MARQUEE_TEXT).slice(marqueePos, marqueePos + MARQUEE_CHARS);
     }

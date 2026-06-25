@@ -64,8 +64,9 @@ const items = [
 const INTERVAL_HEIGHT = 70;
 
 function setScrollHeight() {
-    const h = Math.max(INTERVAL_HEIGHT, INTERVAL_HEIGHT * items.length - window.innerHeight / 2);
-    scrollSpace.style.height = `${h}px`;
+    const container = document.querySelector<HTMLElement>('#top .section-scroll-container');
+    if (container) container.style.height = `${INTERVAL_HEIGHT * items.length + window.innerHeight / 2}px`;
+    scrollSpace.style.height = `${INTERVAL_HEIGHT}px`;
 }
 window.addEventListener("load", setScrollHeight);
 window.addEventListener("resize", setScrollHeight);

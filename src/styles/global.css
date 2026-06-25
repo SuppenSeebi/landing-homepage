@@ -88,7 +88,6 @@ p {
     position: absolute;
     top: 0;
     left: 0;
-    animation: rotate 30s linear infinite;
 }
 
 .static-logo {
