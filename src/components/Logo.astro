@@ -5,18 +5,56 @@
     <div class="rotating-text">
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
-                <!-- CW: left (9) → top (12) → right (3) -->
-                <path id="topArc"    d="M 50,150 A 100,100 0 0,1 250,150" />
-                <!-- CCW: left (9) → bottom (6) → right (3) -->
-                <path id="bottomArc" d="M 50,150 A 100,100 0 0,0 250,150" />
+                <!--
+                    60/40 split centred on the vertical axis.
+                    Seam points at θ=162° and θ=18° (both at y≈181, below centre):
+                      B = (55, 181)   A = (245, 181)
+
+                    topArc  : 216° CW  (B → top → A), extended by ~8° on each side
+                              to give the visual overlap into the marquee zone.
+                              Extended seam at θ=154° / θ=26°:
+                              B' ≈ (60, 194)   A' ≈ (240, 194)
+                              Arc length ≈ 232° / 360° × 2π × 100 ≈ 405 SVG units
+
+                    bottomArc: 144° CCW (B → bottom → A)
+                              Arc length ≈ 144° / 360° × 2π × 100 ≈ 251 SVG units
+                -->
+                <path id="topArc"    d="M 60,194 A 100,100 0 1,1 240,194" />
+                <path id="bottomArc" d="M 55,181 A 100,100 0 0,0 245,181" />
+
+                <!--
+                    Horizontal gradient mask for the marquee:
+                    fades to transparent over ~22 SVG units on each end
+                    so the text appears to emerge from the noise at both seams.
+                -->
+                <linearGradient id="marqueeGrad"
+                    gradientUnits="userSpaceOnUse"
+                    x1="55" y1="181" x2="245" y2="181">
+                    <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+                    <stop offset="12%"  stop-color="white" stop-opacity="1"/>
+                    <stop offset="88%"  stop-color="white" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+                </linearGradient>
+                <mask id="marqueeMask">
+                    <rect x="0" y="0" width="300" height="300" fill="url(#marqueeGrad)"/>
+                </mask>
             </defs>
-            <!-- Noise: fixed positions, textLength fills arc exactly -->
-            <text id="logo-noise" font-family="Share Tech Mono" font-size="15" font-weight="bold" fill="#2542A3" dominant-baseline="middle">
-                <textPath id="logo-noise-path" href="#topArc" startOffset="0%" textLength="314" lengthAdjust="spacing"></textPath>
-            </text>
-            <!-- Marquee: no textLength — startOffset is animated for smooth scroll -->
-            <text id="logo-marquee" font-family="Share Tech Mono" font-size="15" font-weight="bold" fill="#2542A3" dominant-baseline="middle">
+
+            <!-- Marquee rendered first (underneath noise) -->
+            <text id="logo-marquee"
+                font-family="Share Tech Mono" font-size="15" font-weight="bold"
+                fill="#2542A3" dominant-baseline="middle"
+                mask="url(#marqueeMask)">
                 <textPath id="logo-marquee-path" href="#bottomArc" startOffset="0%"></textPath>
+            </text>
+
+            <!-- Noise rendered on top — its extended arc overlaps the marquee edges -->
+            <text id="logo-noise"
+                font-family="Share Tech Mono" font-size="15" font-weight="bold"
+                fill="#2542A3" dominant-baseline="middle">
+                <textPath id="logo-noise-path"
+                    href="#topArc" startOffset="0%"
+                    textLength="405" lengthAdjust="spacing"></textPath>
             </text>
         </svg>
     </div>
@@ -29,41 +67,40 @@
 const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-// Semicircle arc length = π×100 ≈ 314 SVG units.
-// font-size 15 bold Share Tech Mono ≈ 9 SVG units/char → ~35 chars per arc.
-const CHARS = 35;
-const CHAR_WIDTH_PCT = 100 / CHARS; // arc-% occupied by one character
+// topArc  ≈ 405 SVG units → ~45 chars at 9 units/char
+// bottomArc ≈ 251 SVG units → ~28 chars at 9 units/char
+const NOISE_CHARS   = 45;
+const MARQUEE_CHARS = 28;
+const MARQUEE_CHAR_PCT = 100 / MARQUEE_CHARS; // arc-% per character on bottomArc
 
-// Noise: each character independently flickers at ~5 Hz, FPS-independent.
-// P(char changes in dt ms) = dt / CHAR_INTERVAL_MS
-const CHAR_INTERVAL_MS = 200;
+// Noise: each character flickers independently at ~12 Hz (FPS-independent)
+const CHAR_INTERVAL_MS = 80;
 
-// Marquee: 4 chars/sec smooth pixel-level scroll, FPS-independent.
+// Marquee: 4 chars/sec smooth sub-character scroll (FPS-independent)
 const MARQUEE_SPEED = 4 / 1000; // chars per ms
 
 const noisePath   = document.getElementById("logo-noise-path")   as SVGTextPathElement;
 const marqueePath = document.getElementById("logo-marquee-path") as SVGTextPathElement;
 
-// Initialise noise characters
-const noiseChars = Array.from({ length: CHARS }, () =>
+// Initialise noise buffer
+const noiseChars = Array.from({ length: NOISE_CHARS }, () =>
     NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)]
 );
 noisePath.textContent = noiseChars.join("");
 
-let charWindow = 0;   // index of first visible char in MARQUEE_TEXT
-let subChar    = 0;   // fractional char advance (0–1)
+let charWindow = 0;
+let subChar    = 0;
 let lastTime   = 0;
 
 function tick(now: number) {
-    const dt = lastTime === 0 ? 16 : now - lastTime;
+    // Clamp dt to [1, 50] ms — prevents tab-switch bursts corrupting subChar
+    const dt = Math.min(50, Math.max(1, lastTime === 0 ? 16 : now - lastTime));
     lastTime = now;
 
-    // ── Noise: per-character probabilistic flicker ─────────────────────
-    // Each char has an independent P(change) = dt / CHAR_INTERVAL_MS per frame.
-    // At any FPS this averages to ~5 changes/sec per character.
+    // ── Noise: per-character independent flicker ───────────────────────
     const p = Math.min(1, dt / CHAR_INTERVAL_MS);
     let changed = false;
-    for (let i = 0; i < CHARS; i++) {
+    for (let i = 0; i < NOISE_CHARS; i++) {
         if (Math.random() < p) {
             noiseChars[i] = NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)];
             changed = true;
@@ -71,18 +108,16 @@ function tick(now: number) {
     }
     if (changed) noisePath.textContent = noiseChars.join("");
 
-    // ── Marquee: smooth sub-character scroll via startOffset ───────────
-    // Advance fractional char position; when it crosses 1, shift the window.
+    // ── Marquee: smooth sub-character scroll via negative startOffset ──
     subChar += MARQUEE_SPEED * dt;
     while (subChar >= 1) {
         charWindow = (charWindow + 1) % MARQUEE_TEXT.length;
         subChar -= 1;
     }
-    // One extra char so the entering character is visible on the right edge.
-    marqueePath.textContent = (MARQUEE_TEXT + MARQUEE_TEXT).slice(charWindow, charWindow + CHARS + 1);
-    // Negative startOffset shifts text left by the sub-character fraction,
-    // creating pixel-smooth scrolling without discrete jumps.
-    marqueePath.setAttribute("startOffset", `${-subChar * CHAR_WIDTH_PCT}%`);
+    // Extra char so the entering character is partially visible on the right
+    marqueePath.textContent =
+        (MARQUEE_TEXT + MARQUEE_TEXT).slice(charWindow, charWindow + MARQUEE_CHARS + 1);
+    marqueePath.setAttribute("startOffset", `${-subChar * MARQUEE_CHAR_PCT}%`);
 
     requestAnimationFrame(tick);
 }
