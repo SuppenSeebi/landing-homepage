@@ -7,25 +7,13 @@
             <defs>
                 <path id="circlePath" d="M 150,150 m -100,0 a 100,100 0 1,0 200,0 a 100,100 0 1,0 -200,0" />
             </defs>
-
-            <!-- Fixed: name -->
-            <text font-family="Share Tech Mono" font-size="15" fill="#2542A3" dominant-baseline="middle">
-                <textPath href="#circlePath" startOffset="0%">Sebastian Schwinn</textPath>
+            <!-- ASCII noise zone (top arc, 0–50%) -->
+            <text id="logo-noise" font-family="Share Tech Mono" font-size="12" fill="#2542A3" dominant-baseline="middle">
+                <textPath id="logo-noise-path" href="#circlePath" startOffset="0%"></textPath>
             </text>
-
-            <!-- Fixed: COBOL (primary skill) -->
-            <text font-family="Share Tech Mono" font-size="15" fill="#1B2D73" font-weight="bold" dominant-baseline="middle">
-                <textPath href="#circlePath" startOffset="29%">COBOL</textPath>
-            </text>
-
-            <!-- Fixed: C (primary skill) -->
-            <text font-family="Share Tech Mono" font-size="15" fill="#1B2D73" font-weight="bold" dominant-baseline="middle">
-                <textPath href="#circlePath" startOffset="39%">C</textPath>
-            </text>
-
-            <!-- Cycling label -->
-            <text id="logo-cycle" font-family="Share Tech Mono" font-size="15" fill="#2542A3" dominant-baseline="middle">
-                <textPath href="#circlePath" startOffset="46%">Electrical Engineer</textPath>
+            <!-- Marquee text zone (bottom arc, 50–100%) -->
+            <text id="logo-marquee" font-family="Share Tech Mono" font-size="13" fill="#1B2D73" font-weight="bold" dominant-baseline="middle">
+                <textPath id="logo-marquee-path" href="#circlePath" startOffset="50%"></textPath>
             </text>
         </svg>
     </div>
@@ -35,22 +23,50 @@
 </div>
 
 <script>
-const cycleLabels = [
-    "Electrical Engineer",
-    "Software Developer",
-    "MSc. w/ dist.",
-    "3D Printing",
-    "Board Member",
-    "RetroCode",
-];
+const NOISE_SRC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
+const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-let labelIndex = 0;
+// circumference ≈ 628 SVG units; font-size 12 mono ≈ 7.2 units/char
+// font-size 13 mono ≈ 7.8 units/char → 50% arc ≈ 40 visible chars
+const NOISE_FULL    = 44; // ~50% of arc at rest
+const NOISE_SLIM    = 22; // ~25% of arc when logo scrolled up
+const MARQUEE_CHARS = 40; // visible chars in bottom 50% arc
 
-const cycleEl = document.getElementById("logo-cycle");
-if (cycleEl) {
-    setInterval(() => {
-        labelIndex = (labelIndex + 1) % cycleLabels.length;
-        cycleEl.querySelector("textPath")!.textContent = cycleLabels[labelIndex];
-    }, 8000);
+const noisePath   = document.getElementById("logo-noise-path")   as SVGTextPathElement;
+const marqueePath = document.getElementById("logo-marquee-path") as SVGTextPathElement;
+const logoWrapper = document.getElementById("logo-wrapper")!;
+
+let noiseTarget = NOISE_FULL;
+let noiseCur    = NOISE_FULL;
+let marqueePos  = 0;
+let frame       = 0;
+
+function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+
+new MutationObserver(() => {
+    noiseTarget = logoWrapper.classList.contains("visible") ? NOISE_FULL : NOISE_SLIM;
+}).observe(logoWrapper, { attributes: true, attributeFilter: ["class"] });
+
+function tick() {
+    frame++;
+
+    // Noise: update content ~10fps, lerp character count toward target
+    if (frame % 6 === 0) {
+        noiseCur = Math.round(lerp(noiseCur, noiseTarget, 0.18));
+        let s = "";
+        for (let i = 0; i < noiseCur; i++)
+            s += NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)];
+        noisePath.textContent = s;
+    }
+
+    // Marquee: advance one character every 3 frames (~20 chars/sec at 60fps)
+    if (frame % 3 === 0) {
+        marqueePos = (marqueePos + 1) % MARQUEE_TEXT.length;
+        marqueePath.textContent = (MARQUEE_TEXT + MARQUEE_TEXT).slice(marqueePos, marqueePos + MARQUEE_CHARS);
+    }
+
+    requestAnimationFrame(tick);
 }
+
+requestAnimationFrame(tick);
 </script>

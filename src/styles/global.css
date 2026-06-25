@@ -398,7 +398,7 @@ a.ctrl-goback:hover .kw     { text-decoration: underline; }
 }
 
 /* Hero structural lines are always visible (not scroll-revealed) */
-.top-01-line,
+.cobol-line.top-01-line,
 .top-data-field .cobol-line {
     opacity: 1;
     transform: none;
@@ -430,8 +430,10 @@ a.ctrl-goback:hover .kw     { text-decoration: underline; }
     font-size: 0.95rem !important;
 }
 
-.top-dyn-pic {
+.cobol-line .top-dyn-pic {
     font-size: 0.8rem;
+    min-width: unset;
+    margin-right: 0;
 }
 
 .top-value-row {
