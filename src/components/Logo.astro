@@ -11,11 +11,11 @@
                 <path id="bottomArc" d="M 50,150 A 100,100 0 0,0 250,150" />
             </defs>
             <!-- Animated noise: top arc -->
-            <text id="logo-noise" font-family="Share Tech Mono" font-size="13" fill="#2542A3" dominant-baseline="middle">
+            <text id="logo-noise" font-family="Share Tech Mono" font-size="15" font-weight="bold" fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-noise-path" href="#topArc" startOffset="0%" textLength="314" lengthAdjust="spacing"></textPath>
             </text>
             <!-- Scrolling marquee: bottom arc -->
-            <text id="logo-marquee" font-family="Share Tech Mono" font-size="13" fill="#2542A3" dominant-baseline="middle">
+            <text id="logo-marquee" font-family="Share Tech Mono" font-size="15" font-weight="bold" fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-marquee-path" href="#bottomArc" startOffset="0%" textLength="314" lengthAdjust="spacing"></textPath>
             </text>
         </svg>
@@ -31,12 +31,12 @@ const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC E
 
 // Both arcs: semicircle of radius 100 → arc length = π×100 ≈ 314 SVG units.
 // textLength="314" forces exact fill → no gap at the 9 o'clock / 3 o'clock seams.
-// ~314 / 7.8 ≈ 40 chars at font-size 13.
-const CHARS = 40;
+// ~314 / 9 ≈ 35 chars at font-size 15 bold.
+const CHARS = 35;
 
 // Time-based intervals — independent of monitor refresh rate (60/120/240 Hz)
-const NOISE_INTERVAL   = 333; // ms → ~3 fps
-const MARQUEE_INTERVAL = 800; // ms → ~1.25 chars/sec  (≈ ¼ of previous 5 chars/sec)
+const NOISE_INTERVAL   = 166; // ms → ~6 fps
+const MARQUEE_INTERVAL = 400; // ms → ~2.5 chars/sec
 
 const noisePath    = document.getElementById("logo-noise-path")   as SVGTextPathElement;
 const marqueePath  = document.getElementById("logo-marquee-path") as SVGTextPathElement;
