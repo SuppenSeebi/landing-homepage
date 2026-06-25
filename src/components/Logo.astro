@@ -6,7 +6,8 @@
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
                 <!-- CCW arc — makes noise characters appear upside-down at the top -->
-                <path id="topArc" d="M 240,194 A 100,100 0 1,0 60,194" />
+                <!-- Extended 3° past each seam (≈5 SVG units, ~1% of ring) -->
+                <path id="topArc" d="M 243,186 A 100,100 0 1,0 57,186" />
             </defs>
 
             <!-- Marquee: 29 pre-created <text> nodes, each positioned by JS per frame.
@@ -22,7 +23,7 @@
                 fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-noise-path"
                     href="#topArc" startOffset="0%"
-                    textLength="405" lengthAdjust="spacing"></textPath>
+                    textLength="388" lengthAdjust="spacing"></textPath>
             </text>
         </svg>
     </div>
@@ -35,7 +36,7 @@
 const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-const NOISE_CHARS      = 45;
+const NOISE_CHARS      = 43;
 const MARQUEE_CHARS    = 28;   // characters visible across the 144° bottom arc
 const CHAR_INTERVAL_MS = 80;   // noise: ~12 Hz per character, FPS-independent
 const MARQUEE_SPEED    = 4 / 1000; // chars per ms
@@ -57,7 +58,7 @@ function arcPoint(arcFrac: number): { x: number; y: number; rot: number } {
 }
 
 // Fade opacity: 0 at seam x-coordinates (55, 245), 1 beyond a short fade zone
-const FADE_PX = 7.6; // SVG units (~1.5 mm at display scale)
+const FADE_PX = 3.5; // SVG units (~0.7 mm at display scale)
 function fadeOpacity(x: number): number {
     if (x < 55  + FADE_PX) return Math.max(0, (x - 55)  / FADE_PX);
     if (x > 245 - FADE_PX) return Math.max(0, (245 - x) / FADE_PX);
