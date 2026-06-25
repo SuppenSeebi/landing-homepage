@@ -5,17 +5,17 @@
     <div class="rotating-text">
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
-                <!-- CCW from left (9 o'clock) through top to right (3 o'clock) — text readable at top -->
-                <path id="topArc"    d="M 50,150 A 100,100 0 0,0 250,150" />
-                <!-- CW from left (9 o'clock) through bottom to right (3 o'clock) — text readable at bottom -->
-                <path id="bottomArc" d="M 50,150 A 100,100 0 0,1 250,150" />
+                <!-- sweep=1 (CW): left (9) → top (12) → right (3) -->
+                <path id="topArc"    d="M 50,150 A 100,100 0 0,1 250,150" />
+                <!-- sweep=0 (CCW): left (9) → bottom (6) → right (3) -->
+                <path id="bottomArc" d="M 50,150 A 100,100 0 0,0 250,150" />
             </defs>
-            <!-- Animated noise on top arc -->
+            <!-- Animated noise: top arc -->
             <text id="logo-noise" font-family="Share Tech Mono" font-size="13" fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-noise-path" href="#topArc" startOffset="0%" textLength="314" lengthAdjust="spacing"></textPath>
             </text>
-            <!-- Scrolling marquee on bottom arc -->
-            <text id="logo-marquee" font-family="Share Tech Mono" font-size="13" fill="#1B2D73" font-weight="bold" dominant-baseline="middle">
+            <!-- Scrolling marquee: bottom arc -->
+            <text id="logo-marquee" font-family="Share Tech Mono" font-size="13" fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-marquee-path" href="#bottomArc" startOffset="0%" textLength="314" lengthAdjust="spacing"></textPath>
             </text>
         </svg>
@@ -29,30 +29,33 @@
 const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-// Both arcs are semicircles of radius 100 → arc length = π×100 ≈ 314 SVG units.
-// textLength="314" forces exact fill so both halves butt against each other with no gap.
-// At font-size 13, ~314/7.8 ≈ 40 chars fit per arc.
+// Both arcs: semicircle of radius 100 → arc length = π×100 ≈ 314 SVG units.
+// textLength="314" forces exact fill → no gap at the 9 o'clock / 3 o'clock seams.
+// ~314 / 7.8 ≈ 40 chars at font-size 13.
 const CHARS = 40;
 
-const noisePath   = document.getElementById("logo-noise-path")   as SVGTextPathElement;
-const marqueePath = document.getElementById("logo-marquee-path") as SVGTextPathElement;
+// Time-based intervals — independent of monitor refresh rate (60/120/240 Hz)
+const NOISE_INTERVAL   = 333; // ms → ~3 fps
+const MARQUEE_INTERVAL = 800; // ms → ~1.25 chars/sec  (≈ ¼ of previous 5 chars/sec)
 
-let marqueePos = 0;
-let frame      = 0;
+const noisePath    = document.getElementById("logo-noise-path")   as SVGTextPathElement;
+const marqueePath  = document.getElementById("logo-marquee-path") as SVGTextPathElement;
 
-function tick() {
-    frame++;
+let marqueePos      = 0;
+let lastNoise       = 0;
+let lastMarquee     = 0;
 
-    // Noise: update at ~3fps
-    if (frame % 20 === 0) {
+function tick(now: number) {
+    if (now - lastNoise >= NOISE_INTERVAL) {
+        lastNoise = now;
         let s = "";
         for (let i = 0; i < CHARS; i++)
             s += NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)];
         noisePath.textContent = s;
     }
 
-    // Marquee: advance one character every 12 frames (~5 chars/sec at 60fps)
-    if (frame % 12 === 0) {
+    if (now - lastMarquee >= MARQUEE_INTERVAL) {
+        lastMarquee = now;
         marqueePos = (marqueePos + 1) % MARQUEE_TEXT.length;
         marqueePath.textContent = (MARQUEE_TEXT + MARQUEE_TEXT).slice(marqueePos, marqueePos + CHARS);
     }
