@@ -19,7 +19,8 @@
                     bottomArc: 144° CCW (B → bottom → A)
                               Arc length ≈ 144° / 360° × 2π × 100 ≈ 251 SVG units
                 -->
-                <path id="topArc"    d="M 60,194 A 100,100 0 1,1 240,194" />
+                <!-- CCW direction makes characters appear upside-down at the top -->
+                <path id="topArc"    d="M 240,194 A 100,100 0 1,0 60,194" />
                 <path id="bottomArc" d="M 55,181 A 100,100 0 0,0 245,181" />
 
                 <!--
@@ -31,8 +32,8 @@
                     gradientUnits="userSpaceOnUse"
                     x1="55" y1="181" x2="245" y2="181">
                     <stop offset="0%"   stop-color="white" stop-opacity="0"/>
-                    <stop offset="12%"  stop-color="white" stop-opacity="1"/>
-                    <stop offset="88%"  stop-color="white" stop-opacity="1"/>
+                    <stop offset="4%"   stop-color="white" stop-opacity="1"/>
+                    <stop offset="96%"  stop-color="white" stop-opacity="1"/>
                     <stop offset="100%" stop-color="white" stop-opacity="0"/>
                 </linearGradient>
                 <mask id="marqueeMask">
@@ -108,16 +109,19 @@ function tick(now: number) {
     }
     if (changed) noisePath.textContent = noiseChars.join("");
 
-    // ── Marquee: smooth sub-character scroll via negative startOffset ──
+    // ── Marquee: smooth sub-character scroll via positive startOffset ──
+    // Negative startOffset is clamped to 0 by most browsers — use positive
+    // offset (0 → MARQUEE_CHAR_PCT%) with the charWindow decrementing so
+    // new characters enter from the left (arc start) without any clamping.
     subChar += MARQUEE_SPEED * dt;
     while (subChar >= 1) {
-        charWindow = (charWindow + 1) % MARQUEE_TEXT.length;
+        charWindow = (charWindow - 1 + MARQUEE_TEXT.length) % MARQUEE_TEXT.length;
         subChar -= 1;
     }
-    // Extra char so the entering character is partially visible on the right
+    // Extra char on the right so the exiting character stays partially visible
     marqueePath.textContent =
         (MARQUEE_TEXT + MARQUEE_TEXT).slice(charWindow, charWindow + MARQUEE_CHARS + 1);
-    marqueePath.setAttribute("startOffset", `${-subChar * MARQUEE_CHAR_PCT}%`);
+    marqueePath.setAttribute("startOffset", `${subChar * MARQUEE_CHAR_PCT}%`);
 
     requestAnimationFrame(tick);
 }
