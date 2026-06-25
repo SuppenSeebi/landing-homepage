@@ -5,15 +5,18 @@
     <div class="rotating-text">
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
-                <path id="circlePath" d="M 150,150 m -100,0 a 100,100 0 1,0 200,0 a 100,100 0 1,0 -200,0" />
+                <!-- CCW from left (9 o'clock) through top to right (3 o'clock) — text readable at top -->
+                <path id="topArc"    d="M 50,150 A 100,100 0 0,0 250,150" />
+                <!-- CW from left (9 o'clock) through bottom to right (3 o'clock) — text readable at bottom -->
+                <path id="bottomArc" d="M 50,150 A 100,100 0 0,1 250,150" />
             </defs>
-            <!-- ASCII noise zone (top arc, 0–50%) -->
-            <text id="logo-noise" font-family="Share Tech Mono" font-size="12" fill="#2542A3" dominant-baseline="middle">
-                <textPath id="logo-noise-path" href="#circlePath" startOffset="0%"></textPath>
+            <!-- Animated noise on top arc -->
+            <text id="logo-noise" font-family="Share Tech Mono" font-size="13" fill="#2542A3" dominant-baseline="middle">
+                <textPath id="logo-noise-path" href="#topArc" startOffset="0%" textLength="314" lengthAdjust="spacing"></textPath>
             </text>
-            <!-- Marquee text zone (bottom arc, 50–100%) -->
+            <!-- Scrolling marquee on bottom arc -->
             <text id="logo-marquee" font-family="Share Tech Mono" font-size="13" fill="#1B2D73" font-weight="bold" dominant-baseline="middle">
-                <textPath id="logo-marquee-path" href="#circlePath" startOffset="50%"></textPath>
+                <textPath id="logo-marquee-path" href="#bottomArc" startOffset="0%" textLength="314" lengthAdjust="spacing"></textPath>
             </text>
         </svg>
     </div>
@@ -23,38 +26,27 @@
 </div>
 
 <script>
-const NOISE_SRC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
+const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-// circumference ≈ 628 SVG units; font-size 12 mono ≈ 7.2 units/char
-// font-size 13 mono ≈ 7.8 units/char → 50% arc ≈ 40 visible chars
-const NOISE_FULL    = 44; // ~50% of arc at rest
-const NOISE_SLIM    = 22; // ~25% of arc when logo scrolled up
-const MARQUEE_CHARS = 40; // visible chars in bottom 50% arc
+// Both arcs are semicircles of radius 100 → arc length = π×100 ≈ 314 SVG units.
+// textLength="314" forces exact fill so both halves butt against each other with no gap.
+// At font-size 13, ~314/7.8 ≈ 40 chars fit per arc.
+const CHARS = 40;
 
 const noisePath   = document.getElementById("logo-noise-path")   as SVGTextPathElement;
 const marqueePath = document.getElementById("logo-marquee-path") as SVGTextPathElement;
-const logoWrapper = document.getElementById("logo-wrapper")!;
 
-let noiseTarget = NOISE_FULL;
-let noiseCur    = NOISE_FULL;
-let marqueePos  = 0;
-let frame       = 0;
-
-function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
-
-new MutationObserver(() => {
-    noiseTarget = logoWrapper.classList.contains("visible") ? NOISE_FULL : NOISE_SLIM;
-}).observe(logoWrapper, { attributes: true, attributeFilter: ["class"] });
+let marqueePos = 0;
+let frame      = 0;
 
 function tick() {
     frame++;
 
-    // Noise: update content ~3fps, lerp character count toward target
+    // Noise: update at ~3fps
     if (frame % 20 === 0) {
-        noiseCur = Math.round(lerp(noiseCur, noiseTarget, 0.18));
         let s = "";
-        for (let i = 0; i < noiseCur; i++)
+        for (let i = 0; i < CHARS; i++)
             s += NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)];
         noisePath.textContent = s;
     }
@@ -62,7 +54,7 @@ function tick() {
     // Marquee: advance one character every 12 frames (~5 chars/sec at 60fps)
     if (frame % 12 === 0) {
         marqueePos = (marqueePos + 1) % MARQUEE_TEXT.length;
-        marqueePath.textContent = (MARQUEE_TEXT + MARQUEE_TEXT).slice(marqueePos, marqueePos + MARQUEE_CHARS);
+        marqueePath.textContent = (MARQUEE_TEXT + MARQUEE_TEXT).slice(marqueePos, marqueePos + CHARS);
     }
 
     requestAnimationFrame(tick);
