@@ -46,7 +46,14 @@
                 font-family="Share Tech Mono" font-size="15" font-weight="bold"
                 fill="#2542A3" dominant-baseline="middle"
                 mask="url(#marqueeMask)">
-                <textPath id="logo-marquee-path" href="#bottomArc" startOffset="0%"></textPath>
+                <!--
+                    textLength forces the browser to treat the glyph block as one
+                    rigid unit. Only startOffset shifts between frames — no per-char
+                    layout recalc — so there is no split-frame inconsistency that
+                    manifests as a backward jump. 251 ≈ bottomArc length in SVG units.
+                -->
+                <textPath id="logo-marquee-path" href="#bottomArc" startOffset="0%"
+                    textLength="251" lengthAdjust="spacingAndGlyphs"></textPath>
             </text>
 
             <!-- Noise rendered on top — its extended arc overlaps the marquee edges -->
@@ -118,9 +125,8 @@ function tick(now: number) {
         charWindow = (charWindow - 1 + MARQUEE_TEXT.length) % MARQUEE_TEXT.length;
         subChar -= 1;
     }
-    // Extra char on the right so the exiting character stays partially visible
     marqueePath.textContent =
-        (MARQUEE_TEXT + MARQUEE_TEXT).slice(charWindow, charWindow + MARQUEE_CHARS + 1);
+        (MARQUEE_TEXT + MARQUEE_TEXT).slice(charWindow, charWindow + MARQUEE_CHARS);
     marqueePath.setAttribute("startOffset", `${subChar * MARQUEE_CHAR_PCT}%`);
 
     requestAnimationFrame(tick);
