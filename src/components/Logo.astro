@@ -8,6 +8,20 @@
                 <!-- CCW arc — makes noise characters appear upside-down at the top -->
                 <!-- Extended 3° past each seam (≈5 SVG units, ~1% of ring) -->
                 <path id="topArc" d="M 243,186 A 100,100 0 1,0 57,186" />
+
+                <!--
+                    Noise fade: both arc endpoints sit at y≈186 (the arc rises above
+                    that to y≈50 at the top). A vertical gradient from transparent at
+                    y=186 to opaque at y≈182.6 fades both ends over exactly 2° of arc.
+                -->
+                <linearGradient id="noiseGrad" x1="0" y1="186" x2="0" y2="182.6"
+                    gradientUnits="userSpaceOnUse">
+                    <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+                    <stop offset="100%" stop-color="white" stop-opacity="1"/>
+                </linearGradient>
+                <mask id="noiseMask">
+                    <rect x="0" y="0" width="300" height="300" fill="url(#noiseGrad)"/>
+                </mask>
             </defs>
 
             <!-- Marquee: 29 pre-created <text> nodes, each positioned by JS per frame.
@@ -18,7 +32,7 @@
             </g>
 
             <!-- Noise on top (z-order: after marquee, so it paints over the seam) -->
-            <text id="logo-noise"
+            <text id="logo-noise" mask="url(#noiseMask)"
                 font-family="Share Tech Mono" font-size="15" font-weight="bold"
                 fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-noise-path"
