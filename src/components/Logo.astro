@@ -31,14 +31,9 @@
                 </mask>
             </defs>
 
-            <!-- Marquee: 29 pre-created <text> nodes, each positioned by JS per frame.
-                 No textPath / startOffset / textLength — no browser layout artifacts. -->
-            <g id="marquee-group"
-               font-family="Share Tech Mono" font-size="15" font-weight="bold"
-               fill="#2542A3" text-anchor="middle" dominant-baseline="central">
-            </g>
+            <!-- Z-order: noise → frosted band → marquee -->
 
-            <!-- Noise on top (z-order: after marquee, so it paints over the seam) -->
+            <!-- 1. Noise (bottom) -->
             <text id="logo-noise" mask="url(#noiseMask)"
                 font-family="Share Tech Mono" font-size="15" font-weight="bold"
                 fill="#2542A3" dominant-baseline="middle">
@@ -46,6 +41,16 @@
                     href="#topArc" startOffset="0%"
                     textLength="420" lengthAdjust="spacing"></textPath>
             </text>
+
+            <!-- 2. Frosted arc band — dims noise in the marquee zone -->
+            <path d="M 67,206 A 100,100 0 0,1 233,206"
+                fill="none" stroke="#EAF3FF" stroke-width="22" stroke-opacity="0.30"/>
+
+            <!-- 3. Marquee (top) -->
+            <g id="marquee-group"
+               font-family="Share Tech Mono" font-size="15" font-weight="bold"
+               fill="#2542A3" text-anchor="middle" dominant-baseline="central">
+            </g>
         </svg>
     </div>
     <div class="static-logo">
