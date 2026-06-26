@@ -53,14 +53,6 @@
                     <stop offset="92%"  stop-color="#7AAAF0" stop-opacity="0.9"/>
                     <stop offset="100%" stop-color="#7AAAF0" stop-opacity="0"/>
                 </linearGradient>
-                <!-- Rail glow: gaussian blur behind sharp line -->
-                <filter id="railGlow" x="-5%" y="-150%" width="110%" height="400%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="glow"/>
-                    <feMerge>
-                        <feMergeNode in="glow"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
             </defs>
 
             <!-- Z-order: noise → frosted band → marquee -->
@@ -78,13 +70,20 @@
             <path d="M 61,195 A 100,100 0 0,0 239,195"
                 fill="none" stroke="url(#bandGrad)" stroke-width="22"/>
 
-            <!-- 2b. Glowing rails framing the marquee zone (inner r=89, outer r=111) -->
+            <!-- 2b. Glowing rails — 3 layers per rail: halo → bloom → core -->
             <path d="M 70,190 A 89,89 0 0,0 230,190"
-                fill="none" stroke="url(#railGradInner)" stroke-width="2.5"
-                filter="url(#railGlow)"/>
+                fill="none" stroke="url(#railGradInner)" stroke-width="14" opacity="0.10"/>
+            <path d="M 70,190 A 89,89 0 0,0 230,190"
+                fill="none" stroke="url(#railGradInner)" stroke-width="6"  opacity="0.30"/>
+            <path d="M 70,190 A 89,89 0 0,0 230,190"
+                fill="none" stroke="url(#railGradInner)" stroke-width="1.5" opacity="1.0"/>
+
             <path d="M 51,200 A 111,111 0 0,0 249,200"
-                fill="none" stroke="url(#railGradOuter)" stroke-width="2.5"
-                filter="url(#railGlow)"/>
+                fill="none" stroke="url(#railGradOuter)" stroke-width="14" opacity="0.10"/>
+            <path d="M 51,200 A 111,111 0 0,0 249,200"
+                fill="none" stroke="url(#railGradOuter)" stroke-width="6"  opacity="0.30"/>
+            <path d="M 51,200 A 111,111 0 0,0 249,200"
+                fill="none" stroke="url(#railGradOuter)" stroke-width="1.5" opacity="1.0"/>
 
             <!-- 3. Marquee (top) -->
             <g id="marquee-group"
