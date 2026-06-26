@@ -30,12 +30,20 @@
                     <rect x="0"   y="0" width="90"  height="300" fill="url(#noiseGradL)"/>
                 </mask>
 
-                <!-- Rail gradient: transparent at seam ends, opaque in the middle -->
-                <linearGradient id="railGrad" x1="58" y1="0" x2="242" y2="0"
+                <!-- Band gradient: small fade at seam ends for frosted arc -->
+                <linearGradient id="bandGrad" x1="65" y1="0" x2="235" y2="0"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="#EAF3FF" stop-opacity="0"/>
-                    <stop offset="20%"  stop-color="#EAF3FF" stop-opacity="0.9"/>
-                    <stop offset="80%"  stop-color="#EAF3FF" stop-opacity="0.9"/>
+                    <stop offset="8%"   stop-color="#EAF3FF" stop-opacity="0.60"/>
+                    <stop offset="92%"  stop-color="#EAF3FF" stop-opacity="0.60"/>
+                    <stop offset="100%" stop-color="#EAF3FF" stop-opacity="0"/>
+                </linearGradient>
+                <!-- Rail gradient: small fade at seam ends -->
+                <linearGradient id="railGrad" x1="55" y1="0" x2="245" y2="0"
+                    gradientUnits="userSpaceOnUse">
+                    <stop offset="0%"   stop-color="#EAF3FF" stop-opacity="0"/>
+                    <stop offset="8%"   stop-color="#EAF3FF" stop-opacity="0.9"/>
+                    <stop offset="92%"  stop-color="#EAF3FF" stop-opacity="0.9"/>
                     <stop offset="100%" stop-color="#EAF3FF" stop-opacity="0"/>
                 </linearGradient>
                 <!-- Rail glow: gaussian blur behind sharp line -->
@@ -60,15 +68,15 @@
             </text>
 
             <!-- 2. Frosted arc band — dims noise in the marquee zone -->
-            <path d="M 67,206 A 100,100 0 0,0 233,206"
-                fill="none" stroke="#EAF3FF" stroke-width="22" stroke-opacity="0.60"/>
+            <path d="M 65,202 A 100,100 0 0,0 235,202"
+                fill="none" stroke="url(#bandGrad)" stroke-width="22"/>
 
             <!-- 2b. Glowing rails framing the marquee zone (inner r=89, outer r=111) -->
-            <path d="M 76,200 A 89,89 0 0,0 224,200"
-                fill="none" stroke="url(#railGrad)" stroke-width="1.5"
+            <path d="M 74,197 A 89,89 0 0,0 226,197"
+                fill="none" stroke="url(#railGrad)" stroke-width="2.5"
                 filter="url(#railGlow)"/>
-            <path d="M 58,212 A 111,111 0 0,0 242,212"
-                fill="none" stroke="url(#railGrad)" stroke-width="1.5"
+            <path d="M 55,208 A 111,111 0 0,0 245,208"
+                fill="none" stroke="url(#railGrad)" stroke-width="2.5"
                 filter="url(#railGlow)"/>
 
             <!-- 3. Marquee (top) -->
