@@ -10,17 +10,25 @@
                 <path id="topArc" d="M 243,186 A 100,100 0 1,0 57,186" />
 
                 <!--
-                    Noise fade: both arc endpoints sit at y≈186 (the arc rises above
-                    that to y≈50 at the top). A vertical gradient from transparent at
-                    y=186 to opaque at y≈182.6 fades both ends over exactly 2° of arc.
+                    Noise fade: asymmetric masks for each arc endpoint (both at y≈186).
+                    Right end (x=210-300): 4° fade, y=186→179.2.
+                    Left end  (x=0-90):   wider fade, y=184→171, hides the extra
+                    opaque chars that would otherwise overlap exiting marquee text.
                 -->
-                <linearGradient id="noiseGrad" x1="0" y1="186" x2="0" y2="179.2"
+                <linearGradient id="noiseGradR" x1="0" y1="186" x2="0" y2="179.2"
+                    gradientUnits="userSpaceOnUse">
+                    <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+                    <stop offset="100%" stop-color="white" stop-opacity="1"/>
+                </linearGradient>
+                <linearGradient id="noiseGradL" x1="0" y1="184" x2="0" y2="171"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="white" stop-opacity="0"/>
                     <stop offset="100%" stop-color="white" stop-opacity="1"/>
                 </linearGradient>
                 <mask id="noiseMask">
-                    <rect x="0" y="0" width="300" height="300" fill="url(#noiseGrad)"/>
+                    <rect x="0"   y="0" width="300" height="300" fill="white"/>
+                    <rect x="210" y="0" width="90"  height="300" fill="url(#noiseGradR)"/>
+                    <rect x="0"   y="0" width="90"  height="300" fill="url(#noiseGradL)"/>
                 </mask>
             </defs>
 
