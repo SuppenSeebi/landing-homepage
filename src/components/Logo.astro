@@ -5,23 +5,21 @@
     <div class="rotating-text">
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
-                <!-- CCW arc — makes noise characters appear upside-down at the top -->
-                <!-- Both endpoints symmetric at y≈189: right θ≈23° (242,189), left θ≈157° (58,189) -->
-                <path id="topArc" d="M 242,189 A 100,100 0 1,0 58,189" />
+                <!-- CCW arc — noise covers 65% (234°); seams at θ=27°/153°, endpoints 5° past at θ=32°/148° -->
+                <!-- Both endpoints symmetric at y≈203: right (235,203), left (65,203) -->
+                <path id="topArc" d="M 235,203 A 100,100 0 1,0 65,203" />
 
                 <!--
-                    Noise fade: 3-region mask — middle always white, ends use gradients.
-                    Each gradient goes from transparent at the seam (y≈186) to opaque
-                    white further up, so SVG mask value is 0 (hidden) at endpoints.
-                    Right end (x=210-300): ~6° fade, y=186→177.
-                    Left end  (x=0-90):   wider fade, y=184→166.
+                    Noise fade: 3-region mask — middle always white, ends use identical
+                    gradients (equalized for symmetry). Transparent at arc endpoint y=203,
+                    fully opaque at y=190 (~9° of fade on each side).
                 -->
-                <linearGradient id="noiseGradR" x1="0" y1="186" x2="0" y2="177"
+                <linearGradient id="noiseGradR" x1="0" y1="203" x2="0" y2="190"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="white" stop-opacity="0"/>
                     <stop offset="100%" stop-color="white" stop-opacity="1"/>
                 </linearGradient>
-                <linearGradient id="noiseGradL" x1="0" y1="184" x2="0" y2="166"
+                <linearGradient id="noiseGradL" x1="0" y1="203" x2="0" y2="190"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="white" stop-opacity="0"/>
                     <stop offset="100%" stop-color="white" stop-opacity="1"/>
@@ -46,7 +44,7 @@
                 fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-noise-path"
                     href="#topArc" startOffset="0%"
-                    textLength="388" lengthAdjust="spacing"></textPath>
+                    textLength="420" lengthAdjust="spacing"></textPath>
             </text>
         </svg>
     </div>
@@ -59,16 +57,16 @@
 const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-const NOISE_CHARS      = 43;
-const MARQUEE_CHARS    = 28;   // characters visible across the 144° bottom arc
+const NOISE_CHARS      = 47;
+const MARQUEE_CHARS    = 25;   // characters visible across the 126° bottom arc (35%)
 const CHAR_INTERVAL_MS = 80;   // noise: ~12 Hz per character, FPS-independent
 const MARQUEE_SPEED    = 4 / 1000; // chars per ms
 
-// ── Bottom arc: 144° CCW from left seam (θ=162°) to right seam (θ=18°) ──────
-// θ(p) = 162° + p × (−144°) = 162° → 18° as p goes 0 → 1
+// ── Bottom arc: 126° CCW from left seam (θ=153°) to right seam (θ=27°) ──────
+// θ(p) = 153° + p × (−126°) = 153° → 27° as p goes 0 → 1
 const DEG       = Math.PI / 180;
-const ARC_START = 162 * DEG;
-const ARC_SPAN  = -144 * DEG; // CCW = decreasing θ
+const ARC_START = 153 * DEG;
+const ARC_SPAN  = -126 * DEG; // CCW = decreasing θ
 
 function arcPoint(arcFrac: number): { x: number; y: number; rot: number } {
     const t   = ARC_START + arcFrac * ARC_SPAN;
@@ -120,23 +118,7 @@ function tick(now: number) {
     }
     if (changed) noisePath.textContent = noiseChars.join("");
 
-    // ── Marquee: right-to-left scroll, new chars enter from right seam ────
-    // arcFrac for char i = (i − subChar) / MARQUEE_CHARS
-    //   i=0            → exits past left seam as subChar → 1
-    //   i=MARQUEE_CHARS → enters from right seam as subChar → 0
-    subChar += MARQUEE_SPEED * dt;
-    while (subChar >= 1) {
-        charWindow = (charWindow + 1) % MARQUEE_TEXT.length;
-        subChar -= 1;
-    }
-
-    for (let i = 0; i <= MARQUEE_CHARS; i++) {
-        const { x, y, rot } = arcPoint((i - subChar) / MARQUEE_CHARS);
-        charEls[i].setAttribute("transform",
-            `translate(${x.toFixed(2)},${y.toFixed(2)}) rotate(${rot.toFixed(2)})`);
-        charEls[i].textContent =
-            MARQUEE_TEXT[(charWindow + i) % MARQUEE_TEXT.length];
-    }
+    // ── Marquee: DISABLED for symmetry test ──────────────────────────────
 
     requestAnimationFrame(tick);
 }
