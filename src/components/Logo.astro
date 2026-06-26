@@ -6,22 +6,22 @@
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
                 <!-- CCW arc — makes noise characters appear upside-down at the top -->
-                <!-- LEFT END shortened by 15° (to θ≈174°, endpoint ~51,161) for visual ID test -->
-                <path id="topArc" d="M 243,186 A 100,100 0 1,0 51,161" />
+                <!-- LEFT END shortened by 10° (to θ≈169°, endpoint ~52,169) for visual ID test -->
+                <path id="topArc" d="M 243,186 A 100,100 0 1,0 52,169" />
 
                 <!--
                     Noise fade: 3-region mask — middle always white, ends use gradients.
                     Each gradient goes from transparent at the seam (y≈186) to opaque
                     white further up, so SVG mask value is 0 (hidden) at endpoints.
-                    Right end (x=210-300): 4° fade, y=186→179.2.
-                    Left end  (x=0-90):   wider fade, y=184→171.
+                    Right end (x=210-300): ~6° fade, y=186→177.
+                    Left end  (x=0-90):   wider fade, y=184→166.
                 -->
-                <linearGradient id="noiseGradR" x1="0" y1="186" x2="0" y2="179.2"
+                <linearGradient id="noiseGradR" x1="0" y1="186" x2="0" y2="177"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="white" stop-opacity="0"/>
                     <stop offset="100%" stop-color="white" stop-opacity="1"/>
                 </linearGradient>
-                <linearGradient id="noiseGradL" x1="0" y1="184" x2="0" y2="171"
+                <linearGradient id="noiseGradL" x1="0" y1="184" x2="0" y2="166"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="white" stop-opacity="0"/>
                     <stop offset="100%" stop-color="white" stop-opacity="1"/>
