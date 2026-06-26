@@ -31,7 +31,7 @@
                 </mask>
 
                 <!-- Band gradient: tight fade at seam ends for frosted arc -->
-                <linearGradient id="bandGrad" x1="61" y1="0" x2="239" y2="0"
+                <linearGradient id="bandGrad" x1="60" y1="0" x2="240" y2="0"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="#EAF3FF" stop-opacity="0"/>
                     <stop offset="5%"   stop-color="#EAF3FF" stop-opacity="0.60"/>
@@ -39,19 +39,19 @@
                     <stop offset="100%" stop-color="#EAF3FF" stop-opacity="0"/>
                 </linearGradient>
                 <!-- Rail gradients: each matched to its own arc endpoints -->
-                <linearGradient id="railGradInner" x1="71" y1="0" x2="229" y2="0"
+                <linearGradient id="railGradInner" x1="70" y1="0" x2="230" y2="0"
                     gradientUnits="userSpaceOnUse">
-                    <stop offset="0%"   stop-color="#4477EE" stop-opacity="0"/>
-                    <stop offset="8%"   stop-color="#4477EE" stop-opacity="0.9"/>
-                    <stop offset="92%"  stop-color="#4477EE" stop-opacity="0.9"/>
-                    <stop offset="100%" stop-color="#4477EE" stop-opacity="0"/>
+                    <stop offset="0%"   stop-color="#A8C4F5" stop-opacity="0"/>
+                    <stop offset="8%"   stop-color="#A8C4F5" stop-opacity="0.9"/>
+                    <stop offset="92%"  stop-color="#A8C4F5" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#A8C4F5" stop-opacity="0"/>
                 </linearGradient>
-                <linearGradient id="railGradOuter" x1="52" y1="0" x2="248" y2="0"
+                <linearGradient id="railGradOuter" x1="50" y1="0" x2="250" y2="0"
                     gradientUnits="userSpaceOnUse">
-                    <stop offset="0%"   stop-color="#4477EE" stop-opacity="0"/>
-                    <stop offset="8%"   stop-color="#4477EE" stop-opacity="0.9"/>
-                    <stop offset="92%"  stop-color="#4477EE" stop-opacity="0.9"/>
-                    <stop offset="100%" stop-color="#4477EE" stop-opacity="0"/>
+                    <stop offset="0%"   stop-color="#A8C4F5" stop-opacity="0"/>
+                    <stop offset="8%"   stop-color="#A8C4F5" stop-opacity="0.9"/>
+                    <stop offset="92%"  stop-color="#A8C4F5" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#A8C4F5" stop-opacity="0"/>
                 </linearGradient>
                 <!-- Rail glow: gaussian blur behind sharp line -->
                 <filter id="railGlow" x="-5%" y="-150%" width="110%" height="400%">
@@ -75,14 +75,14 @@
             </text>
 
             <!-- 2. Frosted arc band — dims noise in the marquee zone -->
-            <path d="M 61,196 A 100,100 0 0,0 239,196"
+            <path d="M 60,193 A 100,100 0 0,0 240,193"
                 fill="none" stroke="url(#bandGrad)" stroke-width="22"/>
 
             <!-- 2b. Glowing rails framing the marquee zone (inner r=89, outer r=111) -->
-            <path d="M 71,191 A 89,89 0 0,0 229,191"
+            <path d="M 70,188 A 89,89 0 0,0 230,188"
                 fill="none" stroke="url(#railGradInner)" stroke-width="2.5"
                 filter="url(#railGlow)"/>
-            <path d="M 52,201 A 111,111 0 0,0 248,201"
+            <path d="M 50,198 A 111,111 0 0,0 250,198"
                 fill="none" stroke="url(#railGradOuter)" stroke-width="2.5"
                 filter="url(#railGlow)"/>
 
