@@ -38,8 +38,8 @@
                fill="#2542A3" text-anchor="middle" dominant-baseline="central">
             </g>
 
-            <!-- Noise DISABLED -->
-            <text id="logo-noise" visibility="hidden" mask="url(#noiseMask)"
+            <!-- Noise on top (z-order: after marquee, so it paints over the seam) -->
+            <text id="logo-noise" mask="url(#noiseMask)"
                 font-family="Share Tech Mono" font-size="15" font-weight="bold"
                 fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-noise-path"
