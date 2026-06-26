@@ -14,7 +14,7 @@
                     that to y≈50 at the top). A vertical gradient from transparent at
                     y=186 to opaque at y≈182.6 fades both ends over exactly 2° of arc.
                 -->
-                <linearGradient id="noiseGrad" x1="0" y1="186" x2="0" y2="182.6"
+                <linearGradient id="noiseGrad" x1="0" y1="186" x2="0" y2="179.2"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="white" stop-opacity="0"/>
                     <stop offset="100%" stop-color="white" stop-opacity="1"/>
@@ -71,13 +71,6 @@ function arcPoint(arcFrac: number): { x: number; y: number; rot: number } {
     return { x, y, rot };
 }
 
-// Fade opacity: 0 at seam x-coordinates (55, 245), 1 beyond a short fade zone
-const FADE_PX = 3.5; // SVG units (~0.7 mm at display scale)
-function fadeOpacity(x: number): number {
-    if (x < 55  + FADE_PX) return Math.max(0, (x - 55)  / FADE_PX);
-    if (x > 245 - FADE_PX) return Math.max(0, (245 - x) / FADE_PX);
-    return 1;
-}
 
 // ── DOM setup ─────────────────────────────────────────────────────────────────
 const noisePath    = document.getElementById("logo-noise-path") as SVGTextPathElement;
@@ -130,10 +123,8 @@ function tick(now: number) {
 
     for (let i = 0; i <= MARQUEE_CHARS; i++) {
         const { x, y, rot } = arcPoint((i - subChar) / MARQUEE_CHARS);
-        const op = fadeOpacity(x);
         charEls[i].setAttribute("transform",
             `translate(${x.toFixed(2)},${y.toFixed(2)}) rotate(${rot.toFixed(2)})`);
-        charEls[i].setAttribute("fill-opacity", op.toFixed(2));
         charEls[i].textContent =
             MARQUEE_TEXT[(charWindow + i) % MARQUEE_TEXT.length];
     }
