@@ -6,14 +6,15 @@
         <svg width="300" height="300" viewBox="0 0 300 300">
             <defs>
                 <!-- CCW arc — makes noise characters appear upside-down at the top -->
-                <!-- Extended 3° past each seam (≈5 SVG units, ~1% of ring) -->
-                <path id="topArc" d="M 243,186 A 100,100 0 1,0 57,186" />
+                <!-- LEFT END shortened by 15° (to θ≈174°, endpoint ~51,161) for visual ID test -->
+                <path id="topArc" d="M 243,186 A 100,100 0 1,0 51,161" />
 
                 <!--
-                    Noise fade: asymmetric masks for each arc endpoint (both at y≈186).
+                    Noise fade: 3-region mask — middle always white, ends use gradients.
+                    Each gradient goes from transparent at the seam (y≈186) to opaque
+                    white further up, so SVG mask value is 0 (hidden) at endpoints.
                     Right end (x=210-300): 4° fade, y=186→179.2.
-                    Left end  (x=0-90):   wider fade, y=184→171, hides the extra
-                    opaque chars that would otherwise overlap exiting marquee text.
+                    Left end  (x=0-90):   wider fade, y=184→171.
                 -->
                 <linearGradient id="noiseGradR" x1="0" y1="186" x2="0" y2="179.2"
                     gradientUnits="userSpaceOnUse">
@@ -26,7 +27,7 @@
                     <stop offset="100%" stop-color="white" stop-opacity="1"/>
                 </linearGradient>
                 <mask id="noiseMask">
-                    <rect x="0"   y="0" width="300" height="300" fill="white"/>
+                    <rect x="90"  y="0" width="120" height="300" fill="white"/>
                     <rect x="210" y="0" width="90"  height="300" fill="url(#noiseGradR)"/>
                     <rect x="0"   y="0" width="90"  height="300" fill="url(#noiseGradL)"/>
                 </mask>
