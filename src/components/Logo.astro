@@ -38,8 +38,8 @@
                fill="#2542A3" text-anchor="middle" dominant-baseline="central">
             </g>
 
-            <!-- Noise DISABLED for marquee symmetry test -->
-            <text id="logo-noise" visibility="hidden" mask="url(#noiseMask)"
+            <!-- Noise on top (z-order: after marquee, so it paints over the seam) -->
+            <text id="logo-noise" mask="url(#noiseMask)"
                 font-family="Share Tech Mono" font-size="15" font-weight="bold"
                 fill="#2542A3" dominant-baseline="middle">
                 <textPath id="logo-noise-path"
@@ -83,9 +83,12 @@ function arcPoint(arcFrac: number): { x: number; y: number; rot: number } {
 const noisePath    = document.getElementById("logo-noise-path") as SVGTextPathElement;
 const marqueeGroup = document.getElementById("marquee-group")   as SVGGElement;
 
-// Pre-create MARQUEE_CHARS+1 <text> nodes (index 0 exits left; index CHARS enters right)
+// Pre-create MARQUEE_CHARS+2 <text> nodes:
+//   i=0            exits past left seam  (arcFrac → -1/CHARS)
+//   i=MARQUEE_CHARS+1 enters past right seam (arcFrac → 1+1/CHARS)
+// Both sides now extend equally past their seams → symmetric appearance.
 const charEls: SVGTextElement[] = [];
-for (let i = 0; i <= MARQUEE_CHARS; i++) {
+for (let i = 0; i <= MARQUEE_CHARS + 1; i++) {
     const el = document.createElementNS("http://www.w3.org/2000/svg", "text");
     el.setAttribute("x", "0");
     el.setAttribute("y", "0");
@@ -128,7 +131,7 @@ function tick(now: number) {
         subChar -= 1;
     }
 
-    for (let i = 0; i <= MARQUEE_CHARS; i++) {
+    for (let i = 0; i <= MARQUEE_CHARS + 1; i++) {
         const { x, y, rot } = arcPoint((i - subChar) / MARQUEE_CHARS);
         charEls[i].setAttribute("transform",
             `translate(${x.toFixed(2)},${y.toFixed(2)}) rotate(${rot.toFixed(2)})`);
