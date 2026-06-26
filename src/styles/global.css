@@ -274,7 +274,7 @@ p {
     pointer-events: auto;
 }
 
-#file-section-indicator .ctrl-para-hdr { color: var(--blue-darker-1); font-weight: 700; font-size: 0.98rem; }
+#file-section-indicator .ctrl-para-hdr { color: var(--blue-darker-2); font-weight: 700; font-size: 0.98rem; }
 
 .ctrl-data-record {
     display: flex;
@@ -284,7 +284,7 @@ p {
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: inherit;
 }
-.ctrl-data-record .kw           { color: var(--blue-darker-1); }
+.ctrl-data-record .kw           { color: var(--text-muted); }
 .ctrl-data-record .name         { color: var(--blue-darker-2); font-weight: 600; }
 .ctrl-data-record .dot          { color: var(--text-muted); }
 .ctrl-data-record .call-comment { color: var(--text-muted); font-style: italic; }
@@ -311,7 +311,7 @@ p {
 }
 
 .ctrl-para-hdr {
-    color: var(--blue-darker-1);
+    color: var(--blue-darker-2);
     font-weight: 700;
     font-size: 0.98rem;
 }
@@ -322,7 +322,7 @@ p {
 
 /* Standalone dot terminator inside overlays */
 .ctrl-stmt-dot {
-    color: var(--blue-darker-1);
+    color: var(--text-muted);
     font-weight: 700;
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: 1.05rem;
@@ -340,7 +340,8 @@ a.ctrl-goback {
     /* no padding-left here — ctrl-l1/ctrl-l2 classes provide it */
 }
 
-a.ctrl-goback .kw           { color: var(--blue-darker-1); }
+a.ctrl-goback .kw           { color: var(--text-muted); }
+a.ctrl-goback .name         { color: var(--blue-darker-2); font-weight: 700; }
 a.ctrl-goback .dot          { color: var(--text-muted); }
 a.ctrl-goback .call-comment { color: var(--text-muted); font-style: italic; }
 a.ctrl-goback:hover .kw     { text-decoration: underline; }
@@ -577,9 +578,9 @@ a.ctrl-goback:hover .kw     { text-decoration: underline; }
 }
 
 .l01 .name  { font-weight: 700; font-size: 1.05rem; }
-.l05 .name  { font-weight: 600; min-width: 16ch; }
-.l10 .name  { min-width: 12ch; }
-.l88 .name  { min-width: 14ch; }
+.l05 .name  { font-weight: 600; font-size: 0.92rem; min-width: 16ch; }
+.l10 .name  { font-size: 0.82rem; min-width: 12ch; }
+.l88 .name  { font-size: 0.79rem; min-width: 14ch; }
 
 .cobol-line.primary .name {
     color: var(--blue-darker-2);
@@ -598,7 +599,7 @@ a.ctrl-goback:hover .kw     { text-decoration: underline; }
 .l05 .pic { min-width: unset; margin-right: 0.3ch; }
 
 .cobol-line .kw {
-    color: var(--blue-darker-1);
+    color: var(--text-muted);
     margin-right: 1ch;
     flex-shrink: 0;
 }
@@ -626,9 +627,9 @@ a.val-link:hover { text-decoration: underline; }
 
 .cobol-section-hdr {
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--blue-darker-1);
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--blue-darker-2);
     margin-bottom: 10px;
 }
 
@@ -664,27 +665,27 @@ a.cobol-call .call-comment {
     margin-left: 1ch;
 }
 
-/* Impressum link inline with 01 ABOUT-ME. */
+/* Comment link inline with 01 ABOUT-ME — dotted underline signals it's clickable */
 a.cobol-author-link {
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: 0.82rem;
     color: var(--text-muted);
     font-style: italic;
-    text-decoration: none;
+    text-decoration: underline dotted;
     margin-left: 2ch;
     transition: color 0.2s;
     white-space: nowrap;
 }
 
 a.cobol-author-link:hover { color: var(--blue-primary); }
-a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
+a.cobol-author-link .kw { font-style: normal; color: var(--text-muted); }
 
-/* Paragraph labels in PROCEDURE DIVISION */
+/* Paragraph labels in PROCEDURE DIVISION — Font C at 01 level */
 .cobol-para-label {
     font-family: "Share Tech Mono", Consolas, monospace;
-    font-size: 1.0rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: var(--blue-darker-1);
+    color: var(--blue-darker-2);
     padding-left: 2ch;
     margin-top: 4px;
     margin-bottom: 2px;
@@ -700,11 +701,11 @@ a.cobol-author-link .kw { font-style: normal; color: var(--blue-darker-1); }
 a.cobol-call.para-body { padding-left: 4ch; }
 a.cobol-call.para-lvl  { padding-left: 2ch; }
 
-/* Standalone paragraph-terminating dot — more prominent than inline field dots */
+/* Standalone paragraph-terminating dot — non-informing like other structural syntax */
 .lone-dot {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--blue-darker-1);
+    color: var(--text-muted);
 }
 
 /* LAN comment note (no reveal animation) */
@@ -717,12 +718,12 @@ a.cobol-call.para-lvl  { padding-left: 2ch; }
     margin-bottom: 1px;
 }
 
-/* DISPLAY / END-DISPLAY wrapper in IMPRESSUM-SECTION */
+/* DISPLAY / END-DISPLAY wrapper in IMPRESSUM-SECTION — structural, non-informing */
 .impressum-display-kw {
     font-family: "Share Tech Mono", Consolas, monospace;
     font-size: 0.9rem;
     font-weight: 700;
-    color: var(--blue-darker-1);
+    color: var(--text-muted);
     padding-left: 2ch;
     margin: 4px 0 2px;
 }
@@ -731,10 +732,10 @@ a.cobol-call.para-lvl  { padding-left: 2ch; }
     padding-left: 4ch;
 }
 
-/* Terminating dot after EXIT PRGRPH in impressum */
+/* Terminating dot after EXIT PARAGRAPH in impressum */
 .impressum-exit-dot {
     font-family: "Share Tech Mono", Consolas, monospace;
-    color: var(--blue-darker-1);
+    color: var(--text-muted);
     font-weight: 700;
     font-size: 1.1rem;
     padding-left: 2ch;
@@ -755,7 +756,7 @@ a.cobol-exit-link {
     padding: 2px 0;
     padding-left: 2ch;
 }
-a.cobol-exit-link .kw           { color: var(--blue-darker-1); }
+a.cobol-exit-link .kw           { color: var(--text-muted); }
 a.cobol-exit-link .call-comment { color: var(--text-muted); font-style: italic; }
 a.cobol-exit-link:hover .kw     { text-decoration: underline; }
 
