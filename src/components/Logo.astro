@@ -118,7 +118,23 @@ function tick(now: number) {
     }
     if (changed) noisePath.textContent = noiseChars.join("");
 
-    // ── Marquee: DISABLED for symmetry test ──────────────────────────────
+    // ── Marquee: right-to-left scroll, new chars enter from right seam ────
+    // arcFrac for char i = (i − subChar) / MARQUEE_CHARS
+    //   i=0            → exits past left seam as subChar → 1
+    //   i=MARQUEE_CHARS → enters from right seam as subChar → 0
+    subChar += MARQUEE_SPEED * dt;
+    while (subChar >= 1) {
+        charWindow = (charWindow + 1) % MARQUEE_TEXT.length;
+        subChar -= 1;
+    }
+
+    for (let i = 0; i <= MARQUEE_CHARS; i++) {
+        const { x, y, rot } = arcPoint((i - subChar) / MARQUEE_CHARS);
+        charEls[i].setAttribute("transform",
+            `translate(${x.toFixed(2)},${y.toFixed(2)}) rotate(${rot.toFixed(2)})`);
+        charEls[i].textContent =
+            MARQUEE_TEXT[(charWindow + i) % MARQUEE_TEXT.length];
+    }
 
     requestAnimationFrame(tick);
 }
