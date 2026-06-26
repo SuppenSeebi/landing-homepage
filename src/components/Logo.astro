@@ -58,15 +58,15 @@ const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
 const NOISE_CHARS      = 47;
-const MARQUEE_CHARS    = 25;   // characters visible across the 126° bottom arc (35%)
+const MARQUEE_CHARS    = 22;   // characters visible across the 112° bottom arc (~31%)
 const CHAR_INTERVAL_MS = 80;   // noise: ~12 Hz per character, FPS-independent
 const MARQUEE_SPEED    = 4 / 1000; // chars per ms
 
-// ── Bottom arc: 126° CCW from left seam (θ=153°) to right seam (θ=27°) ──────
-// θ(p) = 153° + p × (−126°) = 153° → 27° as p goes 0 → 1
+// ── Bottom arc: 112° CCW from left seam (θ=146°) to right seam (θ=34°) ──────
+// θ(p) = 146° + p × (−112°) = 146° → 34° as p goes 0 → 1
 const DEG       = Math.PI / 180;
-const ARC_START = 153 * DEG;
-const ARC_SPAN  = -126 * DEG; // CCW = decreasing θ
+const ARC_START = 146 * DEG;
+const ARC_SPAN  = -112 * DEG; // CCW = decreasing θ
 
 function arcPoint(arcFrac: number): { x: number; y: number; rot: number } {
     const t   = ARC_START + arcFrac * ARC_SPAN;
