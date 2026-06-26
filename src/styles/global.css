@@ -285,7 +285,7 @@ p {
     font-size: inherit;
 }
 .ctrl-data-record .kw           { color: var(--text-muted); }
-.ctrl-data-record .name         { color: var(--blue-darker-2); font-weight: 600; }
+.ctrl-data-record .name         { color: var(--blue-darker-2); font-weight: 400; font-size: 0.82rem; }
 .ctrl-data-record .dot          { color: var(--text-muted); }
 .ctrl-data-record .call-comment { color: var(--text-muted); font-style: italic; }
 
@@ -341,7 +341,7 @@ a.ctrl-goback {
 }
 
 a.ctrl-goback .kw           { color: var(--text-muted); }
-a.ctrl-goback .name         { color: var(--blue-darker-2); font-weight: 700; }
+a.ctrl-goback .name         { color: var(--blue-darker-2); font-weight: 400; font-size: 0.82rem; }
 a.ctrl-goback .dot          { color: var(--text-muted); }
 a.ctrl-goback .call-comment { color: var(--text-muted); font-style: italic; }
 a.ctrl-goback:hover .kw     { text-decoration: underline; }
@@ -604,9 +604,9 @@ a.ctrl-goback:hover .kw     { text-decoration: underline; }
     flex-shrink: 0;
 }
 
-.cobol-line .val   { color: var(--blue-primary); }
-.cobol-line .numval { color: var(--blue-mid); }
-.cobol-line .dot   { color: var(--text-muted); margin-left: 0.1ch; }
+.cobol-line .val    { color: var(--blue-primary); }
+.cobol-line .numval { color: var(--blue-primary); }
+.cobol-line .dot    { color: var(--text-muted); margin-left: 0.1ch; }
 
 /* Clickable VALUE (e.g. LinkedIn profile URL in work section) */
 a.val-link {
@@ -659,6 +659,8 @@ a.cobol-call.revealed {
 
 a.cobol-call:hover { background: rgba(135, 167, 247, 0.1); }
 
+a.cobol-call .kw  { color: var(--text-muted); }
+a.cobol-call .val { color: var(--blue-primary); }
 a.cobol-call .call-comment {
     color: var(--text-muted);
     font-style: italic;
@@ -759,6 +761,17 @@ a.cobol-exit-link {
 a.cobol-exit-link .kw           { color: var(--text-muted); }
 a.cobol-exit-link .call-comment { color: var(--text-muted); font-style: italic; }
 a.cobol-exit-link:hover .kw     { text-decoration: underline; }
+
+/* Comment links underline — any .call-comment inside or as an <a> signals navigation */
+a .call-comment,
+a.call-comment {
+    text-decoration: underline dotted;
+}
+/* Standalone comment-as-link (e.g. in ctrl-data-record) */
+a.call-comment {
+    color: var(--text-muted);
+    font-style: italic;
+}
 
 /* LAN-only group in links section */
 .lan-group.lan-only  { display: none; }
