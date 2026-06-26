@@ -30,13 +30,17 @@
                     <rect x="0"   y="0" width="90"  height="300" fill="url(#noiseGradL)"/>
                 </mask>
 
-                <!-- Band gradient: tight fade at seam ends for frosted arc -->
-                <linearGradient id="bandGrad" x1="61" y1="0" x2="239" y2="0"
+                <!-- Band fade gradients: angled along arc tangent at each endpoint -->
+                <!-- Split points (67,206)/(233,206) are exactly the original marquee seams at θ=146°/34° -->
+                <linearGradient id="bandGradL" x1="61" y1="195" x2="67" y2="206"
                     gradientUnits="userSpaceOnUse">
                     <stop offset="0%"   stop-color="#EAF3FF" stop-opacity="0"/>
-                    <stop offset="5%"   stop-color="#EAF3FF" stop-opacity="0.60"/>
-                    <stop offset="95%"  stop-color="#EAF3FF" stop-opacity="0.60"/>
-                    <stop offset="100%" stop-color="#EAF3FF" stop-opacity="0"/>
+                    <stop offset="100%" stop-color="#EAF3FF" stop-opacity="0.60"/>
+                </linearGradient>
+                <linearGradient id="bandGradR" x1="239" y1="195" x2="233" y2="206"
+                    gradientUnits="userSpaceOnUse">
+                    <stop offset="0%"   stop-color="#EAF3FF" stop-opacity="0"/>
+                    <stop offset="100%" stop-color="#EAF3FF" stop-opacity="0.60"/>
                 </linearGradient>
                 <!-- Rail gradients: each matched to its own arc endpoints -->
                 <linearGradient id="railGradInner" x1="70" y1="0" x2="230" y2="0"
@@ -66,9 +70,14 @@
                     textLength="420" lengthAdjust="spacing"></textPath>
             </text>
 
-            <!-- 2. Frosted arc band — dims noise in the marquee zone -->
-            <path d="M 61,195 A 100,100 0 0,0 239,195"
-                fill="none" stroke="url(#bandGrad)" stroke-width="22"/>
+            <!-- 2. Frosted arc band: left fade → solid middle → right fade -->
+            <!-- Each fade segment gradient follows the arc tangent (~63° from horizontal) -->
+            <path d="M 61,195 A 100,100 0 0,0 67,206"
+                fill="none" stroke="url(#bandGradL)" stroke-width="22"/>
+            <path d="M 67,206 A 100,100 0 0,0 233,206"
+                fill="none" stroke="#EAF3FF" stroke-width="22" stroke-opacity="0.60"/>
+            <path d="M 233,206 A 100,100 0 0,0 239,195"
+                fill="none" stroke="url(#bandGradR)" stroke-width="22"/>
 
             <!-- 2b. Glowing rails — 3 layers per rail: halo → bloom → core -->
             <path d="M 70,190 A 89,89 0 0,0 230,190"
