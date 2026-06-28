@@ -1,5 +1,16 @@
 ---
+import { execSync } from 'child_process';
 const compiled = new Date().toISOString().slice(0, 10);
+let gitHash = '??????';
+try { gitHash = execSync('git rev-parse --short HEAD', {encoding:'utf8'}).trim().slice(0,6); } catch {}
+
+function punchText(text: string): string {
+    return text.split('').map(ch => {
+        if (ch === ' ') return '<span class="pcf-fh-sp"></span>';
+        const e = ch.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `<span class="pcf-fh-ch">${e}</span>`;
+    }).join('');
+}
 ---
 <section id="demo-full">
     <div class="section-scroll-container pcf-section-height">
@@ -21,7 +32,7 @@ const compiled = new Date().toISOString().slice(0, 10);
                         <div class="pcf-fh-row">
                             <div class="pcf-fh-cell pcf-fh-w1">
                                 <span class="pcf-fh-lbl">PROGRAMMER</span>
-                                <span class="pcf-fh-val">SEBASTIAN SCHWINN</span>
+                                <span class="pcf-fh-val" set:html={punchText('SEBASTIAN SCHWINN')}></span>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                                 <span class="pcf-fh-lbl">DIVISION</span>
@@ -35,7 +46,7 @@ const compiled = new Date().toISOString().slice(0, 10);
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w3">
                                 <span class="pcf-fh-lbl">PAGE</span>
-                                <span class="pcf-fh-val">1&nbsp;OF&nbsp;1</span>
+                                <span class="pcf-fh-val" set:html={punchText('1 OF 1')}></span>
                             </div>
                         </div>
 
@@ -43,7 +54,7 @@ const compiled = new Date().toISOString().slice(0, 10);
                         <div class="pcf-fh-row">
                             <div class="pcf-fh-cell pcf-fh-w1">
                                 <span class="pcf-fh-lbl">PROGRAM</span>
-                                <span class="pcf-fh-val">SSCHW-DEV</span>
+                                <span class="pcf-fh-val" set:html={punchText('SSCHW-DEV')}></span>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                                 <span class="pcf-fh-lbl">SECTION</span>
@@ -51,31 +62,23 @@ const compiled = new Date().toISOString().slice(0, 10);
                             </div>
                             <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#impressum">
                                 <span class="pcf-fh-lbl">IDENTIFICATION</span>
-                                <div class="pcf-id-track">
-                                    <span class="pcf-id-n">72</span>
-                                    <span class="pcf-id-box">I</span><span class="pcf-id-box">M</span>
-                                    <span class="pcf-id-box">P</span><span class="pcf-id-box">R</span>
-                                    <span class="pcf-id-box">E</span><span class="pcf-id-box">S</span>
-                                    <span class="pcf-id-box">S</span><span class="pcf-id-box">U</span>
-                                    <span class="pcf-id-box">M</span>
-                                    <span class="pcf-id-n">80</span>
-                                </div>
+                                <span class="pcf-fh-val" set:html={punchText('IMPRESSUM')}></span>
                             </a>
                         </div>
 
                         <!-- Row 3: SYSTEM · PARAGRAPH nav · DATE+PUNCH -->
                         <div class="pcf-fh-row">
                             <div class="pcf-fh-cell pcf-fh-w1">
-                                <span class="pcf-fh-lbl">SYSTEM</span>
-                                <span class="pcf-fh-val">RETROCODE CORPORATION</span>
+                                <span class="pcf-fh-lbl">CURRENT SYSTEM</span>
+                                <span class="pcf-fh-val" set:html={punchText('RETROCODE GMBH')}></span>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                                 <span class="pcf-fh-lbl">PARAGRAPH</span>
                                 <div class="pcf-fh-nav" id="pcf-nav-para"></div>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w3">
-                                <span class="pcf-fh-lbl">DATE · PUNCH</span>
-                                <span class="pcf-fh-val">{compiled}</span>
+                                <span class="pcf-fh-lbl">DATE - VERSION</span>
+                                <span class="pcf-fh-val" set:html={punchText(`${compiled} · ${gitHash}`)}></span>
                             </div>
                         </div>
 
@@ -383,10 +386,10 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 .pcf-title-right { text-align: right; }
 /* Center is the prominent title */
 .pcf-title-name {
-    font-size: 0.84rem;
+    font-size: 0.96rem;
     font-weight: 700;
     color: #2C1A00;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.13em;
     text-align: center;
 }
 
@@ -444,6 +447,23 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     text-overflow: ellipsis;
     line-height: 1.15;
 }
+/* Punch-style header text: spaces become dots, characters stay inline */
+.pcf-fh-ch { display: inline; }
+.pcf-fh-sp {
+    display: inline-block;
+    width: 1ch;
+    position: relative;
+    vertical-align: middle;
+}
+.pcf-fh-sp::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.8px; height: 1.8px;
+    background: #C8AE58;
+    border-radius: 50%;
+}
 
 /* Nav rows (DIVISION / SECTION) */
 .pcf-fh-nav {
@@ -497,29 +517,6 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     transition: background-color 0.12s;
 }
 .pcf-fh-id:hover { background-color: rgba(195,168,64,0.12); }
-.pcf-id-track {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 1px;
-    margin-top: 2px;
-}
-.pcf-id-box {
-    width: 13px; height: 16px;
-    border: 1px solid #C2A840;
-    background: #F0E4B8;
-    flex-shrink: 0;
-    transition: background-color 0.12s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.54rem;
-    font-weight: 700;
-    color: #1A0E00;
-    letter-spacing: 0;
-}
-.pcf-fh-id:hover .pcf-id-box { background: #E8D890; }
-.pcf-id-n { font-size: 0.36rem; color: #9B8050; line-height: 1; }
 
 /* ── CODING AREA ────────────────────────────────────────────────────────── */
 .pcf-coding-area {
@@ -555,7 +552,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 }
 .pcf-zone-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; }
 .pcf-zone-seq     { width: 72px; flex-shrink: 0; border-right: 1.5px solid #C2A840; }
-.pcf-zone-stmt    { width: 80ch; flex-shrink: 0; }
+.pcf-zone-stmt    { flex: 1; }
 
 /* Rulers */
 .pcf-ruler-row {
