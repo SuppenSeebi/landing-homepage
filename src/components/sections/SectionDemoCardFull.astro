@@ -22,26 +22,13 @@
                         <div class="pcf-row-num">8</div>
                         <div class="pcf-row-num">9</div>
                     </div>
-                    <!-- ── Column ruler + punch area ── -->
+                    <!-- ── Body: ruler row + punch rows (built by script) ── -->
                     <div class="pcf-body">
-                        <div class="pcf-ruler">
-                            <span>10</span><span>20</span><span>30</span><span>40</span>
-                            <span>50</span><span>60</span><span>70</span><span>80</span>
+                        <div class="pcf-ruler-row">
+                            <div class="pcf-seq pcf-seq-hdr"></div>
+                            <div class="pcf-ruler-track" id="pcf-ruler-track"></div>
                         </div>
-                        <div class="pcf-punch-area">
-                            <div class="pcf-line">000001 IDENTIFICATION DIVISION.</div>
-                            <div class="pcf-line">000002 PROGRAM-ID. SSCHW-DEV.</div>
-                            <div class="pcf-line">000003 AUTHOR. SEBASTIAN SCHWINN.</div>
-                            <div class="pcf-line">000004*&gt; DATE-COMPILED. 2025.</div>
-                            <div class="pcf-line">000005</div>
-                            <div class="pcf-line">000006 DATA DIVISION.</div>
-                            <div class="pcf-line">000007 WORKING-STORAGE SECTION.</div>
-                            <div class="pcf-line">000008 01 SSCHW-RECORD.</div>
-                            <div class="pcf-line">000009    05 NAME     PIC X(50) VALUE 'SEBASTIAN SCHWINN'.</div>
-                            <div class="pcf-line">000010    05 ROLE     PIC X(40) VALUE 'COBOL DEVELOPER AT RETROCODE'.</div>
-                            <div class="pcf-line">000011    05 DEGREE   PIC X(40) VALUE 'MSC EE WITH DISTINCTION'.</div>
-                            <div class="pcf-line">000012    05 CONTACT  PIC X(40) VALUE 'LINKEDIN.COM/IN/SSCHWINN'.</div>
-                        </div>
+                        <div class="pcf-punch-area" id="pcf-punch-area"></div>
                     </div>
                 </div>
             </div>
@@ -49,8 +36,110 @@
     </div>
 </section>
 
+<script>
+// ── Token types ────────────────────────────────────────────────────────────
+// div      DATA DIVISION / PROCEDURE DIVISION headers
+// section  WORKING-STORAGE SECTION etc.
+// para     paragraph names (MAIN-PRGRPH.)
+// lvl      level numbers (01 05 10 88)
+// name     data-name identifiers
+// kw       built-in keywords (PIC VALUE DISPLAY MOVE PERFORM STOP RUN TO)
+// val      string literals  'LIKE THIS'
+// numval   numeric literals  2025
+// dot      period terminators
+// comment  *> inline comments
+// (spaces in any token are always rendered as empty punch dots)
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];  // [seq, tokens]
+
+const LINES: Line[] = [
+    ['000001', [['div','DATA DIVISION'],['dot','.']]],
+    ['000002', [['section','WORKING-STORAGE SECTION'],['dot','.']]],
+    ['000003', [['lvl','01'],['name',' SSCHW-RECORD'],['dot','.']]],
+    ['000004', [['lvl','    05'],['name',' NAME    '],['kw',' PIC X(50)'],['kw','  VALUE'],['val'," 'SEBASTIAN SCHWINN'"],['dot','.']]],
+    ['000005', [['lvl','    05'],['name',' ROLE    '],['kw',' PIC X(40)'],['kw','  VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
+    ['000006', [['lvl','    05'],['name',' YEAR    '],['kw',' PIC 9(4) '],['kw','  VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000007', [['lvl','    88'],['name',' ACTIVE  '],['kw','           VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000008', []],
+    ['000009', [['div','PROCEDURE DIVISION'],['dot','.']]],
+    ['000010', [['para','MAIN-PRGRPH'],['dot','.']]],
+    ['000011', [['kw','    DISPLAY'],['name',' NAME'],['comment','                        *> prints to SYSOUT']]],
+    ['000012', [['kw','    MOVE'],['val'," 'ENGINEER'"],['kw',' TO'],['name',' ROLE'],['kw','    PERFORM'],['name',' INIT-PRGRPH']]],
+];
+
+const COLS = 80;
+
+// ── CSS class map ──────────────────────────────────────────────────────────
+const CLS: Record<TT, string> = {
+    div:     'pcc-div',
+    section: 'pcc-section',
+    para:    'pcc-para',
+    lvl:     'pcc-lvl',
+    name:    'pcc-name',
+    kw:      'pcc-kw',
+    val:     'pcc-val',
+    numval:  'pcc-numval',
+    dot:     'pcc-dot',
+    comment: 'pcc-comment',
+};
+
+// ── Build ruler ────────────────────────────────────────────────────────────
+const ruler = document.getElementById('pcf-ruler-track')!;
+for (let c = 10; c <= COLS; c += 10) {
+    const tick = document.createElement('span');
+    tick.className = 'pcf-ruler-tick';
+    tick.textContent = String(c);
+    ruler.appendChild(tick);
+}
+
+// ── Build punch rows ───────────────────────────────────────────────────────
+const area = document.getElementById('pcf-punch-area')!;
+
+for (const [seq, tokens] of LINES) {
+    // Flatten tokens into per-character (char, class) pairs
+    const chars: [string, string][] = [];
+    for (const [type, text] of tokens) {
+        for (const ch of text) {
+            chars.push([ch, CLS[type]]);
+        }
+    }
+    // Pad to COLS
+    while (chars.length < COLS) chars.push([' ', 'pcc-kw']);
+
+    // Build row element
+    const row = document.createElement('div');
+    row.className = 'pcf-line-row';
+
+    // Sequence number cell
+    const seqEl = document.createElement('div');
+    seqEl.className = 'pcf-seq';
+    seqEl.textContent = seq;
+    row.appendChild(seqEl);
+
+    // 80-column character area
+    const charsEl = document.createElement('div');
+    charsEl.className = 'pcf-chars';
+    for (let i = 0; i < COLS; i++) {
+        const [ch, cls] = chars[i];
+        const span = document.createElement('span');
+        if (ch === ' ') {
+            span.className = 'pcc-empty';
+        } else {
+            span.className = cls;
+            span.textContent = ch;
+        }
+        charsEl.appendChild(span);
+    }
+    row.appendChild(charsEl);
+    area.appendChild(row);
+}
+</script>
+
 <style is:global>
 /* ── PROTOTYPE A: PUNCH CARD AS PAGE OBJECT ─────────────────────────────── */
+
 .pcf-stage {
     display: flex;
     flex-direction: column;
@@ -77,13 +166,14 @@
     min-height: 0;
     background: #F5EDD4;
     border: 1.5px solid #C2A840;
-    /* top-left corner cut */
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14);
     overflow: hidden;
+    font-family: "Share Tech Mono", monospace;
+    font-size: clamp(0.52rem, 0.9vw, 0.72rem);
 }
 
-/* Row label column */
+/* ── Row number labels (left edge) ─────────────────────────────────────── */
 .pcf-rows {
     display: flex;
     flex-direction: column;
@@ -93,7 +183,7 @@
 }
 
 .pcf-rows-corner {
-    height: 24px;
+    height: 22px;
     border-bottom: 1.5px solid #C2A840;
     flex-shrink: 0;
 }
@@ -104,64 +194,132 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 0 6px;
-    font-family: "Share Tech Mono", monospace;
+    padding: 0 5px;
     font-size: 0.58rem;
     color: #7A6020;
     border-bottom: 1px solid #D4C478;
 }
 
-/* Column ruler + punch field */
+/* ── Body column: ruler + punch rows ───────────────────────────────────── */
 .pcf-body {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-width: 0;
+    overflow: hidden;
 }
 
-.pcf-ruler {
-    height: 24px;
+/* Ruler row */
+.pcf-ruler-row {
+    display: flex;
+    flex-direction: row;
+    height: 22px;
     background: #EDE0A8;
     border-bottom: 1.5px solid #C2A840;
-    display: flex;
-    justify-content: space-evenly;
+    flex-shrink: 0;
     align-items: center;
-    font-family: "Share Tech Mono", monospace;
-    font-size: 0.56rem;
+    overflow: hidden;
+}
+
+.pcf-seq-hdr {
+    /* spacer matching pcf-seq width */
+    width: 6ch;
+    border-right: 1.5px solid #C2A840;
+    height: 100%;
+    flex-shrink: 0;
+}
+
+.pcf-ruler-track {
+    display: flex;
+    flex: 1;
+    padding-left: 4px;
+    overflow: hidden;
+}
+
+.pcf-ruler-tick {
+    display: inline-block;
+    width: 10ch;
+    text-align: right;
+    font-size: 0.55rem;
     color: #7A6020;
     flex-shrink: 0;
 }
 
+/* Punch area: 12 rows */
 .pcf-punch-area {
-    flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: column;
-    background-image:
-        repeating-linear-gradient(
-            90deg,
-            transparent 0,
-            transparent calc(100% / 80 - 0.5px),
-            #D4C478 calc(100% / 80)
-        ),
-        radial-gradient(circle at 50% 50%, #C8AE58 1.8px, transparent 1.8px);
-    background-size:
-        calc(100% / 80) 100%,
-        calc(100% / 80) calc(100% / 12);
-}
-
-.pcf-line {
     flex: 1;
     min-height: 0;
-    display: flex;
-    align-items: center;
-    padding-left: 0.4ch;
-    font-family: "Share Tech Mono", monospace;
-    font-size: clamp(0.45rem, 1vw, 0.7rem);
-    color: #1B2D73;
-    font-weight: 700;
-    white-space: nowrap;
-    border-bottom: 1px solid #D4C478;
     overflow: hidden;
 }
+
+/* Each punch row: seq | chars */
+.pcf-line-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    border-bottom: 1px solid #D4C478;
+}
+
+/* Sequence number column */
+.pcf-seq {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 4px;
+    width: 6ch;
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    background: #EDE0A8;
+    border-right: 1.5px solid #C2A840;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* 80-column character area */
+.pcf-chars {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    overflow: hidden;
+    padding-left: 3px;
+}
+
+/* Every span occupies exactly 1ch */
+.pcf-chars span {
+    display: inline-block;
+    width: 1ch;
+    text-align: center;
+    line-height: 1;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* ── Non-punched position: 2px centered dot ─────────────────────────────── */
+.pcc-empty::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 2px;
+    background: #C8AE58;
+    border-radius: 50%;
+}
+
+/* ── Token type colors (card-adapted from global design system) ──────────── */
+.pcc-div     { color: #1A0E00; }                      /* DATA / PROCEDURE DIVISION */
+.pcc-section { color: #2C1A00; }                      /* WORKING-STORAGE SECTION   */
+.pcc-para    { color: var(--blue-darker-1); }         /* paragraph names           */
+.pcc-lvl     { color: var(--text-muted); }            /* 01 05 10 88               */
+.pcc-name    { color: var(--blue-darker-2); }         /* data-name identifiers     */
+.pcc-kw      { color: #8B7040; }                      /* PIC VALUE DISPLAY MOVE …  */
+.pcc-val     { color: var(--blue-primary); }          /* 'string literals'         */
+.pcc-numval  { color: var(--blue-primary); }          /* numeric literals          */
+.pcc-dot     { color: #8B7040; }                      /* period terminators        */
+.pcc-comment { color: #9B8050; font-style: italic; }  /* *> inline comments        */
 </style>
