@@ -9,28 +9,28 @@ const compiled = new Date().toISOString().slice(0, 10);
 
                     <!-- ── Title bar ── -->
                     <div class="pcf-title-bar">
-                        <span class="pcf-title-brand">RETROCODE</span>
+                        <span class="pcf-title-brand">PROGRAM NAVIGATION</span>
                         <span class="pcf-title-name">COBOL CODING FORM</span>
-                        <span class="pcf-title-form-no">FORM C61897 · 80-COL</span>
+                        <span class="pcf-title-form-no">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;18&nbsp;ROW</span>
                     </div>
 
                     <!-- ── 3-row form header ── -->
                     <div class="pcf-form-header">
 
+                        <!-- Row 1: PROGRAMMER · DIVISION nav · PAGE -->
                         <div class="pcf-fh-row">
                             <div class="pcf-fh-cell pcf-fh-w1">
-                                <span class="pcf-fh-lbl">SYSTEM</span>
-                                <span class="pcf-fh-val">RETROCODE CORPORATION</span>
+                                <span class="pcf-fh-lbl">PROGRAMMER</span>
+                                <span class="pcf-fh-val">SEBASTIAN SCHWINN</span>
                             </div>
-                            <div class="pcf-fh-cell pcf-fh-w2">
-                                <span class="pcf-fh-lbl">DIVISION</span>
-                                <div class="pcf-fh-nav">
-                                    <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
-                                    <span class="pcf-nav-dot">·</span>
-                                    <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
-                                    <span class="pcf-nav-dot">·</span>
-                                    <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
-                                </div>
+                            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-inline">
+                                <span class="pcf-fh-inline-lbl">DIVISION</span>
+                                <span class="pcf-fh-colon">:</span>
+                                <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
+                                <span class="pcf-nav-dot">·</span>
+                                <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
+                                <span class="pcf-nav-dot">·</span>
+                                <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w3">
                                 <span class="pcf-fh-lbl">PAGE</span>
@@ -38,16 +38,18 @@ const compiled = new Date().toISOString().slice(0, 10);
                             </div>
                         </div>
 
+                        <!-- Row 2: PROGRAM · SECTION nav · IDENTIFICATION → #impressum -->
                         <div class="pcf-fh-row">
                             <div class="pcf-fh-cell pcf-fh-w1">
                                 <span class="pcf-fh-lbl">PROGRAM</span>
                                 <span class="pcf-fh-val">SSCHW-DEV</span>
                             </div>
-                            <div class="pcf-fh-cell pcf-fh-w2">
-                                <span class="pcf-fh-lbl">SECTION</span>
-                                <div class="pcf-fh-nav" id="pcf-nav-sec"></div>
+                            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-inline">
+                                <span class="pcf-fh-inline-lbl">SECTION</span>
+                                <span class="pcf-fh-colon">:</span>
+                                <div id="pcf-nav-sec" class="pcf-sec-container"></div>
                             </div>
-                            <div class="pcf-fh-cell pcf-fh-w3 pcf-fh-id">
+                            <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#impressum">
                                 <span class="pcf-fh-lbl">IDENTIFICATION</span>
                                 <div class="pcf-id-track">
                                     <span class="pcf-id-n">73</span>
@@ -57,13 +59,14 @@ const compiled = new Date().toISOString().slice(0, 10);
                                     <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
                                     <span class="pcf-id-n">80</span>
                                 </div>
-                            </div>
+                            </a>
                         </div>
 
+                        <!-- Row 3: SYSTEM · DATE · PUNCH -->
                         <div class="pcf-fh-row">
                             <div class="pcf-fh-cell pcf-fh-w1">
-                                <span class="pcf-fh-lbl">PROGRAMMER</span>
-                                <span class="pcf-fh-val">SEBASTIAN SCHWINN</span>
+                                <span class="pcf-fh-lbl">SYSTEM</span>
+                                <span class="pcf-fh-val">RETROCODE CORPORATION</span>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w2">
                                 <span class="pcf-fh-lbl">DATE</span>
@@ -79,25 +82,21 @@ const compiled = new Date().toISOString().slice(0, 10);
                     <!-- ── Coding area ── -->
                     <div class="pcf-coding-area">
 
-                        <!-- Zone label row -->
                         <div class="pcf-zone-row">
                             <div class="pcf-zone-linenum">LINE</div>
                             <div class="pcf-zone-seq">SEQUENCE</div>
                             <div class="pcf-zone-stmt">COBOL STATEMENT</div>
                         </div>
 
-                        <!-- Column ruler (top) -->
                         <div class="pcf-ruler-row">
                             <div class="pcf-ruler-linenum"></div>
                             <div class="pcf-ruler-seq" id="pcf-rseq-top"></div>
                             <div class="pcf-ruler-chars" id="pcf-rchars-top"></div>
                         </div>
 
-                        <!-- Punch rows (built by script) -->
                         <div class="pcf-punch-area" id="pcf-punch-area"></div>
 
-                        <!-- Column ruler (bottom) -->
-                        <div class="pcf-ruler-row">
+                        <div class="pcf-ruler-row pcf-ruler-btm">
                             <div class="pcf-ruler-linenum"></div>
                             <div class="pcf-ruler-seq" id="pcf-rseq-btm"></div>
                             <div class="pcf-ruler-chars" id="pcf-rchars-btm"></div>
@@ -112,43 +111,41 @@ const compiled = new Date().toISOString().slice(0, 10);
 
 <script>
 // ── Navigation ─────────────────────────────────────────────────────────────
-const DIVISION_MAP: Record<string, string[]> = {
+const DIVISION_MAP: Record<string,string[]> = {
     data:  ['top','aboutme','work'],
     proc:  ['links','impressum'],
     proto: ['demo-full','demo-texture'],
 };
-
-const SECTIONS_BY_DIV: Record<string, {label:string; href:string}[]> = {
+const SECTIONS_BY_DIV: Record<string,{label:string;href:string}[]> = {
     data:  [
-        { label: 'WORKING-STORAGE.', href: '#top' },
-        { label: 'LOCAL-STORAGE.',   href: '#aboutme' },
-        { label: 'LINKAGE SECTION.', href: '#work' },
+        {label:'WORKING-STORAGE.', href:'#top'},
+        {label:'LOCAL-STORAGE.',   href:'#aboutme'},
+        {label:'LINKAGE SECTION.', href:'#work'},
     ],
     proc:  [
-        { label: 'LINKS SECTION.',     href: '#links' },
-        { label: 'IMPRESSUM-SECTION.', href: '#impressum' },
+        {label:'LINKS SECTION.',     href:'#links'},
+        {label:'IMPRESSUM-SECTION.', href:'#impressum'},
     ],
     proto: [
-        { label: 'PROTO-A FULL-CARD.', href: '#demo-full' },
-        { label: 'PROTO-B TEXTURE.',   href: '#demo-texture' },
+        {label:'PROTO-A FULL-CARD.', href:'#demo-full'},
+        {label:'PROTO-B TEXTURE.',   href:'#demo-texture'},
     ],
 };
 
-// Build section nav groups
-const secNav = document.getElementById('pcf-nav-sec')!;
+const secContainer = document.getElementById('pcf-nav-sec')!;
 for (const [divId, secs] of Object.entries(SECTIONS_BY_DIV)) {
     const grp = document.createElement('div');
     grp.className = 'pcf-sec-group';
     grp.dataset.div = divId;
     secs.forEach((sec, i) => {
-        if (i > 0) { const d = document.createElement('span'); d.className='pcf-nav-dot'; d.textContent='·'; grp.appendChild(d); }
+        if (i > 0) { const d=document.createElement('span'); d.className='pcf-nav-dot'; d.textContent='·'; grp.appendChild(d); }
         const a = document.createElement('a');
         a.className = 'pcf-sec-item';
         a.href = sec.href;
         a.textContent = sec.label;
         grp.appendChild(a);
     });
-    secNav.appendChild(grp);
+    secContainer.appendChild(grp);
 }
 
 function getActiveId(): string {
@@ -159,26 +156,24 @@ function getActiveId(): string {
     });
     return active;
 }
-
 function getActiveDivId(id: string): string {
     for (const [div, ids] of Object.entries(DIVISION_MAP)) { if (ids.includes(id)) return div; }
     return 'data';
 }
-
 function updatePcfNav(activeId: string) {
     const divId = getActiveDivId(activeId);
     document.querySelectorAll<HTMLElement>('.pcf-div-item').forEach(el =>
         el.classList.toggle('pcf-nav-active', el.dataset.div === divId));
     document.querySelectorAll<HTMLElement>('.pcf-sec-group').forEach(el =>
-        (el as HTMLElement).style.display = el.dataset.div === divId ? 'flex' : 'none');
+        ((el as HTMLElement).style.display = el.dataset.div === divId ? 'flex' : 'none'));
     document.querySelectorAll<HTMLElement>('.pcf-sec-item').forEach(el =>
         el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
 }
-
-window.addEventListener('scroll', () => updatePcfNav(getActiveId()), { passive: true });
+window.addEventListener('scroll', () => updatePcfNav(getActiveId()), {passive:true});
 updatePcfNav(getActiveId());
 
 // ── Rulers ─────────────────────────────────────────────────────────────────
+// Seq ruler ticks use same font-size as pcf-seq (0.58rem) so 1ch matches content chars
 function buildSeqRuler(id: string) {
     const el = document.getElementById(id)!;
     for (let i = 1; i <= 6; i++) {
@@ -194,14 +189,14 @@ function buildCharsRuler(id: string) {
         const s = document.createElement('span');
         s.className = 'pcf-rchars-tick';
         s.textContent = String(col);
-        s.style.left = `${((col - 1) / 79) * 100}%`;
+        s.style.left = `${((col-1)/79)*100}%`;
         el.appendChild(s);
     });
 }
 buildSeqRuler('pcf-rseq-top'); buildSeqRuler('pcf-rseq-btm');
 buildCharsRuler('pcf-rchars-top'); buildCharsRuler('pcf-rchars-btm');
 
-// ── Content lines ──────────────────────────────────────────────────────────
+// ── Content ────────────────────────────────────────────────────────────────
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
 type Line  = [string, Token[]];
@@ -225,14 +220,10 @@ const LINES: Line[] = [
     ['000016',[['kw','    MOVE'],['val'," 'ENGINEER'"],['kw',' TO'],['name',' ROLE']]],
     ['000017',[['kw','    STOP RUN'],['dot','.']]],
     ['000018',[['para','INIT-PRGRPH'],['dot','.']]],
-    ['000019',[['kw','    ADD'],['numval',' 1'],['kw',' TO'],['name',' WS-CTR']]],
-    ['000020',[['kw','    IF'],['name',' ACTIVE']]],
-    ['000021',[['kw','       DISPLAY'],['val'," 'SYSTEM ONLINE'"]]],
-    ['000022',[['kw','    END-IF'],['dot','.']]],
 ];
 
 const COLS = 80;
-const CLS: Record<TT, string> = {
+const CLS: Record<TT,string> = {
     div:'pcc-div', section:'pcc-section', para:'pcc-para', lvl:'pcc-lvl',
     name:'pcc-name', kw:'pcc-kw', val:'pcc-val', numval:'pcc-numval',
     dot:'pcc-dot', comment:'pcc-comment',
@@ -284,17 +275,26 @@ LINES.forEach(([seq, tokens], idx) => {
     padding: 7vh 7%;
 }
 
-/* ── CARD ───────────────────────────────────────────────────────────────── */
+/* ── CARD — aged paper feel ─────────────────────────────────────────────── */
 .pcf-card {
     display: flex;
     flex-direction: column;
     width: 85%;
     flex: 1;
     min-height: 0;
-    background: #F5EDD4;
+    background-color: #F5EDD4;
+    /* Uneven yellowing: darker in corners, lighter toward centre */
+    background-image:
+        radial-gradient(ellipse 80% 60% at 6% 94%,  rgba(155,95,15,0.16) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 94% 6%,  rgba(155,95,15,0.11) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 35% at 60% 50%, rgba(195,155,55,0.06) 0%, transparent 45%),
+        linear-gradient(170deg, rgba(255,250,225,0.22) 0%, transparent 30%);
     border: 1.5px solid #C2A840;
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14);
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.28),
+        0 2px 8px rgba(0,0,0,0.14),
+        inset 0 0 80px rgba(139,90,20,0.07);
     overflow: hidden;
     font-family: "Share Tech Mono", monospace;
     font-size: clamp(0.9rem, 1.5vw, 1.4rem);
@@ -312,10 +312,10 @@ LINES.forEach(([seq, tokens], idx) => {
     flex-shrink: 0;
 }
 .pcf-title-brand {
-    font-size: 0.82rem;
+    font-size: 0.68rem;
     font-weight: 700;
     color: #5A3A10;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
 }
 .pcf-title-name {
     font-size: 0.72rem;
@@ -324,19 +324,22 @@ LINES.forEach(([seq, tokens], idx) => {
     text-align: center;
 }
 .pcf-title-form-no {
-    font-size: 0.42rem;
+    font-size: 0.38rem;
     color: #9B8050;
     text-align: right;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* ── FORM HEADER (3 rows) ───────────────────────────────────────────────── */
+/* ── FORM HEADER ────────────────────────────────────────────────────────── */
 .pcf-form-header {
     display: flex;
     flex-direction: column;
     border-bottom: 2px solid #C2A840;
     flex-shrink: 0;
-    background: #F5EDD4;
+    background-image: radial-gradient(ellipse at 4% 50%, rgba(155,95,15,0.05) 0%, transparent 40%);
 }
 .pcf-fh-row {
     display: flex;
@@ -362,6 +365,28 @@ LINES.forEach(([seq, tokens], idx) => {
 .pcf-fh-w2 { flex: 3.5; }
 .pcf-fh-w3 { flex: 1.5; }
 
+/* Inline nav row: label + items on one line */
+.pcf-fh-inline {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 5px;
+    flex-wrap: nowrap;
+    padding: 4px 8px;
+}
+.pcf-fh-inline-lbl {
+    font-size: 0.44rem;
+    color: #9B8050;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.pcf-fh-colon {
+    font-size: 0.44rem;
+    color: #9B8050;
+    flex-shrink: 0;
+    margin-right: 1px;
+}
+
 .pcf-fh-lbl {
     font-size: 0.4rem;
     color: #9B8050;
@@ -375,31 +400,12 @@ LINES.forEach(([seq, tokens], idx) => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.1;
+    line-height: 1.15;
 }
 
-/* Navigation items in form header */
-.pcf-fh-nav {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    overflow: hidden;
-    flex-wrap: nowrap;
-}
-.pcf-sec-group {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-}
-.pcf-nav-dot {
-    font-size: 0.48rem;
-    color: #C8AE58;
-    flex-shrink: 0;
-}
+/* Nav items — larger in inline mode */
 .pcf-div-item, .pcf-sec-item {
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: #B8965A;
     text-decoration: none;
     white-space: nowrap;
@@ -416,14 +422,32 @@ LINES.forEach(([seq, tokens], idx) => {
     vertical-align: middle;
 }
 
-/* IDENTIFICATION boxes (cols 73–80) */
-.pcf-fh-id { flex-direction: column; }
+.pcf-nav-dot {
+    font-size: 0.5rem;
+    color: #C8AE58;
+    flex-shrink: 0;
+}
+.pcf-sec-container { display: contents; }
+.pcf-sec-group {
+    display: none;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+/* IDENTIFICATION (links to Impressum) */
+.pcf-fh-id {
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.12s;
+}
+.pcf-fh-id:hover { background-color: rgba(195,168,64,0.12); }
 .pcf-id-track {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 1px;
-    margin-top: 1px;
+    margin-top: 2px;
 }
 .pcf-id-box {
     width: 9px;
@@ -431,12 +455,10 @@ LINES.forEach(([seq, tokens], idx) => {
     border: 1px solid #C2A840;
     background: #F0E4B8;
     flex-shrink: 0;
+    transition: background-color 0.12s;
 }
-.pcf-id-n {
-    font-size: 0.36rem;
-    color: #9B8050;
-    line-height: 1;
-}
+.pcf-fh-id:hover .pcf-id-box { background: #E8D890; }
+.pcf-id-n { font-size: 0.36rem; color: #9B8050; line-height: 1; }
 
 /* ── CODING AREA ────────────────────────────────────────────────────────── */
 .pcf-coding-area {
@@ -447,78 +469,66 @@ LINES.forEach(([seq, tokens], idx) => {
     overflow: hidden;
 }
 
-/* Shared column layout: linenum(32px) | seq(72px) | chars(flex) */
-.pcf-zone-row,
-.pcf-ruler-row,
-.pcf-line-row {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    flex-shrink: 0;
-}
-
 /* Zone labels */
 .pcf-zone-row {
     height: 15px;
     background: #EDE0A8;
     border-bottom: 1.5px solid #C2A840;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
     align-items: center;
 }
 .pcf-zone-linenum, .pcf-zone-seq, .pcf-zone-stmt {
-    font-size: 0.35rem;
+    font-size: 0.34rem;
     color: #9B8050;
     letter-spacing: 0.08em;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.pcf-zone-linenum {
-    width: 32px;
-    flex-shrink: 0;
-    border-right: 1px solid #D4C478;
-}
-.pcf-zone-seq {
-    width: 72px;
-    flex-shrink: 0;
-    border-right: 1.5px solid #C2A840;
-}
-.pcf-zone-stmt { flex: 1; }
+.pcf-zone-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; }
+.pcf-zone-seq     { width: 72px; flex-shrink: 0; border-right: 1.5px solid #C2A840; }
+.pcf-zone-stmt    { flex: 1; }
 
-/* Column rulers */
+/* Column rulers (top + bottom) */
 .pcf-ruler-row {
     height: 13px;
     background: #EDE0A8;
     border-bottom: 1px solid #D4C478;
-}
-.pcf-ruler-row:last-child {
-    border-bottom: none;
-    border-top: 1px solid #D4C478;
-}
-.pcf-ruler-linenum {
-    width: 32px;
     flex-shrink: 0;
-    border-right: 1px solid #D4C478;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
+.pcf-ruler-btm { border-bottom: none; border-top: 1px solid #D4C478; }
+.pcf-ruler-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; height: 100%; }
+
+/* Seq ruler — SAME font-size and alignment as pcf-seq so ticks align with digits */
 .pcf-ruler-seq {
     width: 72px;
     flex-shrink: 0;
     border-right: 1.5px solid #C2A840;
     display: flex;
     align-items: center;
-    justify-content: space-around;
-    padding: 0 3px;
+    justify-content: flex-end;     /* match pcf-seq justify */
+    padding: 0 5px;                /* match pcf-seq padding */
+    font-size: 0.58rem;            /* match pcf-seq font-size so 1ch is identical */
 }
+/* Each tick occupies exactly 1ch at 0.58rem — same as one sequence number digit */
 .pcf-rseq-tick {
-    font-size: 0.36rem;
+    display: inline-block;
+    width: 1ch;
+    text-align: center;
     color: #9B8050;
+    opacity: 0.75;
+    font-size: inherit;
 }
-.pcf-ruler-chars {
-    flex: 1;
-    position: relative;
-}
+
+.pcf-ruler-chars { flex: 1; position: relative; }
 .pcf-rchars-tick {
     position: absolute;
-    font-size: 0.36rem;
+    font-size: 0.34rem;
     color: #9B8050;
     transform: translateX(-50%);
     bottom: 1px;
@@ -532,8 +542,15 @@ LINES.forEach(([seq, tokens], idx) => {
     flex: 1;
     min-height: 0;
     overflow: hidden;
+    /* Subtle coffee-stain impression, bottom-right of punch area */
+    background-image:
+        radial-gradient(ellipse 9% 7% at 74% 68%, rgba(125,75,10,0.10) 0%, rgba(125,75,10,0.03) 55%, transparent 100%);
 }
+
 .pcf-line-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
     flex: 1;
     min-height: 0;
     border-bottom: 1px solid #D4C478;
@@ -541,7 +558,11 @@ LINES.forEach(([seq, tokens], idx) => {
 }
 .pcf-line-row:last-child { border-bottom: none; }
 
-/* Line number column — larger than col ruler ticks per user request */
+/* Subtle line-colour variation — aged, not perfectly uniform */
+.pcf-line-row:nth-child(4n+1) { border-bottom-color: #CEB870; }
+.pcf-line-row:nth-child(7n+3) { border-bottom-color: #DDD090; }
+
+/* Line numbers — larger than col ruler ticks */
 .pcf-line-num {
     width: 32px;
     flex-shrink: 0;
@@ -554,7 +575,7 @@ LINES.forEach(([seq, tokens], idx) => {
     border-right: 1px solid #D4C478;
 }
 
-/* Sequence number column */
+/* Sequence column — small explicit size so 6 digits always fit */
 .pcf-seq {
     width: 72px;
     flex-shrink: 0;
@@ -584,19 +605,36 @@ LINES.forEach(([seq, tokens], idx) => {
     position: relative;
     flex-shrink: 0;
 }
+
+/* ── Wear & tear: ink pressure variation ─────────────────────────────────── */
+.pcf-chars span:not(.pcc-empty):nth-child(7n)    { opacity: 0.79; }
+.pcf-chars span:not(.pcc-empty):nth-child(11n+2) { opacity: 0.88; }
+.pcf-chars span:not(.pcc-empty):nth-child(13n+5) { opacity: 0.82; }
+.pcf-chars span:not(.pcc-empty):nth-child(17n)   { opacity: 0.91; }
+.pcf-chars span:not(.pcc-empty):nth-child(19n+3) { opacity: 0.84; }
+
+/* ── Wear & tear: typewriter keystrike misalignment ─────────────────────── */
+.pcf-chars span:nth-child(5n+1)  { transform: translateY(0.5px); }
+.pcf-chars span:nth-child(8n+3)  { transform: translateY(-0.4px); }
+.pcf-chars span:nth-child(12n+7) { transform: translateY(0.35px) translateX(0.2px); }
+.pcf-chars span:nth-child(15n+2) { transform: translateX(-0.3px); }
+.pcf-chars span:nth-child(21n+9) { transform: translateY(-0.3px) translateX(0.25px); }
+
+/* ── Non-punched position: dot with organic size variation ───────────────── */
 .pcc-empty::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 2.5px;
-    height: 2.5px;
+    width: 2.5px; height: 2.5px;
     background: #C8AE58;
     border-radius: 50%;
 }
+.pcc-empty:nth-child(3n+1)::before { width: 2px;   height: 2px;   opacity: 0.85; }
+.pcc-empty:nth-child(3n+2)::before { width: 3px;   height: 3px;   opacity: 0.65; }
+.pcc-empty:nth-child(5n+4)::before { width: 2.5px; height: 2px;   opacity: 0.75; }
 
-/* ── Token colors ───────────────────────────────────────────────────────── */
+/* ── Token type colors ───────────────────────────────────────────────────── */
 .pcc-div     { color: #1A0E00; }
 .pcc-section { color: #2C1A00; }
 .pcc-para    { color: var(--blue-darker-1); }
