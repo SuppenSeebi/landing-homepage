@@ -110,36 +110,29 @@
 const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-const NOISE_CHARS      = 47;
-const MARQUEE_CHARS    = 22;   // characters visible across the 112° bottom arc (~31%)
-const CHAR_INTERVAL_MS = 80;   // noise: ~12 Hz per character, FPS-independent
-const MARQUEE_SPEED    = 4 / 1000; // chars per ms
+const NOISE_CHARS    = 47;
+const NOISE_BUF_SIZE = 200; // circular buffer, much larger than the visible window
+const MARQUEE_CHARS  = 22;  // characters visible across the 112° bottom arc (~31%)
+const MARQUEE_SPEED  = 4 / 1000; // chars per ms — shared belt speed
 
 // ── Bottom arc: 112° CCW from left seam (θ=146°) to right seam (θ=34°) ──────
-// θ(p) = 146° + p × (−112°) = 146° → 34° as p goes 0 → 1
 const DEG       = Math.PI / 180;
 const ARC_START = 146 * DEG;
-const ARC_SPAN  = -112 * DEG; // CCW = decreasing θ
+const ARC_SPAN  = -112 * DEG;
 
 function arcPoint(arcFrac: number): { x: number; y: number; rot: number } {
     const t   = ARC_START + arcFrac * ARC_SPAN;
     const x   = 150 + 100 * Math.cos(t);
     const y   = 150 + 100 * Math.sin(t);
-    // Tangent direction for CCW arc at θ: (sin θ, −cos θ)
-    // SVG rotate angle = atan2(vy, vx) of that tangent vector
     const rot = Math.atan2(-Math.cos(t), Math.sin(t)) * (180 / Math.PI);
     return { x, y, rot };
 }
-
 
 // ── DOM setup ─────────────────────────────────────────────────────────────────
 const noisePath    = document.getElementById("logo-noise-path") as SVGTextPathElement;
 const marqueeGroup = document.getElementById("marquee-group")   as SVGGElement;
 
-// Pre-create MARQUEE_CHARS+2 <text> nodes:
-//   i=0            exits past left seam  (arcFrac → -1/CHARS)
-//   i=MARQUEE_CHARS+1 enters past right seam (arcFrac → 1+1/CHARS)
-// Both sides now extend equally past their seams → symmetric appearance.
+// Pre-create MARQUEE_CHARS+2 <text> nodes (one overflow char per seam)
 const charEls: SVGTextElement[] = [];
 for (let i = 0; i <= MARQUEE_CHARS + 1; i++) {
     const el = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -149,12 +142,14 @@ for (let i = 0; i <= MARQUEE_CHARS + 1; i++) {
     charEls.push(el);
 }
 
-// ── Noise init ────────────────────────────────────────────────────────────────
-const noiseChars = Array.from({ length: NOISE_CHARS }, () =>
-    NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)]
-);
-noisePath.textContent = noiseChars.join("");
+// ── Noise circular buffer ─────────────────────────────────────────────────────
+function rndChar(): string {
+    return NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)];
+}
+const noiseBuffer: string[] = Array.from({ length: NOISE_BUF_SIZE }, rndChar);
+let noiseCharWindow = 0; // index of the char currently at the right-seam end
 
+// ── Scroll state ──────────────────────────────────────────────────────────────
 let charWindow = 0;
 let subChar    = 0;
 let lastTime   = 0;
@@ -163,27 +158,30 @@ function tick(now: number) {
     const dt = Math.min(50, Math.max(1, lastTime === 0 ? 16 : now - lastTime));
     lastTime = now;
 
-    // ── Noise: per-character probabilistic flicker ────────────────────────
-    const p = Math.min(1, dt / CHAR_INTERVAL_MS);
-    let changed = false;
-    for (let i = 0; i < NOISE_CHARS; i++) {
-        if (Math.random() < p) {
-            noiseChars[i] = NOISE_SRC[Math.floor(Math.random() * NOISE_SRC.length)];
-            changed = true;
-        }
-    }
-    if (changed) noisePath.textContent = noiseChars.join("");
-
-    // ── Marquee: right-to-left scroll, new chars enter from right seam ────
-    // arcFrac for char i = (i − subChar) / MARQUEE_CHARS
-    //   i=0            → exits past left seam as subChar → 1
-    //   i=MARQUEE_CHARS → enters from right seam as subChar → 0
+    // ── Advance the shared belt ────────────────────────────────────────────
     subChar += MARQUEE_SPEED * dt;
     while (subChar >= 1) {
         charWindow = (charWindow + 1) % MARQUEE_TEXT.length;
+        // A new random char enters the noise arc at the left seam
+        noiseBuffer[(noiseCharWindow + NOISE_CHARS) % NOISE_BUF_SIZE] = rndChar();
+        noiseCharWindow = (noiseCharWindow + 1) % NOISE_BUF_SIZE;
         subChar -= 1;
     }
 
+    // ── Noise: same CW rotation as marquee ────────────────────────────────
+    // The noise textPath runs right-seam → over top → left-seam (opposite CW direction),
+    // so CW motion requires startOffset to decrease — chars travel toward the path start
+    // (right seam). One char-width % = 100/NOISE_CHARS; startOffset sweeps that range
+    // from full (subChar=0) down to 0 (subChar→1), then the content window steps forward.
+    const startOffsetPct = (1 - subChar) * (100 / NOISE_CHARS);
+    noisePath.setAttribute('startOffset', `${startOffsetPct.toFixed(4)}%`);
+    let noiseContent = '';
+    for (let i = 0; i < NOISE_CHARS; i++) {
+        noiseContent += noiseBuffer[(noiseCharWindow + i) % NOISE_BUF_SIZE];
+    }
+    noisePath.textContent = noiseContent;
+
+    // ── Marquee: right-to-left, chars enter from right seam ───────────────
     for (let i = 0; i <= MARQUEE_CHARS + 1; i++) {
         const { x, y, rot } = arcPoint((i - subChar) / MARQUEE_CHARS);
         charEls[i].setAttribute("transform",
