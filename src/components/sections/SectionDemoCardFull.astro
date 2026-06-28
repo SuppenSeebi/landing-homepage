@@ -78,7 +78,7 @@ function punchText(text: string): string {
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w3">
                                 <span class="pcf-fh-lbl">DATE - VERSION</span>
-                                <span class="pcf-fh-val" set:html={punchText(`${compiled} · ${gitHash}`)}></span>
+                                <span class="pcf-fh-val" set:html={punchText(`${compiled} - ${gitHash}`)}></span>
                             </div>
                         </div>
 
@@ -447,8 +447,8 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     text-overflow: ellipsis;
     line-height: 1.15;
 }
-/* Punch-style header text: spaces become dots, characters stay inline */
-.pcf-fh-ch { display: inline; }
+/* Punch-style header text: spaces become dots, characters as inline-block for transform support */
+.pcf-fh-ch { display: inline-block; vertical-align: baseline; }
 .pcf-fh-sp {
     display: inline-block;
     width: 1ch;
@@ -464,6 +464,16 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     background: #C8AE58;
     border-radius: 50%;
 }
+/* Header wear: ink pressure — different primes than punch area to avoid same visual rhythm */
+.pcf-fh-val .pcf-fh-ch:nth-child(4n+1)  { opacity: 0.80; }
+.pcf-fh-val .pcf-fh-ch:nth-child(9n+3)  { opacity: 0.86; }
+.pcf-fh-val .pcf-fh-ch:nth-child(15n+7) { opacity: 0.82; }
+.pcf-fh-val .pcf-fh-ch:nth-child(11n+5) { opacity: 0.91; }
+/* Header wear: typewriter micro-jitter */
+.pcf-fh-val .pcf-fh-ch:nth-child(3n+2)  { transform: translateY(0.4px); }
+.pcf-fh-val .pcf-fh-ch:nth-child(7n+4)  { transform: translateY(-0.35px); }
+.pcf-fh-val .pcf-fh-ch:nth-child(12n+6) { transform: translateY(0.3px) translateX(0.15px); }
+.pcf-fh-val .pcf-fh-ch:nth-child(16n+9) { transform: translateX(-0.2px); }
 
 /* Nav rows (DIVISION / SECTION) */
 .pcf-fh-nav {
@@ -609,7 +619,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 .pcf-rchars-tick {
     display: inline-block;
     text-align: right;
-    font-size: 0.34rem;
+    font-size: 0.58rem;
     color: #9B8050;
     flex-shrink: 0;
     overflow: hidden;
