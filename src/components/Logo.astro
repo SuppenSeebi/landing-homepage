@@ -110,10 +110,11 @@
 const NOISE_SRC    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·=<>+-#@!?|~^";
 const MARQUEE_TEXT = "SEBASTIAN SCHWINN · COBOL DEVELOPER · RETROCODE · MSC EE W/ DISTINCTION · EMBEDDED C · OPC UA · 3D PRINTING · BOARD MEMBER · TENNIS · TABLE TENNIS · ";
 
-const NOISE_CHARS    = 47;
-const NOISE_BUF_SIZE = 200; // circular buffer, much larger than the visible window
-const MARQUEE_CHARS  = 22;  // characters visible across the 112° bottom arc (~31%)
-const MARQUEE_SPEED  = 4 / 1000; // chars per ms — shared belt speed
+const NOISE_CHARS         = 47;
+const NOISE_BUF_SIZE      = 200;  // circular buffer, much larger than the visible window
+const MARQUEE_CHARS       = 22;   // characters visible across the 112° bottom arc (~31%)
+const MARQUEE_SPEED       = 4 / 1000; // chars per ms — shared belt speed
+const SCRAMBLE_INTERVAL_MS = 220; // expected ms between scrambles per char (~4.5 Hz)
 
 // ── Bottom arc: 112° CCW from left seam (θ=146°) to right seam (θ=34°) ──────
 const DEG       = Math.PI / 180;
@@ -175,12 +176,12 @@ function tick(now: number) {
     // from full (subChar=0) down to 0 (subChar→1), then the content window steps forward.
     const startOffsetPct = (1 - subChar) * (100 / NOISE_CHARS);
     noisePath.setAttribute('startOffset', `${startOffsetPct.toFixed(4)}%`);
-    // Every char in transit gets a new random glyph each frame — locked in only when it
-    // crosses the right seam and the marquee takes over with the real text.
+    // Each char in transit scrambles independently at ~SCRAMBLE_INTERVAL_MS per change —
+    // FPS-independent probability so 240 Hz and 60 Hz look identical.
     let noiseContent = '';
     for (let i = 0; i < NOISE_CHARS; i++) {
         const idx = (noiseCharWindow + i) % NOISE_BUF_SIZE;
-        noiseBuffer[idx] = rndChar();
+        if (Math.random() < dt / SCRAMBLE_INTERVAL_MS) noiseBuffer[idx] = rndChar();
         noiseContent += noiseBuffer[idx];
     }
     noisePath.textContent = noiseContent;
