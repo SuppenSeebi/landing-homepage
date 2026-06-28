@@ -1,166 +1,41 @@
 ---
+import PunchCard from '../PunchCard.astro';
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];
+
+const LINES: Line[] = [
+    ['000001', [['div','PROTOTYPE DIVISION'],['dot','.']]],
+    ['000002', [['section','CARD-TEXTURE SECTION'],['dot','.']]],
+    ['000003', []],
+    ['000004', [['lvl','01'],['name',' DEMO-RECORD'],['dot','.']]],
+    ['000005', []],
+    ['000006', [['lvl','    05'],['name',' APPROACH   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'CARD-AS-BACKGROUND-TEXTURE'"],['dot','.']]],
+    ['000007', [['lvl','    05'],['name',' TRANSITIONS'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'HORIZONTAL PAN BETWEEN CARDS'"],['dot','.']]],
+    ['000008', [['lvl','    05'],['name',' SCROLL     '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'SECTION FLOWS ON CARD PAPER'"],['dot','.']]],
+    ['000009', []],
+    ['000010', [['lvl','    05'],['name',' CARD-COLS  '],['kw',' PIC 9(2) '],['kw',' VALUE'],['numval','  80'],['dot','.']]],
+    ['000011', [['lvl','    05'],['name',' CARD-ROWS  '],['kw',' PIC 9(2) '],['kw',' VALUE'],['numval','  12'],['dot','.']]],
+    ['000012', []],
+    ['000013', [['lvl','    05'],['name',' FEEL       '],['kw',' PIC X(50)'],['kw',' VALUE'],['val'," 'SAME CONTENT LANGUAGE, NEW MATERIAL'"],['dot','.']]],
+    ['000014', []],
+    ['000015', [['comment','*> PROTOTYPE B: CARD AS BACKGROUND TEXTURE']]],
+    ['000016', [['comment','*> Demonstrates use of punch card as page background']]],
+    ['000017', []],
+    ['000018', []],
+];
 ---
 <section id="demo-texture">
-    <div class="section-scroll-container">
-        <div class="section-content-wrapper pct-bg">
-            <div class="pct-margin-strip"></div>
-            <div class="pct-content">
-                <div class="pct-col-header">
-                    <span>1</span><span>5</span><span>10</span><span>15</span><span>20</span>
-                    <span>25</span><span>30</span><span>35</span><span>40</span><span>45</span>
-                    <span>50</span><span>55</span><span>60</span><span>65</span><span>70</span>
-                    <span>75</span><span>80</span>
-                </div>
-                <div class="cobol-block">
-                    <div class="pct-cobol-division">PROTOTYPE DIVISION.</div>
-                    <div class="pct-cobol-section-hdr">CARD-TEXTURE SECTION.</div>
-                    <div class="cobol-spacer"></div>
-                    <div class="pct-cobol-line l01">
-                        <span class="lvl">01</span><span class="name">DEMO-RECORD.</span>
-                    </div>
-                    <div class="cobol-spacer"></div>
-                    <div class="pct-cobol-line l05">
-                        <span class="lvl">05</span>
-                        <span class="name" style="min-width:16ch">APPROACH</span>
-                        <span class="pic">PIC X(30)</span>
-                        <span class="kw">VALUE</span>
-                        <span class="val">&apos;CARD-AS-BACKGROUND-TEXTURE&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="pct-cobol-line l05">
-                        <span class="lvl">05</span>
-                        <span class="name" style="min-width:16ch">TRANSITIONS</span>
-                        <span class="pic">PIC X(30)</span>
-                        <span class="kw">VALUE</span>
-                        <span class="val">&apos;HORIZONTAL PAN BETWEEN CARDS&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="pct-cobol-line l05">
-                        <span class="lvl">05</span>
-                        <span class="name" style="min-width:16ch">SCROLL</span>
-                        <span class="pic">PIC X(30)</span>
-                        <span class="kw">VALUE</span>
-                        <span class="val">&apos;SECTION FLOWS ON CARD PAPER&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-spacer"></div>
-                    <div class="pct-cobol-line l05">
-                        <span class="lvl">05</span>
-                        <span class="name" style="min-width:16ch">CARD-COLS</span>
-                        <span class="pic">PIC 9(2)</span>
-                        <span class="kw">VALUE</span>
-                        <span class="numval">80</span><span class="dot">.</span>
-                    </div>
-                    <div class="pct-cobol-line l05">
-                        <span class="lvl">05</span>
-                        <span class="name" style="min-width:16ch">CARD-ROWS</span>
-                        <span class="pic">PIC 9(2)</span>
-                        <span class="kw">VALUE</span>
-                        <span class="numval">12</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-spacer"></div>
-                    <div class="pct-cobol-line l05">
-                        <span class="lvl">05</span>
-                        <span class="name" style="min-width:16ch">FEEL</span>
-                        <span class="pic">PIC X(50)</span>
-                        <span class="kw">VALUE</span>
-                        <span class="val">&apos;SAME CONTENT LANGUAGE, NEW MATERIAL&apos;</span><span class="dot">.</span>
-                    </div>
-                </div>
-            </div>
+    <div class="section-scroll-container pcf-section-height">
+        <div class="section-content-wrapper">
+            <PunchCard
+                programName="SSCHW-DEV"
+                programmerName="SEBASTIAN SCHWINN"
+                currentSystem="RETROCODE GMBH"
+                identificationHref="#impressum"
+                lines={LINES}
+            />
         </div>
     </div>
 </section>
-
-<style is:global>
-/* ── PROTOTYPE B: CARD AS BACKGROUND TEXTURE ────────────────────────────── */
-.section-content-wrapper.pct-bg {
-    background-color: #F2E8C0;
-    background-image:
-        repeating-linear-gradient(
-            90deg,
-            transparent 0,
-            transparent calc(100% / 80 - 0.5px),
-            #C8AE5888 calc(100% / 80)
-        ),
-        repeating-linear-gradient(
-            180deg,
-            transparent 0,
-            transparent calc(100% / 12 - 0.5px),
-            #C8AE5855 calc(100% / 12)
-        ),
-        radial-gradient(circle at 50% 50%, #C8AE5870 1.6px, transparent 1.6px);
-    background-size:
-        calc(100% / 80) 100%,
-        100% calc(100% / 12),
-        calc(100% / 80) calc(100% / 12);
-}
-
-/* Left margin strip — mimics the card's row-label zone */
-.pct-margin-strip {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 5%;
-    height: 100%;
-    background: rgba(160, 130, 40, 0.12);
-    border-right: 2px solid #C2A840;
-    pointer-events: none;
-}
-
-/* Content sits to the right of the margin strip */
-.pct-content {
-    position: relative;
-    padding: 16px 8% 110px 7%;
-}
-
-/* Column number header strip */
-.pct-col-header {
-    display: flex;
-    justify-content: space-between;
-    font-family: "Share Tech Mono", monospace;
-    font-size: 0.5rem;
-    color: #8B7030;
-    border-bottom: 1.5px solid #C2A840;
-    padding-bottom: 3px;
-    margin-bottom: 18px;
-}
-
-/* Card-tinted COBOL typography (reuse existing classes, override colors) */
-.pct-cobol-division {
-    font-family: "Share Tech Mono", monospace;
-    font-size: 1.7rem;
-    font-weight: 700;
-    color: #1A0E00;
-    margin-bottom: 4px;
-    letter-spacing: 0.02em;
-}
-
-.pct-cobol-section-hdr {
-    font-family: "Share Tech Mono", monospace;
-    font-size: 1.45rem;
-    font-weight: 700;
-    color: #1A0E00;
-    margin-bottom: 10px;
-}
-
-/* Reuse .cobol-line layout but fully visible, card-colored */
-.pct-cobol-line {
-    display: flex;
-    align-items: baseline;
-    white-space: nowrap;
-    font-family: "Share Tech Mono", monospace;
-    font-size: 0.82rem;
-    line-height: 1.45;
-}
-
-.pct-cobol-line .lvl  { color: #8B7030; min-width: 3ch; margin-right: 1ch; flex-shrink: 0; }
-.pct-cobol-line .name { color: #1A0E00; margin-right: 1.2ch; flex-shrink: 0; font-weight: 600; }
-.pct-cobol-line .pic  { color: #8B7030; font-size: 0.78rem; margin-right: 1.5ch; flex-shrink: 0; }
-.pct-cobol-line .kw   { color: #8B7030; margin-right: 1ch; flex-shrink: 0; }
-.pct-cobol-line .val  { color: #2542A3; }
-.pct-cobol-line .numval { color: #2542A3; }
-.pct-cobol-line .dot  { color: #8B7030; margin-left: 0.1ch; }
-
-.pct-cobol-line.l01 { font-size: 0.82rem; }
-.pct-cobol-line.l05 { padding-left: 2ch; }
-.pct-cobol-line.l01 .name { font-weight: 700; font-size: 1.05rem; }
-.pct-cobol-line.l05 .name { font-weight: 600; font-size: 0.92rem; }
-</style>

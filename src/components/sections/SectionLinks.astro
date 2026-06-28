@@ -1,102 +1,53 @@
 ---
+import PunchCard from '../PunchCard.astro';
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];
+
+const LINES: Line[] = [
+    ['000001', [['div','PROCEDURE DIVISION'],['dot','.']]],
+    ['000002', [['section','LINKS SECTION'],['dot','.']]],
+    ['000003', []],
+    ['000004', [['para','SERVICES-PRGRPH'],['dot','.']]],
+    ['000005', [['kw','    CALL'],['val'," 'KB.SSCHW.DEV'"],['comment','  *> Personal wiki & notes']]],
+    ['000006', [['kw','    CALL'],['val'," 'LLDAP'"],['comment','         *> Directory management (LAN)']]],
+    ['000007', [['kw','    CALL'],['val'," 'BITWARDEN'"],['comment','     *> Password manager (LAN)']]],
+    ['000008', [['dot','.']]],
+    ['000009', []],
+    ['000010', [['para','SOCIALS-PRGRPH'],['dot','.']]],
+    ['000011', [['kw','    CALL'],['val'," 'LINKEDIN'"],['comment','      *> linkedin.com/in/sschwinn/']]],
+    ['000012', [['kw','    CALL'],['val'," 'INSTAGRAM'"],['comment','     *> instagram.com/s.schwinni/']]],
+    ['000013', [['dot','.']]],
+    ['000014', []],
+    ['000015', [['para','EXIT-PRGRPH'],['dot','.']]],
+    ['000016', [['kw','    EXIT PARAGRAPH'],['dot','.']]],
+    ['000017', []],
+    ['000018', []],
+];
+
+const CALL_LINKS: Record<string, string> = {
+    " 'KB.SSCHW.DEV'": 'https://kb.sschw.dev',
+    " 'LINKEDIN'":      'https://www.linkedin.com/in/sschwinn/',
+    " 'INSTAGRAM'":     'https://www.instagram.com/s.schwinni/',
+};
 ---
 <section id="links">
-    <div class="section-scroll-container">
+    <div class="section-scroll-container pcf-section-height">
         <div class="section-content-wrapper">
-            <div class="links-container">
-                <div class="cobol-block">
-
-                    <div class="cobol-section-hdr">LINKS SECTION.</div>
-
-                    <div class="cobol-spacer"></div>
-
-                    <!-- SERVICES-PRGRPH -->
-                    <div class="cobol-para-label">SERVICES-PRGRPH.</div>
-
-                    <a class="cobol-call para-body reveal-item" href="https://kb.sschw.dev" target="_blank" rel="noopener">
-                        <span class="kw">CALL</span>
-                        <span class="val">&apos;KB.SSCHW.DEV&apos;</span>
-                        <span class="call-comment">*&gt; Personal wiki &amp; notes</span>
-                    </a>
-
-                    <!-- LAN-only block, shown by JS when on local network -->
-                    <div class="lan-group lan-only para-body">
-                        <div class="cobol-lan-note">*&gt; local network only:</div>
-                        <a class="cobol-call" href="https://lldap.sschw.dev" target="_blank" rel="noopener">
-                            <span class="kw">CALL</span>
-                            <span class="val">&apos;LLDAP&apos;</span>
-                            <span class="call-comment">*&gt; Directory management</span>
-                        </a>
-                        <a class="cobol-call" href="https://bw.sschw.dev" target="_blank" rel="noopener">
-                            <span class="kw">CALL</span>
-                            <span class="val">&apos;BITWARDEN&apos;</span>
-                            <span class="call-comment">*&gt; Password manager</span>
-                        </a>
-                    </div>
-
-                    <div class="cobol-line para-body reveal-item">
-                        <span class="lone-dot">.</span>
-                    </div>
-
-                    <div class="cobol-spacer-lg"></div>
-
-                    <!-- SOCIALS-PRGRPH -->
-                    <div class="cobol-para-label">SOCIALS-PRGRPH.</div>
-
-                    <a class="cobol-call para-body reveal-item" href="https://www.linkedin.com/in/sschwinn/" target="_blank" rel="noopener">
-                        <span class="kw">CALL</span>
-                        <span class="val">&apos;LINKEDIN&apos;</span>
-                        <span class="call-comment">*&gt; linkedin.com/in/sschwinn/</span>
-                    </a>
-                    <a class="cobol-call para-body reveal-item" href="https://www.instagram.com/s.schwinni/" target="_blank" rel="noopener">
-                        <span class="kw">CALL</span>
-                        <span class="val">&apos;INSTAGRAM&apos;</span>
-                        <span class="call-comment">*&gt; instagram.com/s.schwinni/</span>
-                    </a>
-                    <div class="cobol-line para-body reveal-item">
-                        <span class="lone-dot">.</span>
-                    </div>
-
-                    <div class="cobol-spacer-lg"></div>
-
-                    <!-- Section-level EXIT PARAGRAPH (same indent as paragraph labels) -->
-                    <a href="#links" class="cobol-call para-lvl reveal-item">
-                        <span class="kw">EXIT PARAGRAPH</span>
-                        <span class="call-comment">*&gt; return to top of PROCEDURE DIVISION</span>
-                    </a>
-                    <div class="cobol-line para-lvl reveal-item">
-                        <span class="lone-dot">.</span>
-                    </div>
-
-                </div>
-            </div>
+            <PunchCard
+                programName="SSCHW-DEV"
+                programmerName="SEBASTIAN SCHWINN"
+                currentSystem="RETROCODE GMBH"
+                identificationHref="#impressum"
+                lines={LINES}
+                callLinks={CALL_LINKS}
+            />
         </div>
     </div>
 </section>
 
 <script>
-async function checkLocalNetwork() {
-    try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 1500);
-        const res = await fetch("/api/network-check", { signal: controller.signal });
-        clearTimeout(timeout);
-        if (res.ok) {
-            document.querySelectorAll<HTMLElement>(".lan-group.lan-only").forEach(el => {
-                el.classList.add("lan-visible");
-            });
-        }
-    } catch { /* public visitor */ }
-}
-
-checkLocalNetwork();
-
-let revealed = false;
-export function statemachineLinksRun() {
-    if (revealed) return;
-    revealed = true;
-    const items = document.querySelectorAll<HTMLElement>('#links .reveal-item');
-    items.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 55));
-}
+export function statemachineLinksRun() {}
 (window as any).__linksRun = statemachineLinksRun;
 </script>

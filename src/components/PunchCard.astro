@@ -1,0 +1,487 @@
+---
+import { execSync } from 'child_process';
+import { punchText } from '../utils/punchText';
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];
+
+interface Props {
+    programName: string;
+    programmerName: string;
+    currentSystem: string;
+    identificationHref?: string;
+    lines?: Line[];
+    displaySlot?: boolean;
+    displayLabel?: string;
+    callLinks?: Record<string, string>;
+    noStage?: boolean;
+}
+
+const compiled = new Date().toISOString().slice(0, 10);
+let gitHash = '??????';
+try { gitHash = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim().slice(0, 6); } catch {}
+
+const {
+    programName,
+    programmerName,
+    currentSystem,
+    identificationHref = '#impressum',
+    lines = [],
+    displaySlot = false,
+    displayLabel = 'IMPRESSUM-SECTION.',
+    callLinks = {},
+    noStage = false,
+} = Astro.props;
+
+const linesJson = JSON.stringify(lines);
+const callLinksJson = JSON.stringify(callLinks);
+---
+
+{noStage ? (
+<div class="pcf-card">
+    <!-- ── Title bar ── -->
+    <div class="pcf-title-bar">
+        <span class="pcf-title-side">Program Information</span>
+        <span class="pcf-title-name">Program Navigation</span>
+        <span class="pcf-title-side pcf-title-right">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;18&nbsp;ROW</span>
+    </div>
+
+    <!-- ── 3-row form header ── -->
+    <div class="pcf-form-header">
+        <div class="pcf-fh-row">
+            <div class="pcf-fh-cell pcf-fh-w1">
+                <span class="pcf-fh-lbl">PROGRAMMER</span>
+                <span class="pcf-fh-val" set:html={punchText(programmerName)}></span>
+            </div>
+            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                <span class="pcf-fh-lbl">DIVISION</span>
+                <div class="pcf-fh-nav">
+                    <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
+                    <span class="pcf-nav-dot">·</span>
+                    <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
+                    <span class="pcf-nav-dot">·</span>
+                    <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
+                </div>
+            </div>
+            <div class="pcf-fh-cell pcf-fh-w3">
+                <span class="pcf-fh-lbl">PAGE</span>
+                <span class="pcf-fh-val" set:html={punchText('1 OF 1')}></span>
+            </div>
+        </div>
+
+        <div class="pcf-fh-row">
+            <div class="pcf-fh-cell pcf-fh-w1">
+                <span class="pcf-fh-lbl">PROGRAM</span>
+                <span class="pcf-fh-val" set:html={punchText(programName)}></span>
+            </div>
+            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                <span class="pcf-fh-lbl">SECTION</span>
+                <div class="pcf-fh-nav" data-nav="sec"></div>
+            </div>
+            <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={identificationHref}>
+                <span class="pcf-fh-lbl">IDENTIFICATION</span>
+                <span class="pcf-fh-val" set:html={punchText('IMPRESSUM')}></span>
+            </a>
+        </div>
+
+        <div class="pcf-fh-row">
+            <div class="pcf-fh-cell pcf-fh-w1">
+                <span class="pcf-fh-lbl">CURRENT SYSTEM</span>
+                <span class="pcf-fh-val" set:html={punchText(currentSystem)}></span>
+            </div>
+            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                <span class="pcf-fh-lbl">PARAGRAPH</span>
+                <div class="pcf-fh-nav" data-nav="para"></div>
+            </div>
+            <div class="pcf-fh-cell pcf-fh-w3">
+                <span class="pcf-fh-lbl">DATE - VERSION</span>
+                <span class="pcf-fh-val" set:html={punchText(`${compiled} - ${gitHash}`)}></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Coding area ── -->
+    <div class="pcf-coding-area">
+        {displaySlot ? (
+            <>
+                <div class="pcf-zone-row">
+                    <div class="pcf-zone-linenum">LINE</div>
+                    <div class="pcf-zone-seq">DISPLAY</div>
+                    <div class="pcf-zone-stmt">{displayLabel}</div>
+                </div>
+                <div class="pcf-display-body"><slot /></div>
+                <div class="pcf-zone-row pcf-zone-btm">
+                    <div class="pcf-zone-linenum"></div>
+                    <div class="pcf-zone-seq">END-DISPLAY</div>
+                    <div class="pcf-zone-stmt"></div>
+                </div>
+            </>
+        ) : (
+            <>
+                <div class="pcf-zone-row">
+                    <div class="pcf-zone-linenum">LINE</div>
+                    <div class="pcf-zone-seq">SEQUENCE</div>
+                    <div class="pcf-zone-stmt">COBOL STATEMENT</div>
+                </div>
+                <div class="pcf-ruler-row">
+                    <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
+                    <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
+                    <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
+                </div>
+                <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+                <div class="pcf-ruler-row pcf-ruler-btm">
+                    <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
+                    <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
+                    <div class="pcf-ruler-chars" data-ruler="chars-btm"></div>
+                </div>
+            </>
+        )}
+    </div>
+</div>
+) : (
+<div class="pcf-stage">
+    <div class="pcf-card">
+        <!-- ── Title bar ── -->
+        <div class="pcf-title-bar">
+            <span class="pcf-title-side">Program Information</span>
+            <span class="pcf-title-name">Program Navigation</span>
+            <span class="pcf-title-side pcf-title-right">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;18&nbsp;ROW</span>
+        </div>
+
+        <!-- ── 3-row form header ── -->
+        <div class="pcf-form-header">
+            <div class="pcf-fh-row">
+                <div class="pcf-fh-cell pcf-fh-w1">
+                    <span class="pcf-fh-lbl">PROGRAMMER</span>
+                    <span class="pcf-fh-val" set:html={punchText(programmerName)}></span>
+                </div>
+                <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                    <span class="pcf-fh-lbl">DIVISION</span>
+                    <div class="pcf-fh-nav">
+                        <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
+                        <span class="pcf-nav-dot">·</span>
+                        <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
+                        <span class="pcf-nav-dot">·</span>
+                        <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
+                    </div>
+                </div>
+                <div class="pcf-fh-cell pcf-fh-w3">
+                    <span class="pcf-fh-lbl">PAGE</span>
+                    <span class="pcf-fh-val" set:html={punchText('1 OF 1')}></span>
+                </div>
+            </div>
+
+            <div class="pcf-fh-row">
+                <div class="pcf-fh-cell pcf-fh-w1">
+                    <span class="pcf-fh-lbl">PROGRAM</span>
+                    <span class="pcf-fh-val" set:html={punchText(programName)}></span>
+                </div>
+                <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                    <span class="pcf-fh-lbl">SECTION</span>
+                    <div class="pcf-fh-nav" data-nav="sec"></div>
+                </div>
+                <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={identificationHref}>
+                    <span class="pcf-fh-lbl">IDENTIFICATION</span>
+                    <span class="pcf-fh-val" set:html={punchText('IMPRESSUM')}></span>
+                </a>
+            </div>
+
+            <div class="pcf-fh-row">
+                <div class="pcf-fh-cell pcf-fh-w1">
+                    <span class="pcf-fh-lbl">CURRENT SYSTEM</span>
+                    <span class="pcf-fh-val" set:html={punchText(currentSystem)}></span>
+                </div>
+                <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                    <span class="pcf-fh-lbl">PARAGRAPH</span>
+                    <div class="pcf-fh-nav" data-nav="para"></div>
+                </div>
+                <div class="pcf-fh-cell pcf-fh-w3">
+                    <span class="pcf-fh-lbl">DATE - VERSION</span>
+                    <span class="pcf-fh-val" set:html={punchText(`${compiled} - ${gitHash}`)}></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Coding area ── -->
+        <div class="pcf-coding-area">
+            {displaySlot ? (
+                <>
+                    <div class="pcf-zone-row">
+                        <div class="pcf-zone-linenum">LINE</div>
+                        <div class="pcf-zone-seq">DISPLAY</div>
+                        <div class="pcf-zone-stmt">{displayLabel}</div>
+                    </div>
+                    <div class="pcf-display-body"><slot /></div>
+                    <div class="pcf-zone-row pcf-zone-btm">
+                        <div class="pcf-zone-linenum"></div>
+                        <div class="pcf-zone-seq">END-DISPLAY</div>
+                        <div class="pcf-zone-stmt"></div>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <div class="pcf-zone-row">
+                        <div class="pcf-zone-linenum">LINE</div>
+                        <div class="pcf-zone-seq">SEQUENCE</div>
+                        <div class="pcf-zone-stmt">COBOL STATEMENT</div>
+                    </div>
+                    <div class="pcf-ruler-row">
+                        <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
+                        <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
+                        <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
+                    </div>
+                    <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+                    <div class="pcf-ruler-row pcf-ruler-btm">
+                        <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
+                        <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
+                        <div class="pcf-ruler-chars" data-ruler="chars-btm"></div>
+                    </div>
+                </>
+            )}
+        </div>
+    </div>
+</div>
+)}
+
+<script>
+import { DIVISION_MAP, SECTIONS_BY_DIV, PARAS_BY_SECTION } from '../config/punch-nav';
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+
+function buildNavGroups() {
+    document.querySelectorAll<HTMLElement>('[data-nav="sec"]').forEach(container => {
+        if (container.dataset.built) return;
+        container.dataset.built = '1';
+        for (const [divId, items] of Object.entries(SECTIONS_BY_DIV)) {
+            const grp = document.createElement('div');
+            grp.className = 'pcf-sec-group';
+            grp.dataset.div = divId;
+            items.forEach((item, i) => {
+                if (i > 0) {
+                    const d = document.createElement('span');
+                    d.className = 'pcf-nav-dot'; d.textContent = '·'; grp.appendChild(d);
+                }
+                const a = document.createElement('a');
+                a.className = 'pcf-sec-item'; a.href = item.href; a.textContent = item.label;
+                grp.appendChild(a);
+            });
+            container.appendChild(grp);
+        }
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-nav="para"]').forEach(container => {
+        if (container.dataset.built) return;
+        container.dataset.built = '1';
+        for (const [divId, sectionIds] of Object.entries(DIVISION_MAP)) {
+            for (const sectionId of sectionIds) {
+                const items = PARAS_BY_SECTION[sectionId] ?? [];
+                if (!items.length) continue;
+                const grp = document.createElement('div');
+                grp.className = 'pcf-para-group';
+                grp.dataset.div = divId;
+                grp.dataset.sec = sectionId;
+                items.forEach((item, i) => {
+                    if (i > 0) {
+                        const d = document.createElement('span');
+                        d.className = 'pcf-nav-dot'; d.textContent = '·'; grp.appendChild(d);
+                    }
+                    const a = document.createElement('a');
+                    a.className = 'pcf-para-item'; a.href = item.href; a.textContent = item.label;
+                    grp.appendChild(a);
+                });
+                container.appendChild(grp);
+            }
+        }
+    });
+}
+
+function getActiveId(): string {
+    const mid = window.scrollY + window.innerHeight / 2;
+    let active = 'top';
+    document.querySelectorAll<HTMLElement>('section').forEach(s => {
+        if (mid >= s.offsetTop && mid < s.offsetTop + s.offsetHeight) active = s.id;
+    });
+    return active;
+}
+
+function getActiveDivId(id: string): string {
+    for (const [div, ids] of Object.entries(DIVISION_MAP)) {
+        if (ids.includes(id)) return div;
+    }
+    return 'data';
+}
+
+function updatePcfNav(activeId: string) {
+    const divId = getActiveDivId(activeId);
+
+    document.querySelectorAll<HTMLElement>('.pcf-div-item').forEach(el =>
+        el.classList.toggle('pcf-nav-active', el.dataset.div === divId));
+
+    document.querySelectorAll<HTMLElement>('.pcf-sec-group').forEach(el =>
+        (el.style.display = el.dataset.div === divId ? 'flex' : 'none'));
+
+    document.querySelectorAll<HTMLElement>('.pcf-para-group').forEach(el =>
+        (el.style.display = el.dataset.sec === activeId ? 'flex' : 'none'));
+
+    document.querySelectorAll<HTMLElement>('.pcf-sec-item').forEach(el =>
+        el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
+
+    document.querySelectorAll<HTMLElement>('.pcf-para-item').forEach(el =>
+        el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
+}
+
+// ── Rulers ───────────────────────────────────────────────────────────────────
+
+function buildRulersForCard(card: Element) {
+    const buildSeqRuler = (el: Element | null) => {
+        if (!el || (el as HTMLElement).dataset.built) return;
+        (el as HTMLElement).dataset.built = '1';
+        for (let i = 1; i <= 6; i++) {
+            const s = document.createElement('span');
+            s.className = 'pcf-rseq-tick'; s.textContent = String(i);
+            el.appendChild(s);
+        }
+    };
+    const buildLineRuler = (el: Element | null) => {
+        if (!el || (el as HTMLElement).dataset.built) return;
+        (el as HTMLElement).dataset.built = '1';
+        for (const d of ['1', '2']) {
+            const s = document.createElement('span');
+            s.className = 'pcf-rlinenum-tick'; s.textContent = d;
+            el.appendChild(s);
+        }
+    };
+    buildSeqRuler(card.querySelector('[data-ruler="seq-top"]'));
+    buildSeqRuler(card.querySelector('[data-ruler="seq-btm"]'));
+    buildLineRuler(card.querySelector('[data-ruler="linenum-top"]'));
+    buildLineRuler(card.querySelector('[data-ruler="linenum-btm"]'));
+}
+
+function buildCharsRulerForCard(card: Element) {
+    const sampleSpan = card.querySelector<HTMLElement>('.pcf-punch-area .pcf-chars span');
+    if (!sampleSpan) return;
+    const chPx = sampleSpan.getBoundingClientRect().width;
+    if (chPx <= 0) return;
+    const tickPx = chPx * 4;
+    for (const key of ['chars-top', 'chars-btm']) {
+        const el = card.querySelector<HTMLElement>(`[data-ruler="${key}"]`);
+        if (!el) continue;
+        el.innerHTML = '';
+        for (let c = 4; c <= 80; c += 4) {
+            const s = document.createElement('span');
+            s.className = 'pcf-rchars-tick'; s.textContent = String(c);
+            s.style.width = `${tickPx}px`;
+            el.appendChild(s);
+        }
+    }
+}
+
+// ── Content lines ────────────────────────────────────────────────────────────
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];
+
+const COLS = 80;
+const CLS: Record<TT, string> = {
+    div: 'pcc-div', section: 'pcc-section', para: 'pcc-para', lvl: 'pcc-lvl',
+    name: 'pcc-name', kw: 'pcc-kw', val: 'pcc-val', numval: 'pcc-numval',
+    dot: 'pcc-dot', comment: 'pcc-comment',
+};
+
+interface CharItem { ch: string; cls: string; href?: string; }
+
+function renderLinesForArea(area: HTMLElement) {
+    if (area.dataset.rendered) return;
+    area.dataset.rendered = '1';
+
+    const lines: Line[] = JSON.parse(area.dataset.lines || '[]');
+    const callLinks: Record<string, string> = JSON.parse(area.dataset.callLinks || '{}');
+
+    lines.forEach(([seq, tokens], idx) => {
+        const chars: CharItem[] = [];
+        for (const [type, text] of tokens) {
+            const cls = CLS[type as TT] || 'pcc-kw';
+            const href = (type === 'val' && callLinks[text]) ? callLinks[text] : undefined;
+            for (const ch of text) chars.push({ ch, cls, href });
+        }
+        while (chars.length < COLS) chars.push({ ch: ' ', cls: 'pcc-kw' });
+
+        const row = document.createElement('div');
+        row.className = 'pcf-line-row';
+
+        const lineNum = document.createElement('div');
+        lineNum.className = 'pcf-line-num';
+        for (const ch of String(idx + 1).padStart(2, '0')) {
+            const s = document.createElement('span');
+            s.className = 'pcf-line-num-digit'; s.textContent = ch;
+            lineNum.appendChild(s);
+        }
+        row.appendChild(lineNum);
+
+        const seqEl = document.createElement('div');
+        seqEl.className = 'pcf-seq';
+        for (const ch of seq) {
+            const s = document.createElement('span');
+            s.className = 'pcf-seq-digit'; s.textContent = ch;
+            seqEl.appendChild(s);
+        }
+        row.appendChild(seqEl);
+
+        const charsEl = document.createElement('div');
+        charsEl.className = 'pcf-chars';
+        let i = 0;
+        while (i < COLS) {
+            const item = chars[i];
+            if (item.href) {
+                // Collect the full run of chars sharing this href
+                let j = i;
+                while (j < COLS && chars[j].href === item.href) j++;
+                const a = document.createElement('a');
+                a.href = item.href; a.target = '_blank'; a.rel = 'noopener';
+                a.className = 'pcf-call-link';
+                for (let k = i; k < j; k++) {
+                    const span = document.createElement('span');
+                    if (chars[k].ch === ' ') span.className = 'pcc-empty';
+                    else { span.className = chars[k].cls; span.textContent = chars[k].ch; }
+                    a.appendChild(span);
+                }
+                charsEl.appendChild(a);
+                i = j;
+            } else {
+                const span = document.createElement('span');
+                if (item.ch === ' ') span.className = 'pcc-empty';
+                else { span.className = item.cls; span.textContent = item.ch; }
+                charsEl.appendChild(span);
+                i++;
+            }
+        }
+        row.appendChild(charsEl);
+        area.appendChild(row);
+    });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+function initAllCards() {
+    buildNavGroups();
+    document.querySelectorAll<HTMLElement>('.pcf-card').forEach(card => {
+        buildRulersForCard(card);
+        const area = card.querySelector<HTMLElement>('.pcf-punch-area');
+        if (area) renderLinesForArea(area);
+    });
+    requestAnimationFrame(() => {
+        document.querySelectorAll<HTMLElement>('.pcf-card').forEach(buildCharsRulerForCard);
+    });
+}
+
+initAllCards();
+
+window.addEventListener('scroll', () => updatePcfNav(getActiveId()), { passive: true });
+window.addEventListener('resize', () => {
+    document.querySelectorAll<HTMLElement>('.pcf-card').forEach(buildCharsRulerForCard);
+}, { passive: true });
+
+updatePcfNav(getActiveId());
+</script>

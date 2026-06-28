@@ -1,32 +1,44 @@
 ---
+import PunchCard from '../PunchCard.astro';
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];
+
+const LINES: Line[] = [
+    ['000001', [['div','DATA DIVISION'],['dot','.']]],
+    ['000002', [['section','WORKING-STORAGE SECTION'],['dot','.']]],
+    ['000003', [['lvl','01'],['name',' SSCHW-RECORD'],['dot','.']]],
+    ['000004', [['lvl','    05'],['name',' NAME    '],['kw',' PIC X(50)'],['kw','  VALUE'],['val'," 'SEBASTIAN SCHWINN'"],['dot','.']]],
+    ['000005', [['lvl','    05'],['name',' ROLE    '],['kw',' PIC X(40)'],['kw','  VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
+    ['000006', [['lvl','    05'],['name',' YEAR    '],['kw',' PIC 9(4) '],['kw','  VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000007', [['lvl','    88'],['name',' ACTIVE  '],['kw','           VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000008', [['lvl','01'],['name',' WORK-VARS'],['dot','.']]],
+    ['000009', [['lvl','    05'],['name',' WS-STATUS'],['kw',' PIC X(10)'],['kw','  VALUE'],['val'," 'AVAILABLE'"],['dot','.']]],
+    ['000010', [['lvl','    05'],['name',' WS-CTR   '],['kw',' PIC 9(3) '],['kw','  VALUE'],['numval','  000'],['dot','.']]],
+    ['000011', []],
+    ['000012', [['div','PROCEDURE DIVISION'],['dot','.']]],
+    ['000013', [['para','MAIN-PRGRPH'],['dot','.']]],
+    ['000014', [['kw','    DISPLAY'],['name',' NAME']]],
+    ['000015', [['kw','    PERFORM'],['name',' INIT-PRGRPH'],['kw',' THRU'],['name',' INIT-END']]],
+    ['000016', [['kw','    MOVE'],['val'," 'ENGINEER'"],['kw',' TO'],['name',' ROLE']]],
+    ['000017', [['kw','    STOP RUN'],['dot','.']]],
+    ['000018', [['para','INIT-PRGRPH'],['dot','.']]],
+];
 ---
 <section id="top">
     <div class="section-scroll-container">
         <div class="section-content-wrapper">
             <div class="top-container">
-                <div class="top-text-wrapper">
-                    <div class="cobol-division">DATA DIVISION.</div>
-                    <div class="cobol-section-hdr">WORKING-STORAGE SECTION.</div>
-                    <div class="cobol-line l01 top-01-line">
-                        <span class="lvl">01</span><span class="name">SSCHW-RECORD.</span>
-                        <span class="top-record-comment">*&gt; IDENTITY | BACKGROUND | CAREER | SKILLS | INTERESTS | COMMUNITY</span>
-                    </div>
-                    <!-- Scroll-driven 3-level hierarchy -->
-                    <div class="top-data-field">
-                        <div class="cobol-line l05">
-                            <span class="lvl">05</span>
-                            <span class="name" id="top-group-name">IDENTITY.</span>
-                        </div>
-                        <div class="cobol-line l10">
-                            <span class="lvl">10</span>
-                            <span class="name top-dyn-name" id="top-field-name">NAME</span>
-                            <span class="pic top-dyn-pic">PIC X(50)</span><span class="dot">.</span>
-                        </div>
-                        <div class="top-value-row">
-                            <span class="kw">VALUE</span>
-                            <span class="val" id="top-text-content">SEBASTIAN SCHWINN</span><span class="dot">.</span>
-                        </div>
-                    </div>
+                <div class="top-punch-wrapper">
+                    <PunchCard
+                        noStage={true}
+                        programName="SSCHW-DEV"
+                        programmerName="SEBASTIAN SCHWINN"
+                        currentSystem="RETROCODE GMBH"
+                        identificationHref="#impressum"
+                        lines={LINES}
+                    />
                 </div>
                 <div class="top-image">
                     <img src="/me.jpg"           id="top-me"     class="profile shown" alt="Sebastian" />
@@ -45,20 +57,16 @@
 <div class="sections-scroll-space" id="scroll-space-top-aboutme"></div>
 
 <script>
-const groupEl     = document.getElementById("top-group-name") as HTMLElement;
-const fieldEl     = document.getElementById("top-field-name") as HTMLElement;
-const contentEl   = document.getElementById("top-text-content") as HTMLElement;
 const scrollSpace = document.getElementById("scroll-space-top-aboutme") as HTMLElement;
 
-/* ── content items ─────────────────────────────── */
 const items = [
-    { groupName: "IDENTITY.",   fieldName: "NAME",         value: "SEBASTIAN SCHWINN",                               imageId: "top-me"     },
-    { groupName: "BACKGROUND.", fieldName: "EDUCATION",    value: "MSC ELECTRICAL ENGINEERING WITH DISTINCTION",     imageId: "top-degree" },
-    { groupName: "CAREER.",     fieldName: "CURRENT-ROLE", value: "COBOL DEVELOPER AT RETROCODE",                     imageId: "top-cobol"  },
-    { groupName: "CAREER.",     fieldName: "PREV-ROLE",    value: "EMBEDDED C DEVELOPER - OPC UA",                    imageId: "top-opcua"  },
-    { groupName: "SKILLS.",     fieldName: "LANGUAGES",    value: "PYTHON  SQL-DB2  JCL  SHELL  JAVASCRIPT",          imageId: "top-coding" },
-    { groupName: "INTERESTS.",  fieldName: "HOBBIES",      value: "3D PRINTING - TECHNICAL TINKERING",               imageId: "top-3d"     },
-    { groupName: "COMMUNITY.",  fieldName: "AFFILIATIONS", value: "BOARD MEMBER - TENNIS + TABLE TENNIS CLUBS",      imageId: "top-sports" },
+    { imageId: "top-me"     },
+    { imageId: "top-degree" },
+    { imageId: "top-cobol"  },
+    { imageId: "top-opcua"  },
+    { imageId: "top-coding" },
+    { imageId: "top-3d"     },
+    { imageId: "top-sports" },
 ];
 
 const INTERVAL_HEIGHT = 70;
@@ -71,40 +79,6 @@ function setScrollHeight() {
 window.addEventListener("load", setScrollHeight);
 window.addEventListener("resize", setScrollHeight);
 
-/* ── text scrambler ────────────────────────────── */
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-. ";
-let scrambleTimer: ReturnType<typeof setInterval> | null = null;
-
-function scramble(target: HTMLElement, text: string) {
-    if (scrambleTimer) { clearInterval(scrambleTimer); scrambleTimer = null; }
-    const split       = Math.floor(text.length * 0.4);
-    const staticPart  = text.slice(0, split);
-    const dynPart     = text.slice(split);
-    const revealedArr = Array(dynPart.length).fill(false);
-    const display     = Array.from(dynPart);
-    let frame = 0;
-
-    scrambleTimer = setInterval(() => {
-        const toReveal = Math.floor(Math.random() * 5) + 3;
-        let count = 0;
-        for (let i = 0; i < dynPart.length && count < toReveal; i++) {
-            if (!revealedArr[i]) { revealedArr[i] = true; count++; }
-        }
-        let done = 0;
-        for (let i = 0; i < dynPart.length; i++) {
-            if (revealedArr[i]) { display[i] = dynPart[i]; done++; }
-            else { display[i] = CHARS[Math.floor(Math.random() * CHARS.length)]; }
-        }
-        target.textContent = staticPart + display.join("");
-        if (done >= dynPart.length || frame > 100) {
-            clearInterval(scrambleTimer!); scrambleTimer = null;
-            target.textContent = text;
-        }
-        frame++;
-    }, 75);
-}
-
-/* ── image transitions ─────────────────────────── */
 let currentImageId = "top-me";
 
 function showImage(newId: string) {
@@ -116,15 +90,11 @@ function showImage(newId: string) {
     currentImageId = newId;
 }
 
-/* ── scroll handling ───────────────────────────── */
 let current = 0;
 
 export function statemachineTopRun() {
     const next = Math.min(Math.floor(window.scrollY / INTERVAL_HEIGHT), items.length - 1);
     if (next !== current) {
-        groupEl.textContent  = items[next].groupName;
-        fieldEl.textContent  = items[next].fieldName;
-        scramble(contentEl, items[next].value);
         if (items[next].imageId !== items[current].imageId) showImage(items[next].imageId);
         current = next;
     }

@@ -1,131 +1,78 @@
 ---
+import PunchCard from '../PunchCard.astro';
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];
+
+const CARD1_LINES: Line[] = [
+    ['000001', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
+    ['000002', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
+    ['000003', []],
+    ['000004', [['lvl','    05'],['name',' WORK-NOW'],['dot','.']]],
+    ['000005', [['lvl','        10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'RETROCODE'"],['dot','.']]],
+    ['000006', [['lvl','        10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
+    ['000007', [['lvl','        10'],['name',' SECTOR '],['kw',' PIC X(25)'],['kw',' VALUE'],['val'," 'FINANCIAL SECTOR'"],['dot','.']]],
+    ['000008', [['lvl','        10'],['name',' SINCE  '],['kw',' PIC 9(4) '],['kw',' VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000009', []],
+    ['000010', [['lvl','    05'],['name',' WORK-BFRE'],['dot','.']]],
+    ['000011', [['lvl','        10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'HILSCHER'"],['dot','.']]],
+    ['000012', [['lvl','        10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'C DEVELOPER'"],['dot','.']]],
+    ['000013', [['lvl','        10'],['name',' TECH   '],['kw',' PIC X(40)'],['kw',' VALUE'],['val'," 'OPC UA - INDUSTRIAL AUTOMATION'"],['dot','.']]],
+    ['000014', []],
+    ['000015', [['lvl','    05'],['name',' STUDIES'],['dot','.']]],
+    ['000016', [['lvl','        10'],['name',' DEGREE '],['kw',' PIC X(5) '],['kw',' VALUE'],['val'," 'MSC'"],['dot','.']]],
+    ['000017', [['lvl','        10'],['name',' FIELD  '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'ELECTRICAL ENGINEERING'"],['dot','.']]],
+    ['000018', [['lvl','        10'],['name',' GRADE  '],['kw',' PIC X(20)'],['kw',' VALUE'],['val'," 'WITH DISTINCTION'"],['dot','.']]],
+];
+
+const CARD2_LINES: Line[] = [
+    ['000001', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
+    ['000002', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
+    ['000003', []],
+    ['000004', [['lvl','    05'],['name',' PRG-LANGUAGES'],['kw',' PIC X(10)'],['dot','.']]],
+    ['000005', [['lvl','        88'],['name',' COBOL     '],['kw','  VALUE'],['val'," 'PRIMARY'"],['dot','.']]],
+    ['000006', [['lvl','        88'],['name',' C         '],['kw','  VALUE'],['val'," 'PRIMARY'"],['dot','.']]],
+    ['000007', [['lvl','        88'],['name',' CPP       '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000008', [['lvl','        88'],['name',' PYTHON    '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000009', [['lvl','        88'],['name',' SQL-DB2   '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000010', [['lvl','        88'],['name',' JCL       '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000011', [['lvl','        88'],['name',' SHELL     '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000012', [['lvl','        88'],['name',' JAVASCRIPT'],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000013', [['lvl','        88'],['name',' OPC-UA    '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000014', []],
+    ['000015', [['lvl','    05'],['name',' VOC-LANGUAGES'],['kw',' PIC X(10)'],['dot','.']]],
+    ['000016', [['lvl','        88'],['name',' GERMAN  '],['kw','  VALUE'],['val'," 'NATIVE'"],['dot','.']]],
+    ['000017', [['lvl','        88'],['name',' ENGLISH '],['kw','  VALUE'],['val'," 'C2'"],['dot','.']]],
+    ['000018', [['lvl','        88'],['name',' JAPANESE'],['kw','  VALUE'],['val'," 'BEGINNER'"],['dot','.']]],
+];
 ---
 <section id="aboutme">
-    <div class="section-scroll-container">
+    <div class="section-scroll-container" style="height: 176vh;">
         <div class="section-content-wrapper">
-            <div class="aboutme-container">
-                <div class="cobol-block">
-
-                    <div class="cobol-section-hdr">LOCAL-STORAGE SECTION.</div>
-
-                    <div class="cobol-line l01 reveal-item">
-                        <span class="lvl">01</span><span class="name">ABOUT-ME.</span>
-                        <a href="#impressum" class="cobol-author-link">*&gt; go to IMPRESSUM-SECTION</a>
-                    </div>
-
-                    <!-- WORK NOW -->
-                    <div class="cobol-spacer"></div>
-                    <div class="cobol-line l05 reveal-item">
-                        <span class="lvl">05</span><span class="name">WORK-NOW.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">COMPANY</span><span class="pic">PIC X(30)</span><span class="kw">VALUE</span><span class="val">&apos;RETROCODE&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">ROLE</span><span class="pic">PIC X(30)</span><span class="kw">VALUE</span><span class="val">&apos;COBOL DEVELOPER&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">SECTOR</span><span class="pic">PIC X(25)</span><span class="kw">VALUE</span><span class="val">&apos;FINANCIAL SECTOR&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">SINCE</span><span class="pic">PIC 9(4)</span><span class="kw">VALUE</span><span class="numval">2025</span><span class="dot">.</span>
-                    </div>
-
-                    <!-- WORK BEFORE -->
-                    <div class="cobol-spacer"></div>
-                    <div class="cobol-line l05 reveal-item">
-                        <span class="lvl">05</span><span class="name">WORK-BFRE.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">COMPANY</span><span class="pic">PIC X(30)</span><span class="kw">VALUE</span><span class="val">&apos;HILSCHER&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">ROLE</span><span class="pic">PIC X(30)</span><span class="kw">VALUE</span><span class="val">&apos;C DEVELOPER&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">TECH</span><span class="pic">PIC X(40)</span><span class="kw">VALUE</span><span class="val">&apos;OPC UA - INDUSTRIAL AUTOMATION&apos;</span><span class="dot">.</span>
-                    </div>
-
-                    <!-- STUDIES -->
-                    <div class="cobol-spacer"></div>
-                    <div class="cobol-line l05 reveal-item">
-                        <span class="lvl">05</span><span class="name">STUDIES.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">DEGREE</span><span class="pic">PIC X(5)</span><span class="kw">VALUE</span><span class="val">&apos;MSC&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">FIELD</span><span class="pic">PIC X(30)</span><span class="kw">VALUE</span><span class="val">&apos;ELECTRICAL ENGINEERING&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l10 reveal-item">
-                        <span class="lvl">10</span><span class="name">GRADE</span><span class="pic">PIC X(20)</span><span class="kw">VALUE</span><span class="val">&apos;WITH DISTINCTION&apos;</span><span class="dot">.</span>
-                    </div>
-
-                    <!-- PRG-LANGUAGES -->
-                    <div class="cobol-spacer"></div>
-                    <div class="cobol-line l05 reveal-item">
-                        <span class="lvl">05</span><span class="name">PRG-LANGUAGES</span><span class="pic">PIC X(10)</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 primary reveal-item">
-                        <span class="lvl">88</span><span class="name">COBOL</span><span class="kw">VALUE</span><span class="val">&apos;PRIMARY&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 primary reveal-item">
-                        <span class="lvl">88</span><span class="name">C</span><span class="kw">VALUE</span><span class="val">&apos;PRIMARY&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">CPP</span><span class="kw">VALUE</span><span class="val">&apos;KNOWN&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">PYTHON</span><span class="kw">VALUE</span><span class="val">&apos;KNOWN&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">SQL-DB2</span><span class="kw">VALUE</span><span class="val">&apos;KNOWN&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">JCL</span><span class="kw">VALUE</span><span class="val">&apos;KNOWN&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">SHELL</span><span class="kw">VALUE</span><span class="val">&apos;KNOWN&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">JAVASCRIPT</span><span class="kw">VALUE</span><span class="val">&apos;KNOWN&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">OPC-UA</span><span class="kw">VALUE</span><span class="val">&apos;KNOWN&apos;</span><span class="dot">.</span>
-                    </div>
-
-                    <!-- VOC-LANGUAGES -->
-                    <div class="cobol-spacer"></div>
-                    <div class="cobol-line l05 reveal-item">
-                        <span class="lvl">05</span><span class="name">VOC-LANGUAGES</span><span class="pic">PIC X(10)</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">GERMAN</span><span class="kw">VALUE</span><span class="val">&apos;NATIVE&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">ENGLISH</span><span class="kw">VALUE</span><span class="val">&apos;C2&apos;</span><span class="dot">.</span>
-                    </div>
-                    <div class="cobol-line l88 reveal-item">
-                        <span class="lvl">88</span><span class="name">JAPANESE</span><span class="kw">VALUE</span><span class="val">&apos;BEGINNER&apos;</span><span class="dot">.</span>
-                    </div>
-
-
-                </div>
+            <div class="pcf-stage-multi">
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={CARD1_LINES}
+                />
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={CARD2_LINES}
+                />
             </div>
         </div>
     </div>
 </section>
 
 <script>
-let revealed = false;
-
-export function statemachineAboutMeRun() {
-    if (revealed) return;
-    revealed = true;
-
-    const items = document.querySelectorAll<HTMLElement>('#aboutme .reveal-item');
-    items.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), i * 35));
-}
-
+export function statemachineAboutMeRun() {}
 (window as any).__aboutMeRun = statemachineAboutMeRun;
 </script>

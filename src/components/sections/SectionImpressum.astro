@@ -1,71 +1,67 @@
 ---
+import PunchCard from '../PunchCard.astro';
 ---
 <section id="impressum">
-    <div class="section-scroll-container">
+    <div class="section-scroll-container pcf-section-height">
         <div class="section-content-wrapper">
-            <div class="impressum-container">
-                <div class="cobol-section-hdr impressum-para-hdr">IMPRESSUM-SECTION.</div>
+            <PunchCard
+                programName="SSCHW-DEV"
+                programmerName="SEBASTIAN SCHWINN"
+                currentSystem="RETROCODE GMBH"
+                identificationHref="#impressum"
+                displaySlot={true}
+                displayLabel="IMPRESSUM-SECTION."
+            >
+                <div class="impressum-grid">
+                    <div class="impressum-col">
+                        <div class="impressum-section-title">Angaben gemäß § 5 TMG</div>
+                        <p class="impressum-text">
+                            Sebastian Schwinn<br />
+                            Werner-von-Siemens-Str. 64<br />
+                            64711 Erbach, Deutschland
+                        </p>
 
-                <div class="impressum-display-kw">DISPLAY</div>
-                <div class="impressum-display-body">
-                    <div class="impressum-grid">
-                        <div class="impressum-col">
-                            <div class="impressum-section-title">Angaben gemäß § 5 TMG</div>
-                            <p class="impressum-text">
-                                Sebastian Schwinn<br />
-                                Werner-von-Siemens-Str. 64<br />
-                                64711 Erbach, Deutschland
-                            </p>
+                        <div class="impressum-section-title">Kontakt</div>
+                        <p class="impressum-text">
+                            <a href="mailto:Seb.Schwinn@googlemail.com">Seb.Schwinn@googlemail.com</a>
+                        </p>
 
-                            <div class="impressum-section-title">Kontakt</div>
-                            <p class="impressum-text">
-                                <a href="mailto:Seb.Schwinn@googlemail.com">Seb.Schwinn@googlemail.com</a>
-                            </p>
+                        <div class="impressum-section-title">Verantwortlich nach § 18 Abs. 2 MStV</div>
+                        <p class="impressum-text">
+                            Sebastian Schwinn, Werner-von-Siemens-Str. 64, 64711 Erbach
+                        </p>
 
-                            <div class="impressum-section-title">Verantwortlich nach § 18 Abs. 2 MStV</div>
-                            <p class="impressum-text">
-                                Sebastian Schwinn, Werner-von-Siemens-Str. 64, 64711 Erbach
-                            </p>
+                        <div class="impressum-section-title">Datenschutz</div>
+                        <p class="impressum-text">
+                            Diese Website erhebt keine personenbezogenen Daten und setzt keine Cookies.
+                            Serverseitige Zugriffslogdaten (IP, Zeitstempel, URL) werden nicht an Dritte weitergegeben.
+                        </p>
+                    </div>
 
-                            <div class="impressum-section-title">Datenschutz</div>
-                            <p class="impressum-text">
-                                Diese Website erhebt keine personenbezogenen Daten und setzt keine Cookies.
-                                Serverseitige Zugriffslogdaten (IP, Zeitstempel, URL) werden nicht an Dritte weitergegeben.
-                            </p>
-                        </div>
+                    <div class="impressum-col">
+                        <div class="impressum-section-title">Haftung für Inhalte</div>
+                        <p class="impressum-text">
+                            Als Diensteanbieter bin ich gemäß § 7 Abs. 1 TMG für eigene Inhalte nach den allgemeinen Gesetzen
+                            verantwortlich. Nach §§ 8–10 TMG bin ich nicht verpflichtet, übermittelte fremde Informationen zu
+                            überwachen. Verpflichtungen zur Entfernung rechtswidriger Informationen bleiben hiervon unberührt.
+                        </p>
 
-                        <div class="impressum-col">
-                            <div class="impressum-section-title">Haftung für Inhalte</div>
-                            <p class="impressum-text">
-                                Als Diensteanbieter bin ich gemäß § 7 Abs. 1 TMG für eigene Inhalte nach den allgemeinen Gesetzen
-                                verantwortlich. Nach §§ 8–10 TMG bin ich nicht verpflichtet, übermittelte fremde Informationen zu
-                                überwachen. Verpflichtungen zur Entfernung rechtswidriger Informationen bleiben hiervon unberührt.
-                            </p>
+                        <div class="impressum-section-title">Haftung für Links</div>
+                        <p class="impressum-text">
+                            Für die Inhalte verlinkter Seiten sind stets deren Betreiber verantwortlich. Die verlinkten Seiten
+                            wurden zum Zeitpunkt der Verlinkung auf Rechtsverstöße überprüft — rechtswidrige Inhalte waren nicht
+                            erkennbar. Eine permanente Kontrolle ist ohne konkrete Anhaltspunkte nicht zumutbar.
+                        </p>
 
-                            <div class="impressum-section-title">Haftung für Links</div>
-                            <p class="impressum-text">
-                                Für die Inhalte verlinkter Seiten sind stets deren Betreiber verantwortlich. Die verlinkten Seiten
-                                wurden zum Zeitpunkt der Verlinkung auf Rechtsverstöße überprüft — rechtswidrige Inhalte waren nicht
-                                erkennbar. Eine permanente Kontrolle ist ohne konkrete Anhaltspunkte nicht zumutbar.
-                            </p>
-
-                            <div class="impressum-section-title">Urheberrecht</div>
-                            <p class="impressum-text">
-                                Die durch den Seitenbetreiber erstellten Inhalte unterliegen dem deutschen Urheberrecht.
-                                Vervielfältigung und Verbreitung bedürfen der schriftlichen Zustimmung. Downloads sind nur für den
-                                privaten, nicht kommerziellen Gebrauch gestattet.
-                            </p>
-                        </div>
+                        <div class="impressum-section-title">Urheberrecht</div>
+                        <p class="impressum-text">
+                            Die durch den Seitenbetreiber erstellten Inhalte unterliegen dem deutschen Urheberrecht.
+                            Vervielfältigung und Verbreitung bedürfen der schriftlichen Zustimmung. Downloads sind nur für den
+                            privaten, nicht kommerziellen Gebrauch gestattet.
+                        </p>
                     </div>
                 </div>
-                <div class="impressum-display-kw">END-DISPLAY</div>
-
-                <a href="#links" class="cobol-exit-link">
-                    <span class="kw">EXIT PARAGRAPH</span>
-                    <span class="call-comment">*&gt; return to top of LINKS SECTION</span>
-                </a>
-                <div class="impressum-exit-dot">.</div>
-            </div>
+            </PunchCard>
         </div>
     </div>
 </section>
