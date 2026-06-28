@@ -9,9 +9,9 @@ const compiled = new Date().toISOString().slice(0, 10);
 
                     <!-- ── Title bar ── -->
                     <div class="pcf-title-bar">
-                        <span class="pcf-title-brand">PROGRAM NAVIGATION</span>
-                        <span class="pcf-title-name">COBOL CODING FORM</span>
-                        <span class="pcf-title-form-no">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;18&nbsp;ROW</span>
+                        <span class="pcf-title-side">Program Information</span>
+                        <span class="pcf-title-name">Program Navigation</span>
+                        <span class="pcf-title-side pcf-title-right">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;18&nbsp;ROW</span>
                     </div>
 
                     <!-- ── 3-row form header ── -->
@@ -23,14 +23,15 @@ const compiled = new Date().toISOString().slice(0, 10);
                                 <span class="pcf-fh-lbl">PROGRAMMER</span>
                                 <span class="pcf-fh-val">SEBASTIAN SCHWINN</span>
                             </div>
-                            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-inline">
-                                <span class="pcf-fh-inline-lbl">DIVISION</span>
-                                <span class="pcf-fh-colon">:</span>
-                                <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
-                                <span class="pcf-nav-dot">·</span>
-                                <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
-                                <span class="pcf-nav-dot">·</span>
-                                <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
+                            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                                <span class="pcf-fh-lbl">DIVISION</span>
+                                <div class="pcf-fh-nav">
+                                    <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
+                                    <span class="pcf-nav-dot">·</span>
+                                    <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
+                                    <span class="pcf-nav-dot">·</span>
+                                    <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
+                                </div>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w3">
                                 <span class="pcf-fh-lbl">PAGE</span>
@@ -44,10 +45,9 @@ const compiled = new Date().toISOString().slice(0, 10);
                                 <span class="pcf-fh-lbl">PROGRAM</span>
                                 <span class="pcf-fh-val">SSCHW-DEV</span>
                             </div>
-                            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-inline">
-                                <span class="pcf-fh-inline-lbl">SECTION</span>
-                                <span class="pcf-fh-colon">:</span>
-                                <div id="pcf-nav-sec" class="pcf-sec-container"></div>
+                            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                                <span class="pcf-fh-lbl">SECTION</span>
+                                <div class="pcf-fh-nav" id="pcf-nav-sec"></div>
                             </div>
                             <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#impressum">
                                 <span class="pcf-fh-lbl">IDENTIFICATION</span>
@@ -132,7 +132,7 @@ const SECTIONS_BY_DIV: Record<string,{label:string;href:string}[]> = {
     ],
 };
 
-const secContainer = document.getElementById('pcf-nav-sec')!;
+const secNav = document.getElementById('pcf-nav-sec')!;
 for (const [divId, secs] of Object.entries(SECTIONS_BY_DIV)) {
     const grp = document.createElement('div');
     grp.className = 'pcf-sec-group';
@@ -145,7 +145,7 @@ for (const [divId, secs] of Object.entries(SECTIONS_BY_DIV)) {
         a.textContent = sec.label;
         grp.appendChild(a);
     });
-    secContainer.appendChild(grp);
+    secNav.appendChild(grp);
 }
 
 function getActiveId(): string {
@@ -172,8 +172,7 @@ function updatePcfNav(activeId: string) {
 window.addEventListener('scroll', () => updatePcfNav(getActiveId()), {passive:true});
 updatePcfNav(getActiveId());
 
-// ── Rulers ─────────────────────────────────────────────────────────────────
-// Seq ruler ticks use same font-size as pcf-seq (0.58rem) so 1ch matches content chars
+// ── Seq rulers — space-evenly matches the per-digit content spans ───────────
 function buildSeqRuler(id: string) {
     const el = document.getElementById(id)!;
     for (let i = 1; i <= 6; i++) {
@@ -183,20 +182,32 @@ function buildSeqRuler(id: string) {
         el.appendChild(s);
     }
 }
-function buildCharsRuler(id: string) {
-    const el = document.getElementById(id)!;
-    [8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,80].forEach(col => {
-        const s = document.createElement('span');
-        s.className = 'pcf-rchars-tick';
-        s.textContent = String(col);
-        s.style.left = `${((col-1)/79)*100}%`;
-        el.appendChild(s);
-    });
-}
-buildSeqRuler('pcf-rseq-top'); buildSeqRuler('pcf-rseq-btm');
-buildCharsRuler('pcf-rchars-top'); buildCharsRuler('pcf-rchars-btm');
+buildSeqRuler('pcf-rseq-top');
+buildSeqRuler('pcf-rseq-btm');
 
-// ── Content ────────────────────────────────────────────────────────────────
+// ── Chars ruler — pixel-accurate: measure a real content span after render ──
+function buildCharsRulers() {
+    const sampleSpan = document.querySelector<HTMLElement>('#pcf-punch-area .pcf-chars span');
+    if (!sampleSpan) return;
+    const chPx = sampleSpan.getBoundingClientRect().width;
+    if (chPx <= 0) return;
+    const tickPx = chPx * 4;  // one tick = 4 content columns
+
+    for (const id of ['pcf-rchars-top', 'pcf-rchars-btm']) {
+        const el = document.getElementById(id)!;
+        el.innerHTML = '';
+        // 20 ticks × 4 cols = 80 cols total
+        for (let c = 4; c <= 80; c += 4) {
+            const s = document.createElement('span');
+            s.className = 'pcf-rchars-tick';
+            s.textContent = String(c);
+            s.style.width = `${tickPx}px`;
+            el.appendChild(s);
+        }
+    }
+}
+
+// ── Content lines ──────────────────────────────────────────────────────────
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
 type Line  = [string, Token[]];
@@ -238,16 +249,24 @@ LINES.forEach(([seq, tokens], idx) => {
     const row = document.createElement('div');
     row.className = 'pcf-line-row';
 
+    // Line number
     const lineNum = document.createElement('div');
     lineNum.className = 'pcf-line-num';
     lineNum.textContent = String(idx + 1).padStart(2, '0');
     row.appendChild(lineNum);
 
+    // Sequence number: one span per digit so space-evenly matches the ruler
     const seqEl = document.createElement('div');
     seqEl.className = 'pcf-seq';
-    seqEl.textContent = seq;
+    for (const ch of seq) {
+        const s = document.createElement('span');
+        s.className = 'pcf-seq-digit';
+        s.textContent = ch;
+        seqEl.appendChild(s);
+    }
     row.appendChild(seqEl);
 
+    // 80-col content
     const charsEl = document.createElement('div');
     charsEl.className = 'pcf-chars';
     for (let i = 0; i < COLS; i++) {
@@ -260,6 +279,10 @@ LINES.forEach(([seq, tokens], idx) => {
     row.appendChild(charsEl);
     area.appendChild(row);
 });
+
+// Measure after first paint so ruler pixel widths are accurate
+requestAnimationFrame(buildCharsRulers);
+window.addEventListener('resize', buildCharsRulers, {passive: true});
 </script>
 
 <style is:global>
@@ -275,7 +298,7 @@ LINES.forEach(([seq, tokens], idx) => {
     padding: 7vh 7%;
 }
 
-/* ── CARD — aged paper feel ─────────────────────────────────────────────── */
+/* ── CARD ───────────────────────────────────────────────────────────────── */
 .pcf-card {
     display: flex;
     flex-direction: column;
@@ -283,7 +306,6 @@ LINES.forEach(([seq, tokens], idx) => {
     flex: 1;
     min-height: 0;
     background-color: #F5EDD4;
-    /* Uneven yellowing: darker in corners, lighter toward centre */
     background-image:
         radial-gradient(ellipse 80% 60% at 6% 94%,  rgba(155,95,15,0.16) 0%, transparent 55%),
         radial-gradient(ellipse 60% 50% at 94% 6%,  rgba(155,95,15,0.11) 0%, transparent 50%),
@@ -291,10 +313,8 @@ LINES.forEach(([seq, tokens], idx) => {
         linear-gradient(170deg, rgba(255,250,225,0.22) 0%, transparent 30%);
     border: 1.5px solid #C2A840;
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
-    box-shadow:
-        0 8px 32px rgba(0,0,0,0.28),
-        0 2px 8px rgba(0,0,0,0.14),
-        inset 0 0 80px rgba(139,90,20,0.07);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14),
+                inset 0 0 80px rgba(139,90,20,0.07);
     overflow: hidden;
     font-family: "Share Tech Mono", monospace;
     font-size: clamp(0.9rem, 1.5vw, 1.4rem);
@@ -311,26 +331,21 @@ LINES.forEach(([seq, tokens], idx) => {
     border-bottom: 1.5px solid #C2A840;
     flex-shrink: 0;
 }
-.pcf-title-brand {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: #5A3A10;
-    letter-spacing: 0.05em;
-}
-.pcf-title-name {
-    font-size: 0.72rem;
-    color: #2C1A00;
-    letter-spacing: 0.16em;
-    text-align: center;
-}
-.pcf-title-form-no {
-    font-size: 0.38rem;
-    color: #9B8050;
-    text-align: right;
+/* Left and right share the same font — both are descriptive labels */
+.pcf-title-side {
+    font-size: 0.60rem;
+    font-weight: 400;
+    color: #7A6020;
     letter-spacing: 0.04em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+}
+.pcf-title-right { text-align: right; }
+/* Center is the prominent title */
+.pcf-title-name {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #2C1A00;
+    letter-spacing: 0.12em;
+    text-align: center;
 }
 
 /* ── FORM HEADER ────────────────────────────────────────────────────────── */
@@ -365,26 +380,10 @@ LINES.forEach(([seq, tokens], idx) => {
 .pcf-fh-w2 { flex: 3.5; }
 .pcf-fh-w3 { flex: 1.5; }
 
-/* Inline nav row: label + items on one line */
-.pcf-fh-inline {
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 5px;
-    flex-wrap: nowrap;
-    padding: 4px 8px;
-}
-.pcf-fh-inline-lbl {
-    font-size: 0.44rem;
-    color: #9B8050;
-    letter-spacing: 0.07em;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.pcf-fh-colon {
-    font-size: 0.44rem;
-    color: #9B8050;
-    flex-shrink: 0;
-    margin-right: 1px;
+/* Nav cells: subtle amber left-border signals interactivity */
+.pcf-fh-nav-cell {
+    border-left: 3px solid rgba(194,168,64,0.45);
+    padding-left: 6px;
 }
 
 .pcf-fh-lbl {
@@ -403,39 +402,52 @@ LINES.forEach(([seq, tokens], idx) => {
     line-height: 1.15;
 }
 
-/* Nav items — larger in inline mode */
-.pcf-div-item, .pcf-sec-item {
-    font-size: 0.72rem;
-    color: #B8965A;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: color 0.1s;
-    letter-spacing: 0.02em;
+/* Nav rows (DIVISION / SECTION) */
+.pcf-fh-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
-.pcf-div-item:hover, .pcf-sec-item:hover { color: #5A3A10; }
-.pcf-div-item.pcf-nav-active,
-.pcf-sec-item.pcf-nav-active { color: #1A0E00; }
-.pcf-div-item.pcf-nav-active::before,
-.pcf-sec-item.pcf-nav-active::before {
-    content: '▶ ';
-    font-size: 0.42rem;
-    vertical-align: middle;
+.pcf-sec-group {
+    display: none;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
 }
-
 .pcf-nav-dot {
     font-size: 0.5rem;
     color: #C8AE58;
     flex-shrink: 0;
 }
-.pcf-sec-container { display: contents; }
-.pcf-sec-group {
-    display: none;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
+
+/* Nav items: column layout, larger than labels, dashed underline on hover */
+.pcf-div-item, .pcf-sec-item {
+    font-size: 0.68rem;
+    color: #9B8050;
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    border-bottom: 1px dashed transparent;
+    padding-bottom: 1px;
+    transition: color 0.12s, border-color 0.12s;
+}
+.pcf-div-item:hover, .pcf-sec-item:hover {
+    color: #5A3A10;
+    border-bottom-color: #9B8050;
+}
+.pcf-div-item.pcf-nav-active, .pcf-sec-item.pcf-nav-active {
+    color: #1A0E00;
+}
+.pcf-div-item.pcf-nav-active::before, .pcf-sec-item.pcf-nav-active::before {
+    content: '▶ ';
+    font-size: 0.42rem;
+    vertical-align: middle;
 }
 
-/* IDENTIFICATION (links to Impressum) */
+/* IDENTIFICATION → Impressum */
 .pcf-fh-id {
     text-decoration: none;
     cursor: pointer;
@@ -450,8 +462,7 @@ LINES.forEach(([seq, tokens], idx) => {
     margin-top: 2px;
 }
 .pcf-id-box {
-    width: 9px;
-    height: 11px;
+    width: 9px; height: 11px;
     border: 1px solid #C2A840;
     background: #F0E4B8;
     flex-shrink: 0;
@@ -469,14 +480,19 @@ LINES.forEach(([seq, tokens], idx) => {
     overflow: hidden;
 }
 
-/* Zone labels */
+/* Shared row layout: linenum(32px) | seq(72px) | chars(flex 1) */
+.pcf-zone-row, .pcf-ruler-row, .pcf-line-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+/* Zone label row */
 .pcf-zone-row {
     height: 15px;
     background: #EDE0A8;
     border-bottom: 1.5px solid #C2A840;
     flex-shrink: 0;
-    display: flex;
-    flex-direction: row;
     align-items: center;
 }
 .pcf-zone-linenum, .pcf-zone-seq, .pcf-zone-stmt {
@@ -491,78 +507,73 @@ LINES.forEach(([seq, tokens], idx) => {
 .pcf-zone-seq     { width: 72px; flex-shrink: 0; border-right: 1.5px solid #C2A840; }
 .pcf-zone-stmt    { flex: 1; }
 
-/* Column rulers (top + bottom) */
+/* Rulers */
 .pcf-ruler-row {
     height: 13px;
     background: #EDE0A8;
     border-bottom: 1px solid #D4C478;
     flex-shrink: 0;
-    display: flex;
-    flex-direction: row;
     align-items: center;
 }
 .pcf-ruler-btm { border-bottom: none; border-top: 1px solid #D4C478; }
 .pcf-ruler-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; height: 100%; }
 
-/* Seq ruler — SAME font-size and alignment as pcf-seq so ticks align with digits */
+/* Seq ruler: space-evenly matches the per-digit content spans */
 .pcf-ruler-seq {
     width: 72px;
     flex-shrink: 0;
     border-right: 1.5px solid #C2A840;
     display: flex;
+    justify-content: space-evenly;
     align-items: center;
-    justify-content: flex-end;     /* match pcf-seq justify */
-    padding: 0 5px;                /* match pcf-seq padding */
-    font-size: 0.58rem;            /* match pcf-seq font-size so 1ch is identical */
+    font-size: 0.58rem;
 }
-/* Each tick occupies exactly 1ch at 0.58rem — same as one sequence number digit */
 .pcf-rseq-tick {
-    display: inline-block;
-    width: 1ch;
+    flex: 1;
     text-align: center;
+    font-size: 0.58rem;
     color: #9B8050;
-    opacity: 0.75;
-    font-size: inherit;
+    opacity: 0.7;
 }
 
-.pcf-ruler-chars { flex: 1; position: relative; }
+/* Chars ruler: flex, tick widths set by JS to match real content span px width */
+.pcf-ruler-chars {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+}
 .pcf-rchars-tick {
-    position: absolute;
+    display: inline-block;
+    text-align: right;
     font-size: 0.34rem;
     color: #9B8050;
-    transform: translateX(-50%);
-    bottom: 1px;
-    white-space: nowrap;
+    flex-shrink: 0;
+    overflow: hidden;
+    /* width set by JS after first paint */
 }
 
-/* Punch rows */
+/* Punch area */
 .pcf-punch-area {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    /* Subtle coffee-stain impression, bottom-right of punch area */
     background-image:
         radial-gradient(ellipse 9% 7% at 74% 68%, rgba(125,75,10,0.10) 0%, rgba(125,75,10,0.03) 55%, transparent 100%);
 }
-
 .pcf-line-row {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
     flex: 1;
     min-height: 0;
     border-bottom: 1px solid #D4C478;
     flex-shrink: 1;
 }
 .pcf-line-row:last-child { border-bottom: none; }
-
-/* Subtle line-colour variation — aged, not perfectly uniform */
 .pcf-line-row:nth-child(4n+1) { border-bottom-color: #CEB870; }
 .pcf-line-row:nth-child(7n+3) { border-bottom-color: #DDD090; }
 
-/* Line numbers — larger than col ruler ticks */
+/* Line numbers */
 .pcf-line-num {
     width: 32px;
     flex-shrink: 0;
@@ -575,22 +586,24 @@ LINES.forEach(([seq, tokens], idx) => {
     border-right: 1px solid #D4C478;
 }
 
-/* Sequence column — small explicit size so 6 digits always fit */
+/* Sequence column: space-evenly with per-digit child spans */
 .pcf-seq {
     width: 72px;
     flex-shrink: 0;
     display: flex;
+    justify-content: space-evenly;
     align-items: center;
-    justify-content: flex-end;
-    padding: 0 5px;
     font-size: 0.58rem;
     color: var(--text-muted);
     background: #EDE0A8;
     border-right: 1.5px solid #C2A840;
-    white-space: nowrap;
+}
+.pcf-seq-digit {
+    flex: 1;
+    text-align: center;
 }
 
-/* 80-column character area */
+/* Content area */
 .pcf-chars {
     display: flex;
     align-items: center;
@@ -606,21 +619,21 @@ LINES.forEach(([seq, tokens], idx) => {
     flex-shrink: 0;
 }
 
-/* ── Wear & tear: ink pressure variation ─────────────────────────────────── */
+/* Wear: ink pressure */
 .pcf-chars span:not(.pcc-empty):nth-child(7n)    { opacity: 0.79; }
 .pcf-chars span:not(.pcc-empty):nth-child(11n+2) { opacity: 0.88; }
 .pcf-chars span:not(.pcc-empty):nth-child(13n+5) { opacity: 0.82; }
 .pcf-chars span:not(.pcc-empty):nth-child(17n)   { opacity: 0.91; }
 .pcf-chars span:not(.pcc-empty):nth-child(19n+3) { opacity: 0.84; }
 
-/* ── Wear & tear: typewriter keystrike misalignment ─────────────────────── */
+/* Wear: typewriter misalignment */
 .pcf-chars span:nth-child(5n+1)  { transform: translateY(0.5px); }
 .pcf-chars span:nth-child(8n+3)  { transform: translateY(-0.4px); }
 .pcf-chars span:nth-child(12n+7) { transform: translateY(0.35px) translateX(0.2px); }
 .pcf-chars span:nth-child(15n+2) { transform: translateX(-0.3px); }
 .pcf-chars span:nth-child(21n+9) { transform: translateY(-0.3px) translateX(0.25px); }
 
-/* ── Non-punched position: dot with organic size variation ───────────────── */
+/* Non-punched dots */
 .pcc-empty::before {
     content: '';
     position: absolute;
@@ -634,7 +647,7 @@ LINES.forEach(([seq, tokens], idx) => {
 .pcc-empty:nth-child(3n+2)::before { width: 3px;   height: 3px;   opacity: 0.65; }
 .pcc-empty:nth-child(5n+4)::before { width: 2.5px; height: 2px;   opacity: 0.75; }
 
-/* ── Token type colors ───────────────────────────────────────────────────── */
+/* ── Token colors ───────────────────────────────────────────────────────── */
 .pcc-div     { color: #1A0E00; }
 .pcc-section { color: #2C1A00; }
 .pcc-para    { color: var(--blue-darker-1); }
