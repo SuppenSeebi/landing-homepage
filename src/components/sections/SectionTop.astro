@@ -5,25 +5,26 @@ type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
+// Static header + initial dynamic rows (item 0: IDENTITY)
 const LINES: Line[] = [
     ['000001', [['div','DATA DIVISION'],['dot','.']]],
     ['000002', [['section','WORKING-STORAGE SECTION'],['dot','.']]],
     ['000003', [['lvl','01'],['name',' SSCHW-RECORD'],['dot','.']]],
-    ['000004', [['lvl','    05'],['name',' NAME    '],['kw',' PIC X(50)'],['kw','  VALUE'],['val'," 'SEBASTIAN SCHWINN'"],['dot','.']]],
-    ['000005', [['lvl','    05'],['name',' ROLE    '],['kw',' PIC X(40)'],['kw','  VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
-    ['000006', [['lvl','    05'],['name',' YEAR    '],['kw',' PIC 9(4) '],['kw','  VALUE'],['numval',' 2025'],['dot','.']]],
-    ['000007', [['lvl','    88'],['name',' ACTIVE  '],['kw','           VALUE'],['numval',' 2025'],['dot','.']]],
-    ['000008', [['lvl','01'],['name',' WORK-VARS'],['dot','.']]],
-    ['000009', [['lvl','    05'],['name',' WS-STATUS'],['kw',' PIC X(10)'],['kw','  VALUE'],['val'," 'AVAILABLE'"],['dot','.']]],
-    ['000010', [['lvl','    05'],['name',' WS-CTR   '],['kw',' PIC 9(3) '],['kw','  VALUE'],['numval','  000'],['dot','.']]],
+    ['000004', []],
+    ['000005', [['lvl','    05'],['name',' IDENTITY     '],['dot','.']]],
+    ['000006', [['lvl','        10'],['name',' NME-VAL  '],['kw',' PIC X(32)'],['kw','  VALUE'],['val',"'SEBASTIAN SCHWINN               '"],['dot','.']]],
+    ['000007', [['lvl','        10'],['name',' NME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val',"'NAME     '"],['dot','.']]],
+    ['000008', []],
+    ['000009', []],
+    ['000010', []],
     ['000011', []],
-    ['000012', [['div','PROCEDURE DIVISION'],['dot','.']]],
-    ['000013', [['para','MAIN-PRGRPH'],['dot','.']]],
-    ['000014', [['kw','    DISPLAY'],['name',' NAME']]],
-    ['000015', [['kw','    PERFORM'],['name',' INIT-PRGRPH'],['kw',' THRU'],['name',' INIT-END']]],
-    ['000016', [['kw','    MOVE'],['val'," 'ENGINEER'"],['kw',' TO'],['name',' ROLE']]],
-    ['000017', [['kw','    STOP RUN'],['dot','.']]],
-    ['000018', [['para','INIT-PRGRPH'],['dot','.']]],
+    ['000012', []],
+    ['000013', []],
+    ['000014', []],
+    ['000015', []],
+    ['000016', []],
+    ['000017', []],
+    ['000018', []],
 ];
 ---
 <section id="top">
@@ -57,47 +58,187 @@ const LINES: Line[] = [
 <div class="sections-scroll-space" id="scroll-space-top-aboutme"></div>
 
 <script>
-const scrollSpace = document.getElementById("scroll-space-top-aboutme") as HTMLElement;
+const scrollSpace = document.getElementById('scroll-space-top-aboutme') as HTMLElement;
 
+// ── Items ─────────────────────────────────────────────────────────────────────
+// Group: 14 chars (positions 6-19 in row 4)
+// Value: 34 chars (positions 6-39 in row 5, i.e. after lvl+name+kw+kw tokens)
+// Desc:  11 chars (positions 39-49 in row 6)
 const items = [
-    { imageId: "top-me"     },
-    { imageId: "top-degree" },
-    { imageId: "top-cobol"  },
-    { imageId: "top-opcua"  },
-    { imageId: "top-coding" },
-    { imageId: "top-3d"     },
-    { imageId: "top-sports" },
+    { group: ' IDENTITY     ', value: "'SEBASTIAN SCHWINN               '", desc: "'NAME     '", imageId: 'top-me'     },
+    { group: ' BACKGROUND   ', value: "'MSC ELECTRICAL ENGINEERING      '", desc: "'EDUCATION'", imageId: 'top-degree' },
+    { group: ' CAREER       ', value: "'COBOL DEVELOPER AT RETROCODE    '", desc: "'CURR-ROLE'", imageId: 'top-cobol'  },
+    { group: ' CAREER       ', value: "'EMBEDDED C / OPC-UA             '", desc: "'PREV-ROLE'", imageId: 'top-opcua'  },
+    { group: ' SKILLS       ', value: "'PYTHON  SQL-DB2  JCL  JS        '", desc: "'LANGUAGES'", imageId: 'top-coding' },
+    { group: ' INTERESTS    ', value: "'3D PRINTING - TECHNICAL TINKERIN'", desc: "'HOBBIES  '", imageId: 'top-3d'     },
+    { group: ' COMMUNITY    ', value: "'TENNIS + TABLE TENNIS CLUBS     '", desc: "'COMMUNITY'", imageId: 'top-sports' },
 ];
+
+// Span position constants (character offsets within each row's .pcf-chars)
+// Row 4 (index 4): ['lvl','    05'] = 6 chars, then ['name',' IDENTITY     '] = 14 chars
+const NAME_ROW = 4;
+const NAME_START = 6;
+const NAME_LEN = 14;
+
+// Row 5 (index 5): lvl(10) + name(10) + kw(10) + kw(7) = 37, then val(34)
+const VAL_ROW = 5;
+const VAL_START = 37;
+const VAL_LEN = 34;
+
+// Row 6 (index 6): lvl(10) + name(12) + kw(10) + kw(7) = 39, then val(11)
+const DESC_ROW = 6;
+const DESC_START = 39;
+const DESC_LEN = 11;
+
+const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\-._*@#';
+
+// ── Scramble helpers ──────────────────────────────────────────────────────────
+
+function getRowSpans(area: HTMLElement, rowIdx: number): HTMLElement[] {
+    const rows = area.querySelectorAll('.pcf-line-row');
+    const row = rows[rowIdx];
+    if (!row) return [];
+    return Array.from(row.querySelectorAll('.pcf-chars span')) as HTMLElement[];
+}
+
+function directUpdate(spans: HTMLElement[], start: number, len: number, text: string, cls: string) {
+    for (let i = 0; i < len; i++) {
+        const span = spans[start + i];
+        if (!span) continue;
+        const ch = text[i] ?? ' ';
+        if (ch === ' ') { span.className = 'pcc-empty'; span.textContent = ''; }
+        else { span.className = cls; span.textContent = ch; }
+    }
+}
+
+let nameTimer: ReturnType<typeof setInterval> | null = null;
+let valTimer: ReturnType<typeof setInterval> | null = null;
+
+function scrambleRange(
+    spans: HTMLElement[],
+    start: number,
+    len: number,
+    text: string,
+    cls: string
+): ReturnType<typeof setInterval> {
+    const target = Array.from(text);
+    const revealed = new Array(len).fill(false);
+    let noiseFrames = 3;
+
+    const handle = setInterval(() => {
+        if (noiseFrames > 0) {
+            for (let i = 0; i < len; i++) {
+                const span = spans[start + i];
+                if (span) { span.className = cls; span.textContent = NOISE[Math.floor(Math.random() * NOISE.length)]; }
+            }
+            noiseFrames--;
+            return;
+        }
+
+        const unrevealed = revealed.reduce<number[]>((a, r, i) => { if (!r) a.push(i); return a; }, []);
+        const n = Math.min(Math.floor(Math.random() * 4) + 3, unrevealed.length);
+        for (let k = 0; k < n; k++) {
+            const pick = Math.floor(Math.random() * unrevealed.length);
+            revealed[unrevealed[pick]] = true;
+            unrevealed.splice(pick, 1);
+        }
+
+        for (let i = 0; i < len; i++) {
+            const span = spans[start + i];
+            if (!span) continue;
+            if (revealed[i]) {
+                const ch = target[i] ?? ' ';
+                if (ch === ' ') { span.className = 'pcc-empty'; span.textContent = ''; }
+                else { span.className = cls; span.textContent = ch; }
+            } else {
+                span.className = cls;
+                span.textContent = NOISE[Math.floor(Math.random() * NOISE.length)];
+            }
+        }
+
+        if (revealed.every(Boolean)) clearInterval(handle);
+    }, 80);
+
+    return handle;
+}
+
+// ── Image switcher ────────────────────────────────────────────────────────────
+
+let currentImageId = 'top-me';
+
+function showImage(newId: string) {
+    if (newId === currentImageId) return;
+    const prev = document.getElementById(currentImageId);
+    const next = document.getElementById(newId);
+    if (prev) { prev.classList.remove('shown', 'slide-in'); prev.classList.add('slide-out'); }
+    if (next) { next.classList.remove('slide-out'); next.classList.add('slide-in'); }
+    currentImageId = newId;
+}
+
+// ── Scroll height ─────────────────────────────────────────────────────────────
 
 const INTERVAL_HEIGHT = 70;
 
 function setScrollHeight() {
     const container = document.querySelector<HTMLElement>('#top .section-scroll-container');
     if (container) container.style.height = `${INTERVAL_HEIGHT * items.length + window.innerHeight / 2}px`;
-    scrollSpace.style.height = `${INTERVAL_HEIGHT}px`;
+    if (scrollSpace) scrollSpace.style.height = `${INTERVAL_HEIGHT}px`;
 }
-window.addEventListener("load", setScrollHeight);
-window.addEventListener("resize", setScrollHeight);
+window.addEventListener('load', setScrollHeight);
+window.addEventListener('resize', setScrollHeight);
 
-let currentImageId = "top-me";
+// ── Dynamic row wiring (runs after PunchCard renders the area) ────────────────
 
-function showImage(newId: string) {
-    if (newId === currentImageId) return;
-    const prev = document.getElementById(currentImageId);
-    const next = document.getElementById(newId);
-    if (prev) { prev.classList.remove("shown", "slide-in"); prev.classList.add("slide-out"); }
-    if (next) { next.classList.remove("slide-out"); next.classList.add("slide-in"); }
-    currentImageId = newId;
+let nameSpans: HTMLElement[] = [];
+let valSpans: HTMLElement[] = [];
+let descSpans: HTMLElement[] = [];
+let dynamicReady = false;
+
+function waitForRender(): Promise<void> {
+    return new Promise(resolve => {
+        const area = document.querySelector<HTMLElement>('#top .pcf-punch-area');
+        if (!area) { resolve(); return; }
+        if (area.dataset.rendered) { resolve(); return; }
+        const check = () => {
+            if (area?.dataset.rendered) { resolve(); return; }
+            requestAnimationFrame(check);
+        };
+        requestAnimationFrame(check);
+    });
 }
+
+(async () => {
+    await waitForRender();
+    const area = document.querySelector<HTMLElement>('#top .pcf-punch-area');
+    if (!area) return;
+    nameSpans = getRowSpans(area, NAME_ROW);
+    valSpans  = getRowSpans(area, VAL_ROW);
+    descSpans = getRowSpans(area, DESC_ROW);
+    // Initialise to item 0 (already encoded in LINES, but set explicitly for safety)
+    directUpdate(nameSpans, NAME_START, NAME_LEN, items[0].group, 'pcc-name');
+    directUpdate(valSpans,  VAL_START,  VAL_LEN,  items[0].value, 'pcc-val');
+    directUpdate(descSpans, DESC_START, DESC_LEN, items[0].desc,  'pcc-val');
+    dynamicReady = true;
+})();
+
+// ── State machine (called by app.ts on each scroll tick in #top) ──────────────
 
 let current = 0;
 
 export function statemachineTopRun() {
     const next = Math.min(Math.floor(window.scrollY / INTERVAL_HEIGHT), items.length - 1);
-    if (next !== current) {
-        if (items[next].imageId !== items[current].imageId) showImage(items[next].imageId);
-        current = next;
+    if (next === current) return;
+
+    if (dynamicReady) {
+        if (nameTimer) { clearInterval(nameTimer); nameTimer = null; }
+        if (valTimer)  { clearInterval(valTimer);  valTimer  = null; }
+        nameTimer = scrambleRange(nameSpans, NAME_START, NAME_LEN, items[next].group, 'pcc-name');
+        valTimer  = scrambleRange(valSpans,  VAL_START,  VAL_LEN,  items[next].value, 'pcc-val');
+        directUpdate(descSpans, DESC_START, DESC_LEN, items[next].desc, 'pcc-val');
     }
+
+    showImage(items[next].imageId);
+    current = next;
 }
 
 (window as any).__topRun = statemachineTopRun;

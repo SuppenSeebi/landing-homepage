@@ -73,6 +73,66 @@ const CARD2_LINES: Line[] = [
 </section>
 
 <script>
+const section = document.getElementById('aboutme');
+const cards = section
+    ? (Array.from(section.querySelectorAll<HTMLElement>('.pcf-card')) as HTMLElement[])
+    : [];
+
+let activeIdx = 0;
+let isTransitioning = false;
+
+if (cards[0]) cards[0].classList.add('pcf-card-active');
+
+function switchCard(newIdx: number) {
+    if (newIdx === activeIdx || isTransitioning || cards.length < 2) return;
+    isTransitioning = true;
+
+    const forward = newIdx > activeIdx;
+    const exitCard = cards[activeIdx];
+    const enterCard = cards[newIdx];
+
+    enterCard.style.transition = 'none';
+    enterCard.style.transform = forward ? 'translateX(100%)' : 'translateX(-100%)';
+    enterCard.style.opacity = '0';
+    enterCard.classList.remove('pcf-card-active');
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            exitCard.style.transition = 'transform 0.5s ease, opacity 0.4s ease';
+            exitCard.style.transform = forward ? 'translateX(-100%)' : 'translateX(100%)';
+            exitCard.style.opacity = '0';
+            exitCard.classList.remove('pcf-card-active');
+            exitCard.style.pointerEvents = 'none';
+
+            enterCard.style.transition = 'transform 0.5s ease, opacity 0.4s ease';
+            enterCard.style.transform = 'translateX(0)';
+            enterCard.style.opacity = '1';
+            enterCard.style.pointerEvents = 'auto';
+            enterCard.classList.add('pcf-card-active');
+
+            activeIdx = newIdx;
+
+            setTimeout(() => {
+                exitCard.style.transition = '';
+                exitCard.style.transform = '';
+                exitCard.style.opacity = '';
+                exitCard.style.pointerEvents = '';
+                enterCard.style.transition = '';
+                isTransitioning = false;
+            }, 550);
+        });
+    });
+}
+
+function onAboutMeScroll() {
+    if (!section) return;
+    const relScroll = window.scrollY - section.offsetTop;
+    const newIdx = relScroll >= section.scrollHeight / 2 ? 1 : 0;
+    switchCard(newIdx);
+}
+
+window.addEventListener('scroll', onAboutMeScroll, { passive: true });
+
 export function statemachineAboutMeRun() {}
 (window as any).__aboutMeRun = statemachineAboutMeRun;
 </script>

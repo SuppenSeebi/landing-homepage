@@ -1,19 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Logo from '../components/Logo.astro';
-import BottomNav from '../components/BottomNav.astro';
 import SectionTop from '../components/sections/SectionTop.astro';
 import SectionAboutMe from '../components/sections/SectionAboutMe.astro';
 import SectionWork from '../components/sections/SectionWork.astro';
 import SectionLinks from '../components/sections/SectionLinks.astro';
 import SectionImpressum from '../components/sections/SectionImpressum.astro';
-import SectionDemoCardFull from '../components/sections/SectionDemoCardFull.astro';
-import SectionDemoCardTexture from '../components/sections/SectionDemoCardTexture.astro';
 import '../styles/global.css';
 ---
 <Layout>
     <Logo />
-    <BottomNav />
     <!-- CONTROL-PRGRPH: fixed overlay visible only in PROCEDURE DIVISION sections -->
     <div id="file-section-indicator">
         <div class="ctrl-division">DATA DIVISION.</div>
@@ -42,8 +38,6 @@ import '../styles/global.css';
     <SectionWork />
     <SectionLinks />
     <SectionImpressum />
-    <SectionDemoCardFull />
-    <SectionDemoCardTexture />
     <script>
         import '../scripts/app.ts';
     </script>

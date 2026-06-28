@@ -876,16 +876,11 @@ a.call-comment {
     padding: 7vh 7%;
 }
 
-/* Multi-card variant: stack vertically with internal scroll */
+/* Multi-card variant: one card visible at a time, slides on scroll */
 .pcf-stage-multi {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
+    position: relative;
     height: 100%;
-    overflow-y: auto;
-    padding: 3vh 7%;
-    gap: 20px;
+    overflow: hidden;
 }
 
 /* ── CARD ───────────────────────────────────────────────────────────────────── */
@@ -910,8 +905,25 @@ a.call-comment {
     font-size: clamp(0.9rem, 1.5vw, 1.4rem);
 }
 
-/* In multi-card stage, cards don't flex-grow */
-.pcf-stage-multi .pcf-card { flex: 0 0 auto; }
+/* Multi-card: all cards absolutely stacked, hidden off-screen right by default */
+.pcf-stage-multi .pcf-card {
+    position: absolute;
+    top: 7vh;
+    bottom: 7vh;
+    left: 7%;
+    right: 7%;
+    width: auto;
+    flex: none;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(100%);
+    transition: transform 0.5s ease, opacity 0.4s ease;
+}
+.pcf-stage-multi .pcf-card.pcf-card-active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
 
 /* In top-punch-wrapper, card fills available height without growing unbounded */
 .top-punch-wrapper .pcf-card { flex: 1; min-height: 0; }
@@ -1252,6 +1264,29 @@ a.call-comment {
 .pcc-empty:nth-child(3n+1)::before { width: 2px;   height: 2px;   opacity: 0.85; }
 .pcc-empty:nth-child(3n+2)::before { width: 3px;   height: 3px;   opacity: 0.65; }
 .pcc-empty:nth-child(5n+4)::before { width: 2.5px; height: 2px;   opacity: 0.75; }
+
+/* ── PARAGRAPH HEADER + DOT TERMINATOR rows (displayHeader prop) ────────────── */
+.pcf-para-hdr-row,
+.pcf-dot-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 22px;
+    flex-shrink: 0;
+    background: #F5EDD4;
+}
+.pcf-para-hdr-stmt {
+    flex: 1;
+    padding-left: 8px;
+    font-size: 0.80rem;
+    color: #3A5A8A;
+    letter-spacing: 0.02em;
+}
+.pcf-dot-row .pcf-zone-seq {
+    color: #8B7040;
+    font-weight: 700;
+    font-size: 0.92rem;
+}
 
 /* ── DISPLAY SLOT (impressum special case) ──────────────────────────────────── */
 .pcf-display-body {

@@ -14,6 +14,7 @@ interface Props {
     lines?: Line[];
     displaySlot?: boolean;
     displayLabel?: string;
+    displayHeader?: string;
     callLinks?: Record<string, string>;
     noStage?: boolean;
 }
@@ -29,7 +30,8 @@ const {
     identificationHref = '#impressum',
     lines = [],
     displaySlot = false,
-    displayLabel = 'IMPRESSUM-SECTION.',
+    displayLabel = '',
+    displayHeader,
     callLinks = {},
     noStage = false,
 } = Astro.props;
@@ -57,11 +59,9 @@ const callLinksJson = JSON.stringify(callLinks);
             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                 <span class="pcf-fh-lbl">DIVISION</span>
                 <div class="pcf-fh-nav">
-                    <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
+                    <a class="pcf-div-item" data-div="data" href="#top"  >DATA DIVISION</a>
                     <span class="pcf-nav-dot">·</span>
-                    <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
-                    <span class="pcf-nav-dot">·</span>
-                    <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
+                    <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
                 </div>
             </div>
             <div class="pcf-fh-cell pcf-fh-w3">
@@ -105,6 +105,13 @@ const callLinksJson = JSON.stringify(callLinks);
     <div class="pcf-coding-area">
         {displaySlot ? (
             <>
+                {displayHeader && (
+                    <div class="pcf-para-hdr-row">
+                        <div class="pcf-zone-linenum"></div>
+                        <div class="pcf-zone-seq"></div>
+                        <div class="pcf-para-hdr-stmt">{displayHeader}</div>
+                    </div>
+                )}
                 <div class="pcf-zone-row">
                     <div class="pcf-zone-linenum">LINE</div>
                     <div class="pcf-zone-seq">DISPLAY</div>
@@ -116,6 +123,13 @@ const callLinksJson = JSON.stringify(callLinks);
                     <div class="pcf-zone-seq">END-DISPLAY</div>
                     <div class="pcf-zone-stmt"></div>
                 </div>
+                {displayHeader && (
+                    <div class="pcf-dot-row">
+                        <div class="pcf-zone-linenum"></div>
+                        <div class="pcf-zone-seq">.</div>
+                        <div class="pcf-zone-stmt"></div>
+                    </div>
+                )}
             </>
         ) : (
             <>
@@ -159,11 +173,9 @@ const callLinksJson = JSON.stringify(callLinks);
                 <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                     <span class="pcf-fh-lbl">DIVISION</span>
                     <div class="pcf-fh-nav">
-                        <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
+                        <a class="pcf-div-item" data-div="data" href="#top"  >DATA DIVISION</a>
                         <span class="pcf-nav-dot">·</span>
-                        <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
-                        <span class="pcf-nav-dot">·</span>
-                        <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
+                        <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
                     </div>
                 </div>
                 <div class="pcf-fh-cell pcf-fh-w3">
@@ -207,6 +219,13 @@ const callLinksJson = JSON.stringify(callLinks);
         <div class="pcf-coding-area">
             {displaySlot ? (
                 <>
+                    {displayHeader && (
+                        <div class="pcf-para-hdr-row">
+                            <div class="pcf-zone-linenum"></div>
+                            <div class="pcf-zone-seq"></div>
+                            <div class="pcf-para-hdr-stmt">{displayHeader}</div>
+                        </div>
+                    )}
                     <div class="pcf-zone-row">
                         <div class="pcf-zone-linenum">LINE</div>
                         <div class="pcf-zone-seq">DISPLAY</div>
@@ -218,6 +237,13 @@ const callLinksJson = JSON.stringify(callLinks);
                         <div class="pcf-zone-seq">END-DISPLAY</div>
                         <div class="pcf-zone-stmt"></div>
                     </div>
+                    {displayHeader && (
+                        <div class="pcf-dot-row">
+                            <div class="pcf-zone-linenum"></div>
+                            <div class="pcf-zone-seq">.</div>
+                            <div class="pcf-zone-stmt"></div>
+                        </div>
+                    )}
                 </>
             ) : (
                 <>
