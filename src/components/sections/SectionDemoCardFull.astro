@@ -5,48 +5,102 @@ const compiled = new Date().toISOString().slice(0, 10);
     <div class="section-scroll-container pcf-section-height">
         <div class="section-content-wrapper">
             <div class="pcf-stage">
-                <span class="pcf-proto-tag">PROTOTYPE A · CARD AS PAGE OBJECT</span>
                 <div class="pcf-card">
 
-                    <!-- ── Card header strip ── -->
-                    <div class="pcf-header">
-                        <span class="pcf-hdr-brand">IBM 026 KEYPUNCH · COBOL SOURCE DECK</span>
-                        <div class="pcf-hdr-meta">
-                            <span class="pcf-hdr-field">PROGRAM-ID <span class="pcf-hdr-val">SSCHW-DEV</span></span>
-                            <span class="pcf-hdr-dot">·</span>
-                            <span class="pcf-hdr-field">AUTHOR <span class="pcf-hdr-val">SEBASTIAN SCHWINN</span></span>
-                            <span class="pcf-hdr-dot">·</span>
-                            <span class="pcf-hdr-field">DATE-COMPILED <span class="pcf-hdr-val">{compiled}</span></span>
-                        </div>
+                    <!-- ── Title bar ── -->
+                    <div class="pcf-title-bar">
+                        <span class="pcf-title-brand">RETROCODE</span>
+                        <span class="pcf-title-name">COBOL CODING FORM</span>
+                        <span class="pcf-title-form-no">FORM C61897 · 80-COL</span>
                     </div>
 
-                    <!-- ── Main: row labels + punch body ── -->
-                    <div class="pcf-main">
+                    <!-- ── 3-row form header ── -->
+                    <div class="pcf-form-header">
 
-                        <!-- Row number column -->
-                        <div class="pcf-rows">
-                            <div class="pcf-rows-corner"></div>
-                            <div class="pcf-row-num">12</div>
-                            <div class="pcf-row-num">11</div>
-                            <div class="pcf-row-num">0</div>
-                            <div class="pcf-row-num">1</div>
-                            <div class="pcf-row-num">2</div>
-                            <div class="pcf-row-num">3</div>
-                            <div class="pcf-row-num">4</div>
-                            <div class="pcf-row-num">5</div>
-                            <div class="pcf-row-num">6</div>
-                            <div class="pcf-row-num">7</div>
-                            <div class="pcf-row-num">8</div>
-                            <div class="pcf-row-num">9</div>
+                        <div class="pcf-fh-row">
+                            <div class="pcf-fh-cell pcf-fh-w1">
+                                <span class="pcf-fh-lbl">SYSTEM</span>
+                                <span class="pcf-fh-val">RETROCODE CORPORATION</span>
+                            </div>
+                            <div class="pcf-fh-cell pcf-fh-w2">
+                                <span class="pcf-fh-lbl">DIVISION</span>
+                                <div class="pcf-fh-nav">
+                                    <a class="pcf-div-item" data-div="data"  href="#top"      >DATA DIVISION</a>
+                                    <span class="pcf-nav-dot">·</span>
+                                    <a class="pcf-div-item" data-div="proc"  href="#links"    >PROCEDURE DIVISION</a>
+                                    <span class="pcf-nav-dot">·</span>
+                                    <a class="pcf-div-item" data-div="proto" href="#demo-full">PROTOTYPE DIVISION</a>
+                                </div>
+                            </div>
+                            <div class="pcf-fh-cell pcf-fh-w3">
+                                <span class="pcf-fh-lbl">PAGE</span>
+                                <span class="pcf-fh-val">1&nbsp;OF&nbsp;1</span>
+                            </div>
                         </div>
 
-                        <!-- Ruler + punch area -->
-                        <div class="pcf-body">
-                            <div class="pcf-ruler-row">
-                                <div class="pcf-seq pcf-seq-hdr"></div>
-                                <div class="pcf-ruler-track" id="pcf-ruler-track"></div>
+                        <div class="pcf-fh-row">
+                            <div class="pcf-fh-cell pcf-fh-w1">
+                                <span class="pcf-fh-lbl">PROGRAM</span>
+                                <span class="pcf-fh-val">SSCHW-DEV</span>
                             </div>
-                            <div class="pcf-punch-area" id="pcf-punch-area"></div>
+                            <div class="pcf-fh-cell pcf-fh-w2">
+                                <span class="pcf-fh-lbl">SECTION</span>
+                                <div class="pcf-fh-nav" id="pcf-nav-sec"></div>
+                            </div>
+                            <div class="pcf-fh-cell pcf-fh-w3 pcf-fh-id">
+                                <span class="pcf-fh-lbl">IDENTIFICATION</span>
+                                <div class="pcf-id-track">
+                                    <span class="pcf-id-n">73</span>
+                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
+                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
+                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
+                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
+                                    <span class="pcf-id-n">80</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pcf-fh-row">
+                            <div class="pcf-fh-cell pcf-fh-w1">
+                                <span class="pcf-fh-lbl">PROGRAMMER</span>
+                                <span class="pcf-fh-val">SEBASTIAN SCHWINN</span>
+                            </div>
+                            <div class="pcf-fh-cell pcf-fh-w2">
+                                <span class="pcf-fh-lbl">DATE</span>
+                                <span class="pcf-fh-val">{compiled}</span>
+                            </div>
+                            <div class="pcf-fh-cell pcf-fh-w3">
+                                <span class="pcf-fh-lbl">PUNCH</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ── Coding area ── -->
+                    <div class="pcf-coding-area">
+
+                        <!-- Zone label row -->
+                        <div class="pcf-zone-row">
+                            <div class="pcf-zone-linenum">LINE</div>
+                            <div class="pcf-zone-seq">SEQUENCE</div>
+                            <div class="pcf-zone-stmt">COBOL STATEMENT</div>
+                        </div>
+
+                        <!-- Column ruler (top) -->
+                        <div class="pcf-ruler-row">
+                            <div class="pcf-ruler-linenum"></div>
+                            <div class="pcf-ruler-seq" id="pcf-rseq-top"></div>
+                            <div class="pcf-ruler-chars" id="pcf-rchars-top"></div>
+                        </div>
+
+                        <!-- Punch rows (built by script) -->
+                        <div class="pcf-punch-area" id="pcf-punch-area"></div>
+
+                        <!-- Column ruler (bottom) -->
+                        <div class="pcf-ruler-row">
+                            <div class="pcf-ruler-linenum"></div>
+                            <div class="pcf-ruler-seq" id="pcf-rseq-btm"></div>
+                            <div class="pcf-ruler-chars" id="pcf-rchars-btm"></div>
                         </div>
 
                     </div>
@@ -57,60 +111,146 @@ const compiled = new Date().toISOString().slice(0, 10);
 </section>
 
 <script>
+// ── Navigation ─────────────────────────────────────────────────────────────
+const DIVISION_MAP: Record<string, string[]> = {
+    data:  ['top','aboutme','work'],
+    proc:  ['links','impressum'],
+    proto: ['demo-full','demo-texture'],
+};
+
+const SECTIONS_BY_DIV: Record<string, {label:string; href:string}[]> = {
+    data:  [
+        { label: 'WORKING-STORAGE.', href: '#top' },
+        { label: 'LOCAL-STORAGE.',   href: '#aboutme' },
+        { label: 'LINKAGE SECTION.', href: '#work' },
+    ],
+    proc:  [
+        { label: 'LINKS SECTION.',     href: '#links' },
+        { label: 'IMPRESSUM-SECTION.', href: '#impressum' },
+    ],
+    proto: [
+        { label: 'PROTO-A FULL-CARD.', href: '#demo-full' },
+        { label: 'PROTO-B TEXTURE.',   href: '#demo-texture' },
+    ],
+};
+
+// Build section nav groups
+const secNav = document.getElementById('pcf-nav-sec')!;
+for (const [divId, secs] of Object.entries(SECTIONS_BY_DIV)) {
+    const grp = document.createElement('div');
+    grp.className = 'pcf-sec-group';
+    grp.dataset.div = divId;
+    secs.forEach((sec, i) => {
+        if (i > 0) { const d = document.createElement('span'); d.className='pcf-nav-dot'; d.textContent='·'; grp.appendChild(d); }
+        const a = document.createElement('a');
+        a.className = 'pcf-sec-item';
+        a.href = sec.href;
+        a.textContent = sec.label;
+        grp.appendChild(a);
+    });
+    secNav.appendChild(grp);
+}
+
+function getActiveId(): string {
+    const mid = window.scrollY + window.innerHeight / 2;
+    let active = 'top';
+    document.querySelectorAll<HTMLElement>('section').forEach(s => {
+        if (mid >= s.offsetTop && mid < s.offsetTop + s.offsetHeight) active = s.id;
+    });
+    return active;
+}
+
+function getActiveDivId(id: string): string {
+    for (const [div, ids] of Object.entries(DIVISION_MAP)) { if (ids.includes(id)) return div; }
+    return 'data';
+}
+
+function updatePcfNav(activeId: string) {
+    const divId = getActiveDivId(activeId);
+    document.querySelectorAll<HTMLElement>('.pcf-div-item').forEach(el =>
+        el.classList.toggle('pcf-nav-active', el.dataset.div === divId));
+    document.querySelectorAll<HTMLElement>('.pcf-sec-group').forEach(el =>
+        (el as HTMLElement).style.display = el.dataset.div === divId ? 'flex' : 'none');
+    document.querySelectorAll<HTMLElement>('.pcf-sec-item').forEach(el =>
+        el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
+}
+
+window.addEventListener('scroll', () => updatePcfNav(getActiveId()), { passive: true });
+updatePcfNav(getActiveId());
+
+// ── Rulers ─────────────────────────────────────────────────────────────────
+function buildSeqRuler(id: string) {
+    const el = document.getElementById(id)!;
+    for (let i = 1; i <= 6; i++) {
+        const s = document.createElement('span');
+        s.className = 'pcf-rseq-tick';
+        s.textContent = String(i);
+        el.appendChild(s);
+    }
+}
+function buildCharsRuler(id: string) {
+    const el = document.getElementById(id)!;
+    [8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,80].forEach(col => {
+        const s = document.createElement('span');
+        s.className = 'pcf-rchars-tick';
+        s.textContent = String(col);
+        s.style.left = `${((col - 1) / 79) * 100}%`;
+        el.appendChild(s);
+    });
+}
+buildSeqRuler('pcf-rseq-top'); buildSeqRuler('pcf-rseq-btm');
+buildCharsRuler('pcf-rchars-top'); buildCharsRuler('pcf-rchars-btm');
+
+// ── Content lines ──────────────────────────────────────────────────────────
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
 const LINES: Line[] = [
-    ['000001', [['div','DATA DIVISION'],['dot','.']]],
-    ['000002', [['section','WORKING-STORAGE SECTION'],['dot','.']]],
-    ['000003', [['lvl','01'],['name',' SSCHW-RECORD'],['dot','.']]],
-    ['000004', [['lvl','    05'],['name',' NAME    '],['kw',' PIC X(50)'],['kw','  VALUE'],['val'," 'SEBASTIAN SCHWINN'"],['dot','.']]],
-    ['000005', [['lvl','    05'],['name',' ROLE    '],['kw',' PIC X(40)'],['kw','  VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
-    ['000006', [['lvl','    05'],['name',' YEAR    '],['kw',' PIC 9(4) '],['kw','  VALUE'],['numval',' 2025'],['dot','.']]],
-    ['000007', [['lvl','    88'],['name',' ACTIVE  '],['kw','           VALUE'],['numval',' 2025'],['dot','.']]],
-    ['000008', []],
-    ['000009', [['div','PROCEDURE DIVISION'],['dot','.']]],
-    ['000010', [['para','MAIN-PRGRPH'],['dot','.']]],
-    ['000011', [['kw','    DISPLAY'],['name',' NAME'],['comment','                        *> prints to SYSOUT']]],
-    ['000012', [['kw','    MOVE'],['val'," 'ENGINEER'"],['kw',' TO'],['name',' ROLE'],['kw','    PERFORM'],['name',' INIT-PRGRPH']]],
+    ['000001',[['div','DATA DIVISION'],['dot','.']]],
+    ['000002',[['section','WORKING-STORAGE SECTION'],['dot','.']]],
+    ['000003',[['lvl','01'],['name',' SSCHW-RECORD'],['dot','.']]],
+    ['000004',[['lvl','    05'],['name',' NAME    '],['kw',' PIC X(50)'],['kw','  VALUE'],['val'," 'SEBASTIAN SCHWINN'"],['dot','.']]],
+    ['000005',[['lvl','    05'],['name',' ROLE    '],['kw',' PIC X(40)'],['kw','  VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
+    ['000006',[['lvl','    05'],['name',' YEAR    '],['kw',' PIC 9(4) '],['kw','  VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000007',[['lvl','    88'],['name',' ACTIVE  '],['kw','           VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000008',[['lvl','01'],['name',' WORK-VARS'],['dot','.']]],
+    ['000009',[['lvl','    05'],['name',' WS-STATUS'],['kw',' PIC X(10)'],['kw','  VALUE'],['val'," 'AVAILABLE'"],['dot','.']]],
+    ['000010',[['lvl','    05'],['name',' WS-CTR   '],['kw',' PIC 9(3) '],['kw','  VALUE'],['numval','  000'],['dot','.']]],
+    ['000011',[]],
+    ['000012',[['div','PROCEDURE DIVISION'],['dot','.']]],
+    ['000013',[['para','MAIN-PRGRPH'],['dot','.']]],
+    ['000014',[['kw','    DISPLAY'],['name',' NAME']]],
+    ['000015',[['kw','    PERFORM'],['name',' INIT-PRGRPH'],['kw',' THRU'],['name',' INIT-END']]],
+    ['000016',[['kw','    MOVE'],['val'," 'ENGINEER'"],['kw',' TO'],['name',' ROLE']]],
+    ['000017',[['kw','    STOP RUN'],['dot','.']]],
+    ['000018',[['para','INIT-PRGRPH'],['dot','.']]],
+    ['000019',[['kw','    ADD'],['numval',' 1'],['kw',' TO'],['name',' WS-CTR']]],
+    ['000020',[['kw','    IF'],['name',' ACTIVE']]],
+    ['000021',[['kw','       DISPLAY'],['val'," 'SYSTEM ONLINE'"]]],
+    ['000022',[['kw','    END-IF'],['dot','.']]],
 ];
 
 const COLS = 80;
-
 const CLS: Record<TT, string> = {
-    div:     'pcc-div',
-    section: 'pcc-section',
-    para:    'pcc-para',
-    lvl:     'pcc-lvl',
-    name:    'pcc-name',
-    kw:      'pcc-kw',
-    val:     'pcc-val',
-    numval:  'pcc-numval',
-    dot:     'pcc-dot',
-    comment: 'pcc-comment',
+    div:'pcc-div', section:'pcc-section', para:'pcc-para', lvl:'pcc-lvl',
+    name:'pcc-name', kw:'pcc-kw', val:'pcc-val', numval:'pcc-numval',
+    dot:'pcc-dot', comment:'pcc-comment',
 };
 
-// Ruler: 8 ticks of 10ch each — inherits card base font so 10ch aligns with 10 content spans
-const rulerEl = document.getElementById('pcf-ruler-track')!;
-for (let c = 10; c <= COLS; c += 10) {
-    const tick = document.createElement('span');
-    tick.className = 'pcf-ruler-tick';
-    tick.textContent = String(c);
-    rulerEl.appendChild(tick);
-}
-
-// Punch rows
 const area = document.getElementById('pcf-punch-area')!;
-for (const [seq, tokens] of LINES) {
-    const chars: [string, string][] = [];
-    for (const [type, text] of tokens) {
-        for (const ch of text) chars.push([ch, CLS[type]]);
-    }
-    while (chars.length < COLS) chars.push([' ', 'pcc-kw']);
+LINES.forEach(([seq, tokens], idx) => {
+    const chars: [string,string][] = [];
+    for (const [type, text] of tokens) for (const ch of text) chars.push([ch, CLS[type]]);
+    while (chars.length < COLS) chars.push([' ','pcc-kw']);
 
     const row = document.createElement('div');
     row.className = 'pcf-line-row';
+
+    const lineNum = document.createElement('div');
+    lineNum.className = 'pcf-line-num';
+    lineNum.textContent = String(idx + 1).padStart(2, '0');
+    row.appendChild(lineNum);
 
     const seqEl = document.createElement('div');
     seqEl.className = 'pcf-seq';
@@ -122,26 +262,18 @@ for (const [seq, tokens] of LINES) {
     for (let i = 0; i < COLS; i++) {
         const [ch, cls] = chars[i];
         const span = document.createElement('span');
-        if (ch === ' ') {
-            span.className = 'pcc-empty';
-        } else {
-            span.className = cls;
-            span.textContent = ch;
-        }
+        if (ch === ' ') { span.className = 'pcc-empty'; }
+        else { span.className = cls; span.textContent = ch; }
         charsEl.appendChild(span);
     }
     row.appendChild(charsEl);
     area.appendChild(row);
-}
+});
 </script>
 
 <style is:global>
-/* ── PROTOTYPE A: PUNCH CARD AS PAGE OBJECT ─────────────────────────────── */
-
-/* Taller section so the card has room to breathe */
-.pcf-section-height {
-    height: 92vh;
-}
+/* ── SECTION ────────────────────────────────────────────────────────────── */
+.pcf-section-height { height: 88vh; }
 
 .pcf-stage {
     display: flex;
@@ -149,23 +281,14 @@ for (const [seq, tokens] of LINES) {
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: 3vh 4%;
-    gap: 8px;
+    padding: 7vh 7%;
 }
 
-.pcf-proto-tag {
-    font-family: "Share Tech Mono", monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
-    align-self: flex-start;
-}
-
-/* Card: column flex so header stacks above main content */
+/* ── CARD ───────────────────────────────────────────────────────────────── */
 .pcf-card {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 85%;
     flex: 1;
     min-height: 0;
     background: #F5EDD4;
@@ -174,142 +297,235 @@ for (const [seq, tokens] of LINES) {
     box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14);
     overflow: hidden;
     font-family: "Share Tech Mono", monospace;
-    /* Base font — ruler ticks (10ch) and content spans (1ch) both inherit this
-       so column alignment is guaranteed */
-    font-size: clamp(1.1rem, 1.8vw, 1.8rem);
+    font-size: clamp(0.9rem, 1.5vw, 1.4rem);
 }
 
-/* ── Card header strip ───────────────────────────────────────────────────── */
-.pcf-header {
-    display: flex;
-    flex-direction: row;
+/* ── TITLE BAR ──────────────────────────────────────────────────────────── */
+.pcf-title-bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    padding: 0 16px 0 32px; /* 32px left clears the corner clip */
-    height: 38px;
-    background: #EDE0A8;
-    border-bottom: 2px solid #C2A840;
-    flex-shrink: 0;
-    gap: 16px;
-    overflow: hidden;
-}
-
-.pcf-hdr-brand {
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    color: #7A6020;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.pcf-hdr-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-    overflow: hidden;
-}
-
-.pcf-hdr-field {
-    font-size: 0.6rem;
-    color: #9B8050;
-    white-space: nowrap;
-}
-
-.pcf-hdr-val {
-    color: #1A0E00;
-}
-
-.pcf-hdr-dot {
-    color: #C8AE58;
-    font-size: 0.6rem;
-    flex-shrink: 0;
-}
-
-/* ── Main: row labels + punch body ──────────────────────────────────────── */
-.pcf-main {
-    display: flex;
-    flex-direction: row;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-/* ── Row number labels (left edge) ─────────────────────────────────────── */
-.pcf-rows {
-    display: flex;
-    flex-direction: column;
-    background: #EDE0A8;
-    border-right: 1.5px solid #C2A840;
-    flex-shrink: 0;
-}
-
-/* Aligns with the ruler row height */
-.pcf-rows-corner {
+    padding: 0 12px 0 32px;
     height: 28px;
+    background: #EDE0A8;
     border-bottom: 1.5px solid #C2A840;
     flex-shrink: 0;
 }
-
-.pcf-row-num {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0 6px;
-    font-size: 0.62rem;
-    color: #7A6020;
-    border-bottom: 1px solid #D4C478;
+.pcf-title-brand {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #5A3A10;
+    letter-spacing: 0.06em;
+}
+.pcf-title-name {
+    font-size: 0.72rem;
+    color: #2C1A00;
+    letter-spacing: 0.16em;
+    text-align: center;
+}
+.pcf-title-form-no {
+    font-size: 0.42rem;
+    color: #9B8050;
+    text-align: right;
+    letter-spacing: 0.05em;
 }
 
-/* ── Body column: ruler + punch rows ───────────────────────────────────── */
-.pcf-body {
+/* ── FORM HEADER (3 rows) ───────────────────────────────────────────────── */
+.pcf-form-header {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    border-bottom: 2px solid #C2A840;
+    flex-shrink: 0;
+    background: #F5EDD4;
+}
+.pcf-fh-row {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #D4C478;
+}
+.pcf-fh-row:last-child { border-bottom: none; }
+
+.pcf-fh-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3px 8px;
+    border-right: 1px solid #D4C478;
+    min-height: 26px;
+    gap: 1px;
     min-width: 0;
     overflow: hidden;
 }
+.pcf-fh-cell:last-child { border-right: none; }
 
-/* Ruler row */
-.pcf-ruler-row {
+.pcf-fh-w1 { flex: 2.5; }
+.pcf-fh-w2 { flex: 3.5; }
+.pcf-fh-w3 { flex: 1.5; }
+
+.pcf-fh-lbl {
+    font-size: 0.4rem;
+    color: #9B8050;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    line-height: 1;
+}
+.pcf-fh-val {
+    font-size: 0.68rem;
+    color: #1A0E00;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+}
+
+/* Navigation items in form header */
+.pcf-fh-nav {
     display: flex;
     flex-direction: row;
-    height: 28px;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    flex-wrap: nowrap;
+}
+.pcf-sec-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+.pcf-nav-dot {
+    font-size: 0.48rem;
+    color: #C8AE58;
+    flex-shrink: 0;
+}
+.pcf-div-item, .pcf-sec-item {
+    font-size: 0.6rem;
+    color: #B8965A;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.1s;
+    letter-spacing: 0.02em;
+}
+.pcf-div-item:hover, .pcf-sec-item:hover { color: #5A3A10; }
+.pcf-div-item.pcf-nav-active,
+.pcf-sec-item.pcf-nav-active { color: #1A0E00; }
+.pcf-div-item.pcf-nav-active::before,
+.pcf-sec-item.pcf-nav-active::before {
+    content: '▶ ';
+    font-size: 0.42rem;
+    vertical-align: middle;
+}
+
+/* IDENTIFICATION boxes (cols 73–80) */
+.pcf-fh-id { flex-direction: column; }
+.pcf-id-track {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1px;
+    margin-top: 1px;
+}
+.pcf-id-box {
+    width: 9px;
+    height: 11px;
+    border: 1px solid #C2A840;
+    background: #F0E4B8;
+    flex-shrink: 0;
+}
+.pcf-id-n {
+    font-size: 0.36rem;
+    color: #9B8050;
+    line-height: 1;
+}
+
+/* ── CODING AREA ────────────────────────────────────────────────────────── */
+.pcf-coding-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Shared column layout: linenum(32px) | seq(72px) | chars(flex) */
+.pcf-zone-row,
+.pcf-ruler-row,
+.pcf-line-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex-shrink: 0;
+}
+
+/* Zone labels */
+.pcf-zone-row {
+    height: 15px;
     background: #EDE0A8;
     border-bottom: 1.5px solid #C2A840;
-    flex-shrink: 0;
     align-items: center;
-    overflow: hidden;
 }
-
-/* Spacer above seq column — fixed px width matches pcf-seq */
-.pcf-seq-hdr {
-    width: 72px;
-    border-right: 1.5px solid #C2A840;
-    height: 100%;
-    flex-shrink: 0;
-}
-
-/* Ruler track: flex of 8 ticks × 10ch each.
-   No explicit font-size — inherits pcf-card base so 10ch = 10 × content-span-ch */
-.pcf-ruler-track {
+.pcf-zone-linenum, .pcf-zone-seq, .pcf-zone-stmt {
+    font-size: 0.35rem;
+    color: #9B8050;
+    letter-spacing: 0.08em;
     display: flex;
     align-items: center;
-    flex: 1;
-    overflow: hidden;
+    justify-content: center;
 }
-
-.pcf-ruler-tick {
-    display: inline-block;
-    width: 10ch;
-    text-align: right;
-    color: #9B8050;
+.pcf-zone-linenum {
+    width: 32px;
     flex-shrink: 0;
-    /* intentionally no font-size override — must match content span ch */
+    border-right: 1px solid #D4C478;
+}
+.pcf-zone-seq {
+    width: 72px;
+    flex-shrink: 0;
+    border-right: 1.5px solid #C2A840;
+}
+.pcf-zone-stmt { flex: 1; }
+
+/* Column rulers */
+.pcf-ruler-row {
+    height: 13px;
+    background: #EDE0A8;
+    border-bottom: 1px solid #D4C478;
+}
+.pcf-ruler-row:last-child {
+    border-bottom: none;
+    border-top: 1px solid #D4C478;
+}
+.pcf-ruler-linenum {
+    width: 32px;
+    flex-shrink: 0;
+    border-right: 1px solid #D4C478;
+}
+.pcf-ruler-seq {
+    width: 72px;
+    flex-shrink: 0;
+    border-right: 1.5px solid #C2A840;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 3px;
+}
+.pcf-rseq-tick {
+    font-size: 0.36rem;
+    color: #9B8050;
+}
+.pcf-ruler-chars {
+    flex: 1;
+    position: relative;
+}
+.pcf-rchars-tick {
+    position: absolute;
+    font-size: 0.36rem;
+    color: #9B8050;
+    transform: translateX(-50%);
+    bottom: 1px;
+    white-space: nowrap;
 }
 
-/* Punch area: 12 rows */
+/* Punch rows */
 .pcf-punch-area {
     display: flex;
     flex-direction: column;
@@ -317,29 +533,39 @@ for (const [seq, tokens] of LINES) {
     min-height: 0;
     overflow: hidden;
 }
-
-/* Each punch row: seq | 80 chars */
 .pcf-line-row {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
     flex: 1;
     min-height: 0;
     border-bottom: 1px solid #D4C478;
+    flex-shrink: 1;
+}
+.pcf-line-row:last-child { border-bottom: none; }
+
+/* Line number column — larger than col ruler ticks per user request */
+.pcf-line-num {
+    width: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    color: #7A6020;
+    background: #EDE0A8;
+    border-right: 1px solid #D4C478;
 }
 
-/* Sequence number column — fixed px width so it matches pcf-seq-hdr */
+/* Sequence number column */
 .pcf-seq {
+    width: 72px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 0 6px;
-    width: 72px;
-    font-size: 0.62rem;
+    padding: 0 5px;
+    font-size: 0.58rem;
     color: var(--text-muted);
     background: #EDE0A8;
     border-right: 1.5px solid #C2A840;
-    flex-shrink: 0;
     white-space: nowrap;
 }
 
@@ -350,8 +576,6 @@ for (const [seq, tokens] of LINES) {
     overflow: hidden;
     flex: 1;
 }
-
-/* Every span occupies exactly 1ch — ruler ticks are 10ch, so alignment is guaranteed */
 .pcf-chars span {
     display: inline-block;
     width: 1ch;
@@ -360,8 +584,6 @@ for (const [seq, tokens] of LINES) {
     position: relative;
     flex-shrink: 0;
 }
-
-/* Non-punched position: 2px centered dot */
 .pcc-empty::before {
     content: '';
     position: absolute;
@@ -374,7 +596,7 @@ for (const [seq, tokens] of LINES) {
     border-radius: 50%;
 }
 
-/* ── Token type colors ───────────────────────────────────────────────────── */
+/* ── Token colors ───────────────────────────────────────────────────────── */
 .pcc-div     { color: #1A0E00; }
 .pcc-section { color: #2C1A00; }
 .pcc-para    { color: var(--blue-darker-1); }
