@@ -175,9 +175,13 @@ function tick(now: number) {
     // from full (subChar=0) down to 0 (subChar→1), then the content window steps forward.
     const startOffsetPct = (1 - subChar) * (100 / NOISE_CHARS);
     noisePath.setAttribute('startOffset', `${startOffsetPct.toFixed(4)}%`);
+    // Every char in transit gets a new random glyph each frame — locked in only when it
+    // crosses the right seam and the marquee takes over with the real text.
     let noiseContent = '';
     for (let i = 0; i < NOISE_CHARS; i++) {
-        noiseContent += noiseBuffer[(noiseCharWindow + i) % NOISE_BUF_SIZE];
+        const idx = (noiseCharWindow + i) % NOISE_BUF_SIZE;
+        noiseBuffer[idx] = rndChar();
+        noiseContent += noiseBuffer[idx];
     }
     noisePath.textContent = noiseContent;
 
