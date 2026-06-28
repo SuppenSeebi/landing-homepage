@@ -63,18 +63,19 @@ const compiled = new Date().toISOString().slice(0, 10);
                             </a>
                         </div>
 
-                        <!-- Row 3: SYSTEM · DATE · PUNCH -->
+                        <!-- Row 3: SYSTEM · PARAGRAPH nav · DATE+PUNCH -->
                         <div class="pcf-fh-row">
                             <div class="pcf-fh-cell pcf-fh-w1">
                                 <span class="pcf-fh-lbl">SYSTEM</span>
                                 <span class="pcf-fh-val">RETROCODE CORPORATION</span>
                             </div>
-                            <div class="pcf-fh-cell pcf-fh-w2">
-                                <span class="pcf-fh-lbl">DATE</span>
-                                <span class="pcf-fh-val">{compiled}</span>
+                            <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
+                                <span class="pcf-fh-lbl">PARAGRAPH</span>
+                                <div class="pcf-fh-nav" id="pcf-nav-para"></div>
                             </div>
                             <div class="pcf-fh-cell pcf-fh-w3">
-                                <span class="pcf-fh-lbl">PUNCH</span>
+                                <span class="pcf-fh-lbl">DATE · PUNCH</span>
+                                <span class="pcf-fh-val">{compiled}</span>
                             </div>
                         </div>
 
@@ -132,22 +133,40 @@ const SECTIONS_BY_DIV: Record<string,{label:string;href:string}[]> = {
         {label:'PROTO-B TEXTURE.',   href:'#demo-texture'},
     ],
 };
+const PARAS_BY_DIV: Record<string,{label:string;href:string}[]> = {
+    data:  [
+        {label:'01 SSCHW-RECORD.', href:'#top'},
+        {label:'01 WORK-VARS.',    href:'#aboutme'},
+    ],
+    proc:  [
+        {label:'MAIN-PRGRPH.',  href:'#links'},
+        {label:'INIT-PRGRPH.', href:'#impressum'},
+    ],
+    proto: [
+        {label:'CARD-FULL.',    href:'#demo-full'},
+        {label:'CARD-TEXTURE.', href:'#demo-texture'},
+    ],
+};
 
-const secNav = document.getElementById('pcf-nav-sec')!;
-for (const [divId, secs] of Object.entries(SECTIONS_BY_DIV)) {
-    const grp = document.createElement('div');
-    grp.className = 'pcf-sec-group';
-    grp.dataset.div = divId;
-    secs.forEach((sec, i) => {
-        if (i > 0) { const d=document.createElement('span'); d.className='pcf-nav-dot'; d.textContent='·'; grp.appendChild(d); }
-        const a = document.createElement('a');
-        a.className = 'pcf-sec-item';
-        a.href = sec.href;
-        a.textContent = sec.label;
-        grp.appendChild(a);
-    });
-    secNav.appendChild(grp);
+function buildNavGroup(containerId: string, data: Record<string,{label:string;href:string}[]>, itemClass: string, groupClass: string) {
+    const container = document.getElementById(containerId)!;
+    for (const [divId, items] of Object.entries(data)) {
+        const grp = document.createElement('div');
+        grp.className = groupClass;
+        grp.dataset.div = divId;
+        items.forEach((item, i) => {
+            if (i > 0) { const d=document.createElement('span'); d.className='pcf-nav-dot'; d.textContent='·'; grp.appendChild(d); }
+            const a = document.createElement('a');
+            a.className = itemClass;
+            a.href = item.href;
+            a.textContent = item.label;
+            grp.appendChild(a);
+        });
+        container.appendChild(grp);
+    }
 }
+buildNavGroup('pcf-nav-sec',  SECTIONS_BY_DIV, 'pcf-sec-item',  'pcf-sec-group');
+buildNavGroup('pcf-nav-para', PARAS_BY_DIV,    'pcf-para-item', 'pcf-para-group');
 
 function getActiveId(): string {
     const mid = window.scrollY + window.innerHeight / 2;
@@ -165,10 +184,14 @@ function updatePcfNav(activeId: string) {
     const divId = getActiveDivId(activeId);
     document.querySelectorAll<HTMLElement>('.pcf-div-item').forEach(el =>
         el.classList.toggle('pcf-nav-active', el.dataset.div === divId));
-    document.querySelectorAll<HTMLElement>('.pcf-sec-group').forEach(el =>
-        ((el as HTMLElement).style.display = el.dataset.div === divId ? 'flex' : 'none'));
-    document.querySelectorAll<HTMLElement>('.pcf-sec-item').forEach(el =>
-        el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
+    for (const grpClass of ['pcf-sec-group','pcf-para-group']) {
+        document.querySelectorAll<HTMLElement>(`.${grpClass}`).forEach(el =>
+            ((el as HTMLElement).style.display = el.dataset.div === divId ? 'flex' : 'none'));
+    }
+    for (const itemClass of ['pcf-sec-item','pcf-para-item']) {
+        document.querySelectorAll<HTMLElement>(`.${itemClass}`).forEach(el =>
+            el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
+    }
 }
 window.addEventListener('scroll', () => updatePcfNav(getActiveId()), {passive:true});
 updatePcfNav(getActiveId());
@@ -321,7 +344,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 .pcf-card {
     display: flex;
     flex-direction: column;
-    width: 85%;
+    width: fit-content;
     flex: 1;
     min-height: 0;
     background-color: #F5EDD4;
@@ -431,7 +454,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     flex-wrap: nowrap;
     overflow: hidden;
 }
-.pcf-sec-group {
+.pcf-sec-group, .pcf-para-group {
     display: none;
     flex-direction: row;
     align-items: center;
@@ -444,7 +467,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 }
 
 /* Nav items: column layout, larger than labels, dashed underline on hover */
-.pcf-div-item, .pcf-sec-item {
+.pcf-div-item, .pcf-sec-item, .pcf-para-item {
     font-size: 0.78rem;
     color: #9B8050;
     text-decoration: none;
@@ -454,14 +477,14 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     padding-bottom: 1px;
     transition: color 0.12s, border-color 0.12s;
 }
-.pcf-div-item:hover, .pcf-sec-item:hover {
+.pcf-div-item:hover, .pcf-sec-item:hover, .pcf-para-item:hover {
     color: #5A3A10;
     border-bottom-color: #9B8050;
 }
-.pcf-div-item.pcf-nav-active, .pcf-sec-item.pcf-nav-active {
+.pcf-div-item.pcf-nav-active, .pcf-sec-item.pcf-nav-active, .pcf-para-item.pcf-nav-active {
     color: #1A0E00;
 }
-.pcf-div-item.pcf-nav-active::before, .pcf-sec-item.pcf-nav-active::before {
+.pcf-div-item.pcf-nav-active::before, .pcf-sec-item.pcf-nav-active::before, .pcf-para-item.pcf-nav-active::before {
     content: '▶ ';
     font-size: 0.42rem;
     vertical-align: middle;
@@ -482,7 +505,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     margin-top: 2px;
 }
 .pcf-id-box {
-    width: 9px; height: 11px;
+    width: 13px; height: 16px;
     border: 1px solid #C2A840;
     background: #F0E4B8;
     flex-shrink: 0;
@@ -490,7 +513,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.38rem;
+    font-size: 0.54rem;
     font-weight: 700;
     color: #1A0E00;
     letter-spacing: 0;
@@ -532,7 +555,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 }
 .pcf-zone-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; }
 .pcf-zone-seq     { width: 72px; flex-shrink: 0; border-right: 1.5px solid #C2A840; }
-.pcf-zone-stmt    { flex: 1; }
+.pcf-zone-stmt    { width: 80ch; flex-shrink: 0; }
 
 /* Rulers */
 .pcf-ruler-row {
@@ -578,9 +601,10 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     opacity: 0.7;
 }
 
-/* Chars ruler: flex, tick widths set by JS to match real content span px width */
+/* Chars ruler: fixed 80ch width matches content, ticks set by JS */
 .pcf-ruler-chars {
-    flex: 1;
+    width: 80ch;
+    flex-shrink: 0;
     display: flex;
     overflow: hidden;
     align-items: center;
@@ -592,7 +616,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     color: #9B8050;
     flex-shrink: 0;
     overflow: hidden;
-    padding-right: 2px; /* shift number 2px left to center over its column */
+    padding-right: 4px; /* shift number 4px left to center over its column */
     /* width set by JS after first paint */
 }
 
@@ -616,15 +640,15 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 .pcf-line-row:nth-child(4n+1) { border-bottom-color: #CEB870; }
 .pcf-line-row:nth-child(7n+3) { border-bottom-color: #DDD090; }
 
-/* Line numbers: space-evenly per-digit to match ruler header */
+/* Line numbers: same font/color as sequence numbers, space-evenly per-digit */
 .pcf-line-num {
     width: 32px;
     flex-shrink: 0;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    font-size: 0.72rem;
-    color: #7A6020;
+    font-size: 0.58rem;
+    color: var(--text-muted);
     background: #EDE0A8;
     border-right: 1px solid #D4C478;
 }
@@ -650,12 +674,12 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     text-align: center;
 }
 
-/* Content area */
+/* Content area: fixed 80ch = exact content width, drives card total width */
 .pcf-chars {
     display: flex;
     align-items: center;
-    overflow: hidden;
-    flex: 1;
+    width: 80ch;
+    flex-shrink: 0;
 }
 .pcf-chars span {
     display: inline-block;
