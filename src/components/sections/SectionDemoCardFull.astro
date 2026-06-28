@@ -52,11 +52,12 @@ const compiled = new Date().toISOString().slice(0, 10);
                             <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#impressum">
                                 <span class="pcf-fh-lbl">IDENTIFICATION</span>
                                 <div class="pcf-id-track">
-                                    <span class="pcf-id-n">73</span>
-                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
-                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
-                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
-                                    <span class="pcf-id-box"></span><span class="pcf-id-box"></span>
+                                    <span class="pcf-id-n">72</span>
+                                    <span class="pcf-id-box">I</span><span class="pcf-id-box">M</span>
+                                    <span class="pcf-id-box">P</span><span class="pcf-id-box">R</span>
+                                    <span class="pcf-id-box">E</span><span class="pcf-id-box">S</span>
+                                    <span class="pcf-id-box">S</span><span class="pcf-id-box">U</span>
+                                    <span class="pcf-id-box">M</span>
                                     <span class="pcf-id-n">80</span>
                                 </div>
                             </a>
@@ -89,7 +90,7 @@ const compiled = new Date().toISOString().slice(0, 10);
                         </div>
 
                         <div class="pcf-ruler-row">
-                            <div class="pcf-ruler-linenum"></div>
+                            <div class="pcf-ruler-linenum" id="pcf-rlinenum-top"></div>
                             <div class="pcf-ruler-seq" id="pcf-rseq-top"></div>
                             <div class="pcf-ruler-chars" id="pcf-rchars-top"></div>
                         </div>
@@ -97,7 +98,7 @@ const compiled = new Date().toISOString().slice(0, 10);
                         <div class="pcf-punch-area" id="pcf-punch-area"></div>
 
                         <div class="pcf-ruler-row pcf-ruler-btm">
-                            <div class="pcf-ruler-linenum"></div>
+                            <div class="pcf-ruler-linenum" id="pcf-rlinenum-btm"></div>
                             <div class="pcf-ruler-seq" id="pcf-rseq-btm"></div>
                             <div class="pcf-ruler-chars" id="pcf-rchars-btm"></div>
                         </div>
@@ -185,6 +186,19 @@ function buildSeqRuler(id: string) {
 buildSeqRuler('pcf-rseq-top');
 buildSeqRuler('pcf-rseq-btm');
 
+// ── Line number rulers — "1" and "2" matching per-digit line number spans ──
+function buildLineRuler(id: string) {
+    const el = document.getElementById(id)!;
+    for (const d of ['1','2']) {
+        const s = document.createElement('span');
+        s.className = 'pcf-rlinenum-tick';
+        s.textContent = d;
+        el.appendChild(s);
+    }
+}
+buildLineRuler('pcf-rlinenum-top');
+buildLineRuler('pcf-rlinenum-btm');
+
 // ── Chars ruler — pixel-accurate: measure a real content span after render ──
 function buildCharsRulers() {
     const sampleSpan = document.querySelector<HTMLElement>('#pcf-punch-area .pcf-chars span');
@@ -249,10 +263,15 @@ LINES.forEach(([seq, tokens], idx) => {
     const row = document.createElement('div');
     row.className = 'pcf-line-row';
 
-    // Line number
+    // Line number: per-digit spans to match ruler header
     const lineNum = document.createElement('div');
     lineNum.className = 'pcf-line-num';
-    lineNum.textContent = String(idx + 1).padStart(2, '0');
+    for (const ch of String(idx + 1).padStart(2, '0')) {
+        const s = document.createElement('span');
+        s.className = 'pcf-line-num-digit';
+        s.textContent = ch;
+        lineNum.appendChild(s);
+    }
     row.appendChild(lineNum);
 
     // Sequence number: one span per digit so space-evenly matches the ruler
@@ -380,9 +399,10 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 .pcf-fh-w2 { flex: 3.5; }
 .pcf-fh-w3 { flex: 1.5; }
 
-/* Nav cells: subtle amber left-border signals interactivity */
+/* Nav cells: amber left+right borders signal interactivity */
 .pcf-fh-nav-cell {
     border-left: 3px solid rgba(194,168,64,0.45);
+    border-right: 3px solid rgba(194,168,64,0.45);
     padding-left: 6px;
 }
 
@@ -425,7 +445,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 
 /* Nav items: column layout, larger than labels, dashed underline on hover */
 .pcf-div-item, .pcf-sec-item {
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     color: #9B8050;
     text-decoration: none;
     white-space: nowrap;
@@ -467,6 +487,13 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     background: #F0E4B8;
     flex-shrink: 0;
     transition: background-color 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.38rem;
+    font-weight: 700;
+    color: #1A0E00;
+    letter-spacing: 0;
 }
 .pcf-fh-id:hover .pcf-id-box { background: #E8D890; }
 .pcf-id-n { font-size: 0.36rem; color: #9B8050; line-height: 1; }
@@ -516,7 +543,22 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     align-items: center;
 }
 .pcf-ruler-btm { border-bottom: none; border-top: 1px solid #D4C478; }
-.pcf-ruler-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; height: 100%; }
+.pcf-ruler-linenum {
+    width: 32px;
+    flex-shrink: 0;
+    border-right: 1px solid #D4C478;
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+.pcf-rlinenum-tick {
+    flex: 1;
+    text-align: center;
+    font-size: 0.58rem;
+    color: #9B8050;
+    opacity: 0.7;
+}
 
 /* Seq ruler: space-evenly matches the per-digit content spans */
 .pcf-ruler-seq {
@@ -550,6 +592,7 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
     color: #9B8050;
     flex-shrink: 0;
     overflow: hidden;
+    padding-right: 2px; /* shift number 2px left to center over its column */
     /* width set by JS after first paint */
 }
 
@@ -573,17 +616,21 @@ window.addEventListener('resize', buildCharsRulers, {passive: true});
 .pcf-line-row:nth-child(4n+1) { border-bottom-color: #CEB870; }
 .pcf-line-row:nth-child(7n+3) { border-bottom-color: #DDD090; }
 
-/* Line numbers */
+/* Line numbers: space-evenly per-digit to match ruler header */
 .pcf-line-num {
     width: 32px;
     flex-shrink: 0;
     display: flex;
+    justify-content: space-evenly;
     align-items: center;
-    justify-content: center;
     font-size: 0.72rem;
     color: #7A6020;
     background: #EDE0A8;
     border-right: 1px solid #D4C478;
+}
+.pcf-line-num-digit {
+    flex: 1;
+    text-align: center;
 }
 
 /* Sequence column: space-evenly with per-digit child spans */
