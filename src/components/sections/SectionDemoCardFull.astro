@@ -1,0 +1,167 @@
+---
+---
+<section id="demo-full">
+    <div class="section-scroll-container">
+        <div class="section-content-wrapper">
+            <div class="pcf-stage">
+                <span class="pcf-proto-tag">PROTOTYPE A · CARD AS PAGE OBJECT</span>
+                <div class="pcf-card">
+                    <!-- ── Row number column ── -->
+                    <div class="pcf-rows">
+                        <div class="pcf-rows-corner"></div>
+                        <div class="pcf-row-num">12</div>
+                        <div class="pcf-row-num">11</div>
+                        <div class="pcf-row-num">0</div>
+                        <div class="pcf-row-num">1</div>
+                        <div class="pcf-row-num">2</div>
+                        <div class="pcf-row-num">3</div>
+                        <div class="pcf-row-num">4</div>
+                        <div class="pcf-row-num">5</div>
+                        <div class="pcf-row-num">6</div>
+                        <div class="pcf-row-num">7</div>
+                        <div class="pcf-row-num">8</div>
+                        <div class="pcf-row-num">9</div>
+                    </div>
+                    <!-- ── Column ruler + punch area ── -->
+                    <div class="pcf-body">
+                        <div class="pcf-ruler">
+                            <span>10</span><span>20</span><span>30</span><span>40</span>
+                            <span>50</span><span>60</span><span>70</span><span>80</span>
+                        </div>
+                        <div class="pcf-punch-area">
+                            <div class="pcf-line">000001 IDENTIFICATION DIVISION.</div>
+                            <div class="pcf-line">000002 PROGRAM-ID. SSCHW-DEV.</div>
+                            <div class="pcf-line">000003 AUTHOR. SEBASTIAN SCHWINN.</div>
+                            <div class="pcf-line">000004*&gt; DATE-COMPILED. 2025.</div>
+                            <div class="pcf-line">000005</div>
+                            <div class="pcf-line">000006 DATA DIVISION.</div>
+                            <div class="pcf-line">000007 WORKING-STORAGE SECTION.</div>
+                            <div class="pcf-line">000008 01 SSCHW-RECORD.</div>
+                            <div class="pcf-line">000009    05 NAME     PIC X(50) VALUE 'SEBASTIAN SCHWINN'.</div>
+                            <div class="pcf-line">000010    05 ROLE     PIC X(40) VALUE 'COBOL DEVELOPER AT RETROCODE'.</div>
+                            <div class="pcf-line">000011    05 DEGREE   PIC X(40) VALUE 'MSC EE WITH DISTINCTION'.</div>
+                            <div class="pcf-line">000012    05 CONTACT  PIC X(40) VALUE 'LINKEDIN.COM/IN/SSCHWINN'.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style is:global>
+/* ── PROTOTYPE A: PUNCH CARD AS PAGE OBJECT ─────────────────────────────── */
+.pcf-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 5vh 5%;
+    gap: 10px;
+}
+
+.pcf-proto-tag {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    align-self: flex-start;
+}
+
+.pcf-card {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    background: #F5EDD4;
+    border: 1.5px solid #C2A840;
+    /* top-left corner cut */
+    clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14);
+    overflow: hidden;
+}
+
+/* Row label column */
+.pcf-rows {
+    display: flex;
+    flex-direction: column;
+    background: #EDE0A8;
+    border-right: 1.5px solid #C2A840;
+    flex-shrink: 0;
+}
+
+.pcf-rows-corner {
+    height: 24px;
+    border-bottom: 1.5px solid #C2A840;
+    flex-shrink: 0;
+}
+
+.pcf-row-num {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 6px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.58rem;
+    color: #7A6020;
+    border-bottom: 1px solid #D4C478;
+}
+
+/* Column ruler + punch field */
+.pcf-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.pcf-ruler {
+    height: 24px;
+    background: #EDE0A8;
+    border-bottom: 1.5px solid #C2A840;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.56rem;
+    color: #7A6020;
+    flex-shrink: 0;
+}
+
+.pcf-punch-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background-image:
+        repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent calc(100% / 80 - 0.5px),
+            #D4C478 calc(100% / 80)
+        ),
+        radial-gradient(circle at 50% 50%, #C8AE58 1.8px, transparent 1.8px);
+    background-size:
+        calc(100% / 80) 100%,
+        calc(100% / 80) calc(100% / 12);
+}
+
+.pcf-line {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    padding-left: 0.4ch;
+    font-family: "Share Tech Mono", monospace;
+    font-size: clamp(0.45rem, 1vw, 0.7rem);
+    color: #1B2D73;
+    font-weight: 700;
+    white-space: nowrap;
+    border-bottom: 1px solid #D4C478;
+    overflow: hidden;
+}
+</style>

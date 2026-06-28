@@ -1,6 +1,7 @@
 const navBoxes      = document.querySelectorAll<HTMLAnchorElement>(".nav-box");
 const navDivData    = document.getElementById("nav-div-data");
 const navDivProc    = document.getElementById("nav-div-proc");
+const navDivProto   = document.getElementById("nav-div-proto");
 const sections      = document.querySelectorAll<HTMLElement>("section");
 const logoWrapper   = document.getElementById("logo-wrapper")!;
 const controlPrgrph    = document.getElementById("control-prgrph");
@@ -14,7 +15,8 @@ const sectionRunners: Record<string, () => void> = {
     impressum: () => (window as any).__impressumRun?.(),
 };
 
-const DATA_DIV_SECTIONS = new Set(["top", "aboutme", "work"]);
+const DATA_DIV_SECTIONS  = new Set(["top", "aboutme", "work"]);
+const PROTO_DIV_SECTIONS = new Set(["demo-full", "demo-texture"]);
 
 /* ── scroll direction ──────────────────────────── */
 let lastScrollY = 0;
@@ -66,9 +68,11 @@ function updateNav(id: string) {
         if (box.getAttribute("href") === "#top" && id !== "top") box.classList.add("top");
     });
 
-    const inData = DATA_DIV_SECTIONS.has(id);
-    navDivData?.classList.toggle("active-division", inData);
-    navDivProc?.classList.toggle("active-division", !inData);
+    const inData  = DATA_DIV_SECTIONS.has(id);
+    const inProto = PROTO_DIV_SECTIONS.has(id);
+    navDivData?.classList.toggle("active-division",  inData);
+    navDivProc?.classList.toggle("active-division",  !inData && !inProto);
+    navDivProto?.classList.toggle("active-division", inProto);
 }
 
 function updateLogo(id: string) {

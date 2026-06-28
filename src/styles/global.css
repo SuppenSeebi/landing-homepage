@@ -118,7 +118,7 @@ p {
 /* Three-row CSS grid: row 1 = id bar, row 2 = division headers, row 3 = section boxes */
 .bottom-nav {
     display: grid;
-    grid-template-columns: repeat(5, minmax(130px, 1fr));
+    grid-template-columns: repeat(7, minmax(120px, 1fr));
     grid-template-rows: auto auto auto;
     min-width: max-content;
 }
@@ -126,7 +126,7 @@ p {
 /* ── Row 1: IDENTIFICATION DIVISION bar ─────── */
 .nav-id-row {
     grid-row: 1;
-    grid-column: 1 / 6;
+    grid-column: 1 / 8;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,6 +170,11 @@ p {
 
 .nav-division.proc-div {
     grid-column: 4 / 6;
+}
+
+.nav-division.proto-div {
+    grid-column: 6 / 8;
+    border-left: 1px solid var(--blue-mid);
 }
 
 .nav-division.active-division {
