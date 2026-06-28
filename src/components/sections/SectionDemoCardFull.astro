@@ -1,34 +1,54 @@
 ---
+const compiled = new Date().toISOString().slice(0, 10);
 ---
 <section id="demo-full">
-    <div class="section-scroll-container">
+    <div class="section-scroll-container pcf-section-height">
         <div class="section-content-wrapper">
             <div class="pcf-stage">
                 <span class="pcf-proto-tag">PROTOTYPE A · CARD AS PAGE OBJECT</span>
                 <div class="pcf-card">
-                    <!-- ── Row number column ── -->
-                    <div class="pcf-rows">
-                        <div class="pcf-rows-corner"></div>
-                        <div class="pcf-row-num">12</div>
-                        <div class="pcf-row-num">11</div>
-                        <div class="pcf-row-num">0</div>
-                        <div class="pcf-row-num">1</div>
-                        <div class="pcf-row-num">2</div>
-                        <div class="pcf-row-num">3</div>
-                        <div class="pcf-row-num">4</div>
-                        <div class="pcf-row-num">5</div>
-                        <div class="pcf-row-num">6</div>
-                        <div class="pcf-row-num">7</div>
-                        <div class="pcf-row-num">8</div>
-                        <div class="pcf-row-num">9</div>
-                    </div>
-                    <!-- ── Body: ruler row + punch rows (built by script) ── -->
-                    <div class="pcf-body">
-                        <div class="pcf-ruler-row">
-                            <div class="pcf-seq pcf-seq-hdr"></div>
-                            <div class="pcf-ruler-track" id="pcf-ruler-track"></div>
+
+                    <!-- ── Card header strip ── -->
+                    <div class="pcf-header">
+                        <span class="pcf-hdr-brand">IBM 026 KEYPUNCH · COBOL SOURCE DECK</span>
+                        <div class="pcf-hdr-meta">
+                            <span class="pcf-hdr-field">PROGRAM-ID <span class="pcf-hdr-val">SSCHW-DEV</span></span>
+                            <span class="pcf-hdr-dot">·</span>
+                            <span class="pcf-hdr-field">AUTHOR <span class="pcf-hdr-val">SEBASTIAN SCHWINN</span></span>
+                            <span class="pcf-hdr-dot">·</span>
+                            <span class="pcf-hdr-field">DATE-COMPILED <span class="pcf-hdr-val">{compiled}</span></span>
                         </div>
-                        <div class="pcf-punch-area" id="pcf-punch-area"></div>
+                    </div>
+
+                    <!-- ── Main: row labels + punch body ── -->
+                    <div class="pcf-main">
+
+                        <!-- Row number column -->
+                        <div class="pcf-rows">
+                            <div class="pcf-rows-corner"></div>
+                            <div class="pcf-row-num">12</div>
+                            <div class="pcf-row-num">11</div>
+                            <div class="pcf-row-num">0</div>
+                            <div class="pcf-row-num">1</div>
+                            <div class="pcf-row-num">2</div>
+                            <div class="pcf-row-num">3</div>
+                            <div class="pcf-row-num">4</div>
+                            <div class="pcf-row-num">5</div>
+                            <div class="pcf-row-num">6</div>
+                            <div class="pcf-row-num">7</div>
+                            <div class="pcf-row-num">8</div>
+                            <div class="pcf-row-num">9</div>
+                        </div>
+
+                        <!-- Ruler + punch area -->
+                        <div class="pcf-body">
+                            <div class="pcf-ruler-row">
+                                <div class="pcf-seq pcf-seq-hdr"></div>
+                                <div class="pcf-ruler-track" id="pcf-ruler-track"></div>
+                            </div>
+                            <div class="pcf-punch-area" id="pcf-punch-area"></div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -37,22 +57,9 @@
 </section>
 
 <script>
-// ── Token types ────────────────────────────────────────────────────────────
-// div      DATA DIVISION / PROCEDURE DIVISION headers
-// section  WORKING-STORAGE SECTION etc.
-// para     paragraph names (MAIN-PRGRPH.)
-// lvl      level numbers (01 05 10 88)
-// name     data-name identifiers
-// kw       built-in keywords (PIC VALUE DISPLAY MOVE PERFORM STOP RUN TO)
-// val      string literals  'LIKE THIS'
-// numval   numeric literals  2025
-// dot      period terminators
-// comment  *> inline comments
-// (spaces in any token are always rendered as empty punch dots)
-
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
-type Line  = [string, Token[]];  // [seq, tokens]
+type Line  = [string, Token[]];
 
 const LINES: Line[] = [
     ['000001', [['div','DATA DIVISION'],['dot','.']]],
@@ -71,7 +78,6 @@ const LINES: Line[] = [
 
 const COLS = 80;
 
-// ── CSS class map ──────────────────────────────────────────────────────────
 const CLS: Record<TT, string> = {
     div:     'pcc-div',
     section: 'pcc-section',
@@ -85,40 +91,32 @@ const CLS: Record<TT, string> = {
     comment: 'pcc-comment',
 };
 
-// ── Build ruler ────────────────────────────────────────────────────────────
-const ruler = document.getElementById('pcf-ruler-track')!;
+// Ruler: 8 ticks of 10ch each — inherits card base font so 10ch aligns with 10 content spans
+const rulerEl = document.getElementById('pcf-ruler-track')!;
 for (let c = 10; c <= COLS; c += 10) {
     const tick = document.createElement('span');
     tick.className = 'pcf-ruler-tick';
     tick.textContent = String(c);
-    ruler.appendChild(tick);
+    rulerEl.appendChild(tick);
 }
 
-// ── Build punch rows ───────────────────────────────────────────────────────
+// Punch rows
 const area = document.getElementById('pcf-punch-area')!;
-
 for (const [seq, tokens] of LINES) {
-    // Flatten tokens into per-character (char, class) pairs
     const chars: [string, string][] = [];
     for (const [type, text] of tokens) {
-        for (const ch of text) {
-            chars.push([ch, CLS[type]]);
-        }
+        for (const ch of text) chars.push([ch, CLS[type]]);
     }
-    // Pad to COLS
     while (chars.length < COLS) chars.push([' ', 'pcc-kw']);
 
-    // Build row element
     const row = document.createElement('div');
     row.className = 'pcf-line-row';
 
-    // Sequence number cell
     const seqEl = document.createElement('div');
     seqEl.className = 'pcf-seq';
     seqEl.textContent = seq;
     row.appendChild(seqEl);
 
-    // 80-column character area
     const charsEl = document.createElement('div');
     charsEl.className = 'pcf-chars';
     for (let i = 0; i < COLS; i++) {
@@ -140,14 +138,19 @@ for (const [seq, tokens] of LINES) {
 <style is:global>
 /* ── PROTOTYPE A: PUNCH CARD AS PAGE OBJECT ─────────────────────────────── */
 
+/* Taller section so the card has room to breathe */
+.pcf-section-height {
+    height: 92vh;
+}
+
 .pcf-stage {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: 5vh 5%;
-    gap: 10px;
+    padding: 3vh 4%;
+    gap: 8px;
 }
 
 .pcf-proto-tag {
@@ -158,9 +161,10 @@ for (const [seq, tokens] of LINES) {
     align-self: flex-start;
 }
 
+/* Card: column flex so header stacks above main content */
 .pcf-card {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     width: 100%;
     flex: 1;
     min-height: 0;
@@ -170,7 +174,64 @@ for (const [seq, tokens] of LINES) {
     box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14);
     overflow: hidden;
     font-family: "Share Tech Mono", monospace;
-    font-size: clamp(0.52rem, 0.9vw, 0.72rem);
+    /* Base font — ruler ticks (10ch) and content spans (1ch) both inherit this
+       so column alignment is guaranteed */
+    font-size: clamp(1.1rem, 1.8vw, 1.8rem);
+}
+
+/* ── Card header strip ───────────────────────────────────────────────────── */
+.pcf-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 16px 0 32px; /* 32px left clears the corner clip */
+    height: 38px;
+    background: #EDE0A8;
+    border-bottom: 2px solid #C2A840;
+    flex-shrink: 0;
+    gap: 16px;
+    overflow: hidden;
+}
+
+.pcf-hdr-brand {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: #7A6020;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.pcf-hdr-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+    overflow: hidden;
+}
+
+.pcf-hdr-field {
+    font-size: 0.6rem;
+    color: #9B8050;
+    white-space: nowrap;
+}
+
+.pcf-hdr-val {
+    color: #1A0E00;
+}
+
+.pcf-hdr-dot {
+    color: #C8AE58;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+}
+
+/* ── Main: row labels + punch body ──────────────────────────────────────── */
+.pcf-main {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 /* ── Row number labels (left edge) ─────────────────────────────────────── */
@@ -182,8 +243,9 @@ for (const [seq, tokens] of LINES) {
     flex-shrink: 0;
 }
 
+/* Aligns with the ruler row height */
 .pcf-rows-corner {
-    height: 22px;
+    height: 28px;
     border-bottom: 1.5px solid #C2A840;
     flex-shrink: 0;
 }
@@ -194,8 +256,8 @@ for (const [seq, tokens] of LINES) {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 0 5px;
-    font-size: 0.58rem;
+    padding: 0 6px;
+    font-size: 0.62rem;
     color: #7A6020;
     border-bottom: 1px solid #D4C478;
 }
@@ -213,7 +275,7 @@ for (const [seq, tokens] of LINES) {
 .pcf-ruler-row {
     display: flex;
     flex-direction: row;
-    height: 22px;
+    height: 28px;
     background: #EDE0A8;
     border-bottom: 1.5px solid #C2A840;
     flex-shrink: 0;
@@ -221,18 +283,20 @@ for (const [seq, tokens] of LINES) {
     overflow: hidden;
 }
 
+/* Spacer above seq column — fixed px width matches pcf-seq */
 .pcf-seq-hdr {
-    /* spacer matching pcf-seq width */
-    width: 6ch;
+    width: 72px;
     border-right: 1.5px solid #C2A840;
     height: 100%;
     flex-shrink: 0;
 }
 
+/* Ruler track: flex of 8 ticks × 10ch each.
+   No explicit font-size — inherits pcf-card base so 10ch = 10 × content-span-ch */
 .pcf-ruler-track {
     display: flex;
+    align-items: center;
     flex: 1;
-    padding-left: 4px;
     overflow: hidden;
 }
 
@@ -240,9 +304,9 @@ for (const [seq, tokens] of LINES) {
     display: inline-block;
     width: 10ch;
     text-align: right;
-    font-size: 0.55rem;
-    color: #7A6020;
+    color: #9B8050;
     flex-shrink: 0;
+    /* intentionally no font-size override — must match content span ch */
 }
 
 /* Punch area: 12 rows */
@@ -254,7 +318,7 @@ for (const [seq, tokens] of LINES) {
     overflow: hidden;
 }
 
-/* Each punch row: seq | chars */
+/* Each punch row: seq | 80 chars */
 .pcf-line-row {
     display: flex;
     flex-direction: row;
@@ -264,14 +328,14 @@ for (const [seq, tokens] of LINES) {
     border-bottom: 1px solid #D4C478;
 }
 
-/* Sequence number column */
+/* Sequence number column — fixed px width so it matches pcf-seq-hdr */
 .pcf-seq {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 0 4px;
-    width: 6ch;
-    font-size: 0.58rem;
+    padding: 0 6px;
+    width: 72px;
+    font-size: 0.62rem;
     color: var(--text-muted);
     background: #EDE0A8;
     border-right: 1.5px solid #C2A840;
@@ -283,12 +347,11 @@ for (const [seq, tokens] of LINES) {
 .pcf-chars {
     display: flex;
     align-items: center;
-    flex: 1;
     overflow: hidden;
-    padding-left: 3px;
+    flex: 1;
 }
 
-/* Every span occupies exactly 1ch */
+/* Every span occupies exactly 1ch — ruler ticks are 10ch, so alignment is guaranteed */
 .pcf-chars span {
     display: inline-block;
     width: 1ch;
@@ -298,28 +361,28 @@ for (const [seq, tokens] of LINES) {
     flex-shrink: 0;
 }
 
-/* ── Non-punched position: 2px centered dot ─────────────────────────────── */
+/* Non-punched position: 2px centered dot */
 .pcc-empty::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 2px;
-    height: 2px;
+    width: 2.5px;
+    height: 2.5px;
     background: #C8AE58;
     border-radius: 50%;
 }
 
-/* ── Token type colors (card-adapted from global design system) ──────────── */
-.pcc-div     { color: #1A0E00; }                      /* DATA / PROCEDURE DIVISION */
-.pcc-section { color: #2C1A00; }                      /* WORKING-STORAGE SECTION   */
-.pcc-para    { color: var(--blue-darker-1); }         /* paragraph names           */
-.pcc-lvl     { color: var(--text-muted); }            /* 01 05 10 88               */
-.pcc-name    { color: var(--blue-darker-2); }         /* data-name identifiers     */
-.pcc-kw      { color: #8B7040; }                      /* PIC VALUE DISPLAY MOVE …  */
-.pcc-val     { color: var(--blue-primary); }          /* 'string literals'         */
-.pcc-numval  { color: var(--blue-primary); }          /* numeric literals          */
-.pcc-dot     { color: #8B7040; }                      /* period terminators        */
-.pcc-comment { color: #9B8050; font-style: italic; }  /* *> inline comments        */
+/* ── Token type colors ───────────────────────────────────────────────────── */
+.pcc-div     { color: #1A0E00; }
+.pcc-section { color: #2C1A00; }
+.pcc-para    { color: var(--blue-darker-1); }
+.pcc-lvl     { color: var(--text-muted); }
+.pcc-name    { color: var(--blue-darker-2); }
+.pcc-kw      { color: #8B7040; }
+.pcc-val     { color: var(--blue-primary); }
+.pcc-numval  { color: var(--blue-primary); }
+.pcc-dot     { color: #8B7040; }
+.pcc-comment { color: #9B8050; font-style: italic; }
 </style>
