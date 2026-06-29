@@ -425,11 +425,6 @@ function buildCharsRulerForCard(card: Element) {
         if (!el || (el as HTMLElement).dataset.built) continue;
         (el as HTMLElement).dataset.built = '1';
         el.innerHTML = '';
-        // 8ch spacer for cols 1-8 (those ticks now live in the seq ruler zone)
-        const spacer = document.createElement('span');
-        spacer.style.width = `${chPx * 8}px`;
-        spacer.style.flexShrink = '0';
-        el.appendChild(spacer);
         // 4-char ticks for positions 12, 16, 20 ... 80
         for (let c = 12; c <= 80; c += 4) {
             const s = document.createElement('span');
