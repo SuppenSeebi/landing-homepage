@@ -1161,7 +1161,7 @@ a.call-comment {
 .pcf-zone-area-b {
     flex: 1;
     font-size: 0.34rem; color: #9B8050; letter-spacing: 0.08em;
-    display: flex; align-items: center; padding-left: 5px;
+    display: flex; align-items: center; justify-content: center;
 }
 
 .pcf-ruler-row {
@@ -1357,7 +1357,8 @@ a.call-comment {
     background: #F5EDD4;
     border-top: 1px dashed #C2A840;
     border-bottom: 1px dashed #C2A840;
-    padding: 8px 16px;
+    margin-left: calc(32px + 72px);
+    padding: 8px 16px 8px 6ch;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;

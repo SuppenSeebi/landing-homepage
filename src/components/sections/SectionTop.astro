@@ -12,8 +12,8 @@ const LINES: Line[] = [
     ['000003', []],
     ['000004', [['lvl',' 01'],['name',' SSCHW-RECORD'],['dot','.']]],
     ['000005', [['lvl','     05'],['name',' IDENTITY     '],['dot','.']]],
-    ['000006', [['lvl','       10'],['name',' NAME-VAL    '],['kw',' PIC X(32)'],['kw','  VALUE'],['val',"'SEBASTIAN SCHWINN               '"],['dot','.']]],
-    ['000007', [['lvl','       10'],['name',' NAME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val',"'NAME     '"],['dot','.']]],
+    ['000006', [['lvl','       10'],['name',' NAME-VAL    '],['kw',' PIC X(32)'],['kw','  VALUE'],['val'," 'SEBASTIAN SCHWINN               '"],['dot','.']]],
+    ['000007', [['lvl','       10'],['name',' NAME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val'," 'NAME     '"],['dot','.']]],
     ['000008', []],
     ['000009', []],
     ['000010', []],
@@ -66,13 +66,13 @@ const scrollSpace = document.getElementById('scroll-space-top-aboutme') as HTMLE
 // Value: 34 chars (positions 37-70 in row 4)
 // Desc:  11 chars (positions 40-50 in row 5)
 const items = [
-    { group: ' IDENTITY     ', value: "'SEBASTIAN SCHWINN               '", desc: "'NAME     '", imageId: 'top-me'     },
-    { group: ' BACKGROUND   ', value: "'MSC ELECTRICAL ENGINEERING      '", desc: "'EDUCATION'", imageId: 'top-degree' },
-    { group: ' CAREER       ', value: "'COBOL DEVELOPER AT RETROCODE    '", desc: "'CURR-ROLE'", imageId: 'top-cobol'  },
-    { group: ' CAREER       ', value: "'EMBEDDED C / OPC-UA             '", desc: "'PREV-ROLE'", imageId: 'top-opcua'  },
-    { group: ' SKILLS       ', value: "'PYTHON  SQL-DB2  JCL  JS        '", desc: "'LANGUAGES'", imageId: 'top-coding' },
-    { group: ' INTERESTS    ', value: "'3D PRINTING - TECHNICAL TINKERIN'", desc: "'HOBBIES  '", imageId: 'top-3d'     },
-    { group: ' COMMUNITY    ', value: "'TENNIS + TABLE TENNIS CLUBS     '", desc: "'COMMUNITY'", imageId: 'top-sports' },
+    { group: ' IDENTITY     ', value: " 'SEBASTIAN SCHWINN               '", desc: " 'NAME     '", imageId: 'top-me'     },
+    { group: ' BACKGROUND   ', value: " 'MSC ELECTRICAL ENGINEERING      '", desc: " 'EDUCATION'", imageId: 'top-degree' },
+    { group: ' CAREER       ', value: " 'COBOL DEVELOPER AT RETROCODE    '", desc: " 'CURR-ROLE'", imageId: 'top-cobol'  },
+    { group: ' CAREER       ', value: " 'EMBEDDED C / OPC-UA             '", desc: " 'PREV-ROLE'", imageId: 'top-opcua'  },
+    { group: ' SKILLS       ', value: " 'PYTHON  SQL-DB2  JCL  JS        '", desc: " 'LANGUAGES'", imageId: 'top-coding' },
+    { group: ' INTERESTS    ', value: " '3D PRINTING - TECHNICAL TINKERIN'", desc: " 'HOBBIES  '", imageId: 'top-3d'     },
+    { group: ' COMMUNITY    ', value: " 'TENNIS + TABLE TENNIS CLUBS     '", desc: " 'COMMUNITY'", imageId: 'top-sports' },
 ];
 
 // Span position constants (character offsets within each row's .pcf-chars)
@@ -84,12 +84,12 @@ const NAME_LEN = 14;
 // Row 5 (index 5): lvl(9) + name(13) + kw(10) + kw(7) = 39, then val(34)
 const VAL_ROW = 5;
 const VAL_START = 39;
-const VAL_LEN = 34;
+const VAL_LEN = 35;
 
-// Row 6 (index 6): lvl(9) + name(13) + kw(10) + kw(7) = 39, then val(11)
+// Row 6 (index 6): lvl(9) + name(13) + kw(10) + kw(7) = 39, then val(12)
 const DESC_ROW = 6;
 const DESC_START = 39;
-const DESC_LEN = 11;
+const DESC_LEN = 12;
 
 const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\-._*@#';
 

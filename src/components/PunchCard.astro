@@ -391,15 +391,6 @@ function updatePcfNav(activeId: string) {
 // ── Rulers ───────────────────────────────────────────────────────────────────
 
 function buildRulersForCard(card: Element) {
-    const buildSeqRuler = (el: Element | null) => {
-        if (!el || (el as HTMLElement).dataset.built) return;
-        (el as HTMLElement).dataset.built = '1';
-        for (let i = 1; i <= 6; i++) {
-            const s = document.createElement('span');
-            s.className = 'pcf-rseq-tick'; s.textContent = String(i);
-            el.appendChild(s);
-        }
-    };
     const buildLineRuler = (el: Element | null) => {
         if (!el || (el as HTMLElement).dataset.built) return;
         (el as HTMLElement).dataset.built = '1';
@@ -409,8 +400,6 @@ function buildRulersForCard(card: Element) {
             el.appendChild(s);
         }
     };
-    buildSeqRuler(card.querySelector('[data-ruler="seq-top"]'));
-    buildSeqRuler(card.querySelector('[data-ruler="seq-btm"]'));
     buildLineRuler(card.querySelector('[data-ruler="linenum-top"]'));
     buildLineRuler(card.querySelector('[data-ruler="linenum-btm"]'));
 }

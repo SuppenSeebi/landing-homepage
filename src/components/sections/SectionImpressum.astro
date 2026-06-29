@@ -16,8 +16,8 @@ const LINES: Line[] = [
     ['000006', [['kw','     END-DISPLAY']]],
     ['000007', []],
     ['000008', [['comment','* GOBACK TO PROCEDURE DIVISION IMPRESSUM-SECTION']]],
-    ['000009', [['kw','     EXIT PARAGRAPH']]],
-    ['000010', [['dot','.']]],
+    ['000009', [['kw','     '],['val','EXIT PARAGRAPH']]],
+    ['000010', [['dot','     .']]],
 ];
 ---
 <section id="impressum">
@@ -30,6 +30,7 @@ const LINES: Line[] = [
                 identificationHref="#impressum"
                 lines={LINES}
                 slotAtLine={5}
+                callLinks={{ 'EXIT PARAGRAPH': '#impressum' }}
             >
                 <div class="impressum-grid">
                     <div class="impressum-col">
