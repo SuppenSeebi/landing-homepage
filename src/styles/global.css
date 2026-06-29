@@ -885,6 +885,7 @@ a.call-comment {
     position: relative;
     height: 100%;
     overflow: hidden;
+    font-size: clamp(0.9rem, 1.5vw, 1.4rem); /* needed so ch resolves correctly in pseudo-elements */
 }
 
 /* Card stack ghost layers — two empty card silhouettes behind the active card */
@@ -893,8 +894,9 @@ a.call-comment {
     position: absolute;
     top: calc(7vh + 8px);
     bottom: calc(7vh - 8px);
-    left: calc(7% + 8px);
-    right: calc(7% - 8px);
+    left: 50%;
+    width: calc(32px + 72px + 80ch);
+    transform: translateX(calc(-50% + 8px));
     background: #F0E5C0;
     border: 1.5px solid #C2A840;
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
@@ -907,8 +909,9 @@ a.call-comment {
     position: absolute;
     top: calc(7vh + 16px);
     bottom: calc(7vh - 16px);
-    left: calc(7% + 16px);
-    right: calc(7% - 16px);
+    left: 50%;
+    width: calc(32px + 72px + 80ch);
+    transform: translateX(calc(-50% + 16px));
     background: #EBE0BB;
     border: 1.5px solid #C2A840;
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
@@ -944,9 +947,9 @@ a.call-comment {
     position: absolute;
     top: 7vh;
     bottom: 7vh;
-    left: 7%;
-    right: 7%;
-    width: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: fit-content;
     flex: none;
     opacity: 0;
     pointer-events: none;
@@ -1388,7 +1391,8 @@ a.call-comment {
 .top-punch-wrapper {
     flex: 1;
     display: flex;
-    align-items: stretch;
+    flex-direction: column;
+    align-items: flex-start;
     overflow: hidden;
     padding-left: 5%;
     padding-top: 7vh;
