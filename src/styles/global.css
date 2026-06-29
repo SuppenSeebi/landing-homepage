@@ -376,10 +376,14 @@ a.ctrl-goback:hover .kw     { text-decoration: underline; }
     z-index: 2;
 }
 
-.section-content-wrapper.exit-up   { transform: translateY(-80vh); opacity: 0; z-index: 1; }
-.section-content-wrapper.exit-down { transform: translateY(80vh);  opacity: 0; z-index: 1; }
-.section-content-wrapper.enter-up  { transform: translateY(80vh);  opacity: 0; }
-.section-content-wrapper.enter-down{ transform: translateY(-80vh); opacity: 0; }
+.section-content-wrapper.exit-up    { transform: translateY(-80vh); opacity: 0; z-index: 1; }
+.section-content-wrapper.exit-down  { transform: translateY(80vh);  opacity: 0; z-index: 1; }
+.section-content-wrapper.enter-up   { transform: translateY(80vh);  opacity: 0; }
+.section-content-wrapper.enter-down { transform: translateY(-80vh); opacity: 0; }
+.section-content-wrapper.exit-left  { transform: translateX(-80vw); opacity: 0; z-index: 1; }
+.section-content-wrapper.exit-right { transform: translateX(80vw);  opacity: 0; z-index: 1; }
+.section-content-wrapper.enter-left { transform: translateX(-80vw); opacity: 0; }
+.section-content-wrapper.enter-right{ transform: translateX(80vw);  opacity: 0; }
 
 .sections-scroll-space { height: 5000px; }
 
@@ -876,11 +880,41 @@ a.call-comment {
     padding: 7vh 7%;
 }
 
-/* Multi-card variant: one card visible at a time, slides on scroll */
+/* Multi-card variant: one card visible at a time, noise-transitions on scroll */
 .pcf-stage-multi {
     position: relative;
     height: 100%;
     overflow: hidden;
+}
+
+/* Card stack ghost layers — two empty card silhouettes behind the active card */
+.pcf-stage-multi::before {
+    content: '';
+    position: absolute;
+    top: calc(7vh + 5px);
+    bottom: calc(7vh - 5px);
+    left: calc(7% + 5px);
+    right: calc(7% - 5px);
+    background: #F0E5C0;
+    border: 1.5px solid #C2A840;
+    clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
+    opacity: 0.65;
+    z-index: 0;
+    pointer-events: none;
+}
+.pcf-stage-multi::after {
+    content: '';
+    position: absolute;
+    top: calc(7vh + 10px);
+    bottom: calc(7vh - 10px);
+    left: calc(7% + 10px);
+    right: calc(7% - 10px);
+    background: #EBE0BB;
+    border: 1.5px solid #C2A840;
+    clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
 }
 
 /* ── CARD ───────────────────────────────────────────────────────────────────── */
@@ -905,7 +939,7 @@ a.call-comment {
     font-size: clamp(0.9rem, 1.5vw, 1.4rem);
 }
 
-/* Multi-card: all cards absolutely stacked, hidden off-screen right by default */
+/* Multi-card: all cards absolutely stacked, hidden by default */
 .pcf-stage-multi .pcf-card {
     position: absolute;
     top: 7vh;
@@ -916,13 +950,11 @@ a.call-comment {
     flex: none;
     opacity: 0;
     pointer-events: none;
-    transform: translateX(100%);
-    transition: transform 0.5s ease, opacity 0.4s ease;
+    z-index: 1;
 }
 .pcf-stage-multi .pcf-card.pcf-card-active {
     opacity: 1;
     pointer-events: auto;
-    transform: translateX(0);
 }
 
 /* In top-punch-wrapper, card fills available height without growing unbounded */
@@ -1175,6 +1207,13 @@ a.call-comment {
     overflow: hidden;
     padding-right: 4px;
 }
+/* Area A / Area B boundary markers in the column ruler */
+.pcf-rchars-tick.pcf-rchars-area {
+    color: #7A5020;
+    font-weight: 700;
+    opacity: 1;
+    font-size: 0.62rem;
+}
 
 /* ── PUNCH AREA ─────────────────────────────────────────────────────────────── */
 .pcf-punch-area {
@@ -1298,6 +1337,19 @@ a.call-comment {
     padding: 8px 16px 8px 12px;
     font-family: inherit;
     font-size: 0.82rem;
+}
+
+/* ── INLINE SLOT BLOCK (slotAtLine — injects slot between two line ranges) ───── */
+.pcf-display-block {
+    min-height: 0;
+    overflow-y: hidden;
+    background: #F5EDD4;
+    border-top: 1px dashed #C2A840;
+    border-bottom: 1px dashed #C2A840;
+    padding: 6px 12px 6px calc(32px + 72px + 10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* Clickable CALL value in punch card coding area */

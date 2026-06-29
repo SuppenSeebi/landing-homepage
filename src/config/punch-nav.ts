@@ -18,9 +18,11 @@ export const SECTIONS_BY_DIV: Record<string, { label: string; href: string }[]> 
 export const PARAS_BY_SECTION: Record<string, { label: string; href: string }[]> = {
     'top':       [{ label: '01 SSCHW-RECORD.', href: '#top' }],
     'aboutme':   [
-        { label: 'WORK-NOW.',         href: '#aboutme' },
-        { label: '05 PRG-LANGUAGES.', href: '#aboutme' },
-        { label: '05 VOC-LANGUAGES.', href: '#aboutme' },
+        { label: 'WORK-NOW.',      href: '#aboutme' },
+        { label: 'WORK-BFRE.',     href: '#aboutme' },
+        { label: 'STUDIES.',       href: '#aboutme' },
+        { label: 'PRG-LANGUAGES.', href: '#aboutme' },
+        { label: 'VOC-LANGUAGES.', href: '#aboutme' },
     ],
     'work':      [{ label: 'WORK-CURRENT.', href: '#work' }, { label: 'WORK-PREV.', href: '#work' }],
     'links':     [{ label: 'SERVICES-PRGRPH.', href: '#links' }, { label: 'SOCIALS-PRGRPH.', href: '#links' }],

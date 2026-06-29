@@ -18,6 +18,11 @@ const sectionRunners: Record<string, () => void> = {
 const DATA_DIV_SECTIONS  = new Set(["top", "aboutme", "work"]);
 const PROTO_DIV_SECTIONS = new Set(["demo-full", "demo-texture"]);
 
+// Division membership for directional slide: same division → horizontal, cross → vertical
+const DIVISION_OF: Record<string, string> = {
+    top: 'data', aboutme: 'data', work: 'data', links: 'proc', impressum: 'proc',
+};
+
 /* ── scroll direction ──────────────────────────── */
 let lastScrollY = 0;
 let scrollDir: "up" | "down" = "down";
@@ -46,18 +51,34 @@ function transitionTo(id: string) {
     const current = document.querySelector<HTMLElement>(".section-content-wrapper.active");
     if (!next) return;
 
-    next.classList.remove("exit-up", "exit-down", "enter-up", "enter-down", "active");
-    next.classList.add(scrollDir === "down" ? "enter-up" : "enter-down");
+    const fromId = activeSectionId ?? '';
+    const sameDivision = !!fromId && DIVISION_OF[fromId] === DIVISION_OF[id];
+
+    let enterClass: string;
+    let exitClass: string;
+
+    if (sameDivision) {
+        // Within same DIVISION: horizontal slide
+        enterClass = scrollDir === 'down' ? 'enter-right' : 'enter-left';
+        exitClass  = scrollDir === 'down' ? 'exit-left'   : 'exit-right';
+    } else {
+        // Crossing DIVISION boundary: vertical slide
+        enterClass = scrollDir === 'down' ? 'enter-up'   : 'enter-down';
+        exitClass  = scrollDir === 'down' ? 'exit-up'    : 'exit-down';
+    }
+
+    next.classList.remove('exit-up','exit-down','exit-left','exit-right','enter-up','enter-down','enter-left','enter-right','active');
+    next.classList.add(enterClass);
     void next.offsetWidth;
 
     if (current) {
-        current.classList.remove("active");
-        current.classList.add(scrollDir === "down" ? "exit-up" : "exit-down");
-        setTimeout(() => current.classList.remove("exit-up", "exit-down"), 2000);
+        current.classList.remove('active');
+        current.classList.add(exitClass);
+        setTimeout(() => current.classList.remove('exit-up','exit-down','exit-left','exit-right'), 2000);
     }
 
-    next.classList.remove("enter-up", "enter-down");
-    next.classList.add("active");
+    next.classList.remove(enterClass);
+    next.classList.add('active');
 }
 
 /* ── navbar, logo, control paragraph ──────────── */

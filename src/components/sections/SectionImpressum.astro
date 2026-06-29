@@ -1,5 +1,24 @@
 ---
 import PunchCard from '../PunchCard.astro';
+
+type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
+type Token = [TT, string];
+type Line  = [string, Token[]];
+
+// 10 lines: slot gets the remaining 8 rows of height (18 - 10 = 8)
+const LINES: Line[] = [
+    ['000001', [['div','PROCEDURE DIVISION'],['dot','.']]],
+    ['000002', [['section','IMPRESSUM-SECTION'],['dot','.']]],
+    ['000003', []],
+    ['000004', [['para','IMPRESSUM-PRGRPH'],['dot','.']]],
+    ['000005', [['kw','    DISPLAY']]],
+    // slot injected here (slotAtLine={5})
+    ['000006', [['kw','    END-DISPLAY']]],
+    ['000007', []],
+    ['000008', [['comment','* GOBACK TO PROCEDURE DIVISION IMPRESSUM-SECTION']]],
+    ['000009', [['kw','    EXIT PARAGRAPH']]],
+    ['000010', [['dot','.']]],
+];
 ---
 <section id="impressum">
     <div class="section-scroll-container pcf-section-height">
@@ -9,8 +28,8 @@ import PunchCard from '../PunchCard.astro';
                 programmerName="SEBASTIAN SCHWINN"
                 currentSystem="RETROCODE GMBH"
                 identificationHref="#impressum"
-                displaySlot={true}
-                displayHeader="IMPRESSUM-PRGRPH."
+                lines={LINES}
+                slotAtLine={5}
             >
                 <div class="impressum-grid">
                     <div class="impressum-col">

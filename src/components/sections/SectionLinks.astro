@@ -5,23 +5,44 @@ type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
-const LINES: Line[] = [
+const SERVICES_LINES: Line[] = [
     ['000001', [['div','PROCEDURE DIVISION'],['dot','.']]],
     ['000002', [['section','LINKS SECTION'],['dot','.']]],
     ['000003', []],
     ['000004', [['para','SERVICES-PRGRPH'],['dot','.']]],
-    ['000005', [['kw','    CALL'],['val'," 'KB.SSCHW.DEV'"],['comment','  *> Personal wiki & notes']]],
-    ['000006', [['kw','    CALL'],['val'," 'LLDAP'"],['comment','         *> Directory management (LAN)']]],
-    ['000007', [['kw','    CALL'],['val'," 'BITWARDEN'"],['comment','     *> Password manager (LAN)']]],
-    ['000008', [['dot','.']]],
-    ['000009', []],
-    ['000010', [['para','SOCIALS-PRGRPH'],['dot','.']]],
-    ['000011', [['kw','    CALL'],['val'," 'LINKEDIN'"],['comment','      *> linkedin.com/in/sschwinn/']]],
-    ['000012', [['kw','    CALL'],['val'," 'INSTAGRAM'"],['comment','     *> instagram.com/s.schwinni/']]],
+    ['000005', [['comment','* Personal wiki and notes']]],
+    ['000006', [['kw','    CALL'],['val'," 'KB.SSCHW.DEV'"]]],
+    ['000007', [['comment','* Directory management (LAN only)']]],
+    ['000008', [['kw','    CALL'],['val'," 'LLDAP'"]]],
+    ['000009', [['comment','* Password manager (LAN only)']]],
+    ['000010', [['kw','    CALL'],['val'," 'BITWARDEN'"]]],
+    ['000011', [['dot','.']]],
+    ['000012', []],
+    ['000013', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
+    ['000014', [['kw','    EXIT PARAGRAPH']]],
+    ['000015', [['dot','.']]],
+    ['000016', []],
+    ['000017', []],
+    ['000018', []],
+];
+
+const SOCIALS_LINES: Line[] = [
+    ['000001', [['div','PROCEDURE DIVISION'],['dot','.']]],
+    ['000002', [['section','LINKS SECTION'],['dot','.']]],
+    ['000003', []],
+    ['000004', [['para','SOCIALS-PRGRPH'],['dot','.']]],
+    ['000005', [['comment','* LinkedIn: linkedin.com/in/sschwinn']]],
+    ['000006', [['kw','    CALL'],['val'," 'LINKEDIN'"]]],
+    ['000007', [['comment','* Instagram: instagram.com/s.schwinni']]],
+    ['000008', [['kw','    CALL'],['val'," 'INSTAGRAM'"]]],
+    ['000009', [['dot','.']]],
+    ['000010', []],
+    ['000011', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
+    ['000012', [['kw','    EXIT PARAGRAPH']]],
     ['000013', [['dot','.']]],
     ['000014', []],
-    ['000015', [['para','EXIT-PRGRPH'],['dot','.']]],
-    ['000016', [['kw','    EXIT PARAGRAPH'],['dot','.']]],
+    ['000015', []],
+    ['000016', []],
     ['000017', []],
     ['000018', []],
 ];
@@ -31,23 +52,96 @@ const CALL_LINKS: Record<string, string> = {
     " 'LINKEDIN'":      'https://www.linkedin.com/in/sschwinn/',
     " 'INSTAGRAM'":     'https://www.instagram.com/s.schwinni/',
 };
+
+const CARD_COUNT = 2;
 ---
 <section id="links">
-    <div class="section-scroll-container pcf-section-height">
+    <div class="section-scroll-container" style={`height: ${CARD_COUNT * 88}vh;`}>
         <div class="section-content-wrapper">
-            <PunchCard
-                programName="SSCHW-DEV"
-                programmerName="SEBASTIAN SCHWINN"
-                currentSystem="RETROCODE GMBH"
-                identificationHref="#impressum"
-                lines={LINES}
-                callLinks={CALL_LINKS}
-            />
+            <div class="pcf-stage-multi">
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={SERVICES_LINES}
+                    callLinks={CALL_LINKS}
+                />
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={SOCIALS_LINES}
+                    callLinks={CALL_LINKS}
+                />
+            </div>
         </div>
     </div>
 </section>
 
 <script>
+const CARD_COUNT = 2;
+const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\-._*@#';
+
+const section = document.getElementById('links');
+const cards = section
+    ? (Array.from(section.querySelectorAll<HTMLElement>('.pcf-card')) as HTMLElement[])
+    : [];
+
+let activeIdx = 0;
+let isTransitioning = false;
+
+if (cards[0]) cards[0].classList.add('pcf-card-active');
+
+function scrambleCardRows(area: HTMLElement, onComplete: () => void) {
+    const rows = Array.from(area.querySelectorAll<HTMLElement>('.pcf-line-row')).slice(2);
+    const spans = rows.flatMap(row =>
+        Array.from(row.querySelectorAll<HTMLElement>('.pcf-chars span')).filter(s => !!s.textContent)
+    );
+    if (!spans.length) { onComplete(); return; }
+    let frames = 4;
+    const handle = setInterval(() => {
+        spans.forEach(s => { s.textContent = NOISE[Math.floor(Math.random() * NOISE.length)]; });
+        if (--frames <= 0) { clearInterval(handle); onComplete(); }
+    }, 65);
+}
+
+function switchCard(newIdx: number) {
+    if (newIdx === activeIdx || isTransitioning || cards.length < 2) return;
+    isTransitioning = true;
+
+    const oldCard = cards[activeIdx];
+    const newCard = cards[newIdx];
+    const area = oldCard.querySelector<HTMLElement>('.pcf-punch-area');
+
+    const doSwap = () => {
+        oldCard.classList.remove('pcf-card-active');
+        newCard.style.opacity = '1';
+        newCard.classList.add('pcf-card-active');
+        activeIdx = newIdx;
+        requestAnimationFrame(() => { isTransitioning = false; });
+    };
+
+    if (area?.dataset.rendered) {
+        scrambleCardRows(area, doSwap);
+    } else {
+        doSwap();
+    }
+}
+
+function onLinksScroll() {
+    if (!section) return;
+    const relScroll = window.scrollY - section.offsetTop;
+    const cardH = section.scrollHeight / CARD_COUNT;
+    const newIdx = Math.min(Math.floor(relScroll / cardH), CARD_COUNT - 1);
+    switchCard(newIdx);
+}
+
+window.addEventListener('scroll', onLinksScroll, { passive: true });
+
 export function statemachineLinksRun() {}
 (window as any).__linksRun = statemachineLinksRun;
 </script>

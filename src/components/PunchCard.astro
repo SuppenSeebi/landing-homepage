@@ -17,6 +17,7 @@ interface Props {
     displayHeader?: string;
     callLinks?: Record<string, string>;
     noStage?: boolean;
+    slotAtLine?: number; // inject <slot> between line[slotAtLine-1] and line[slotAtLine]
 }
 
 const compiled = new Date().toISOString().slice(0, 10);
@@ -34,10 +35,20 @@ const {
     displayHeader,
     callLinks = {},
     noStage = false,
+    slotAtLine,
 } = Astro.props;
 
 const linesJson = JSON.stringify(lines);
 const callLinksJson = JSON.stringify(callLinks);
+
+// slotAtLine: split the coding area into pre/slot/post
+const useSlot = slotAtLine !== undefined;
+const preLines  = useSlot ? lines.slice(0, slotAtLine) : lines;
+const postLines = useSlot ? lines.slice(slotAtLine)    : [];
+const preLinesJson  = JSON.stringify(preLines);
+const postLinesJson = JSON.stringify(postLines);
+// slot flex proportional to "missing" rows (card is always 18 rows tall)
+const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
 ---
 
 {noStage ? (
@@ -143,7 +154,15 @@ const callLinksJson = JSON.stringify(callLinks);
                     <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
                     <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
                 </div>
-                <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+                {useSlot ? (
+                    <>
+                        <div class="pcf-punch-area" data-lines={preLinesJson} data-call-links={callLinksJson} style={`flex: ${preLines.length};`}></div>
+                        <div class="pcf-display-block" style={`flex: ${slotFlex};`}><slot /></div>
+                        <div class="pcf-punch-area" data-lines={postLinesJson} data-call-links={callLinksJson} style={`flex: ${postLines.length};`}></div>
+                    </>
+                ) : (
+                    <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+                )}
                 <div class="pcf-ruler-row pcf-ruler-btm">
                     <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
                     <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
@@ -257,7 +276,15 @@ const callLinksJson = JSON.stringify(callLinks);
                         <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
                         <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
                     </div>
-                    <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+                    {useSlot ? (
+                        <>
+                            <div class="pcf-punch-area" data-lines={preLinesJson} data-call-links={callLinksJson} style={`flex: ${preLines.length};`}></div>
+                            <div class="pcf-display-block" style={`flex: ${slotFlex};`}><slot /></div>
+                            <div class="pcf-punch-area" data-lines={postLinesJson} data-call-links={callLinksJson} style={`flex: ${postLines.length};`}></div>
+                        </>
+                    ) : (
+                        <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+                    )}
                     <div class="pcf-ruler-row pcf-ruler-btm">
                         <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
                         <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
@@ -396,7 +423,11 @@ function buildCharsRulerForCard(card: Element) {
         el.innerHTML = '';
         for (let c = 4; c <= 80; c += 4) {
             const s = document.createElement('span');
-            s.className = 'pcf-rchars-tick'; s.textContent = String(c);
+            s.className = 'pcf-rchars-tick';
+            // Col 4 = end of Area A (COBOL cols 8-11), col 8 = start of Area B (col 12+)
+            if (c === 4)      { s.textContent = 'A'; s.classList.add('pcf-rchars-area'); }
+            else if (c === 8) { s.textContent = 'B'; s.classList.add('pcf-rchars-area'); }
+            else              { s.textContent = String(c); }
             s.style.width = `${tickPx}px`;
             el.appendChild(s);
         }

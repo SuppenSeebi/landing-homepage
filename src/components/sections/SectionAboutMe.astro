@@ -5,50 +5,115 @@ type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
-const CARD1_LINES: Line[] = [
-    ['000001', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
-    ['000002', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
-    ['000003', []],
-    ['000004', [['lvl','    05'],['name',' WORK-NOW'],['dot','.']]],
-    ['000005', [['lvl','        10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'RETROCODE'"],['dot','.']]],
-    ['000006', [['lvl','        10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
-    ['000007', [['lvl','        10'],['name',' SECTOR '],['kw',' PIC X(25)'],['kw',' VALUE'],['val'," 'FINANCIAL SECTOR'"],['dot','.']]],
-    ['000008', [['lvl','        10'],['name',' SINCE  '],['kw',' PIC 9(4) '],['kw',' VALUE'],['numval',' 2025'],['dot','.']]],
-    ['000009', []],
-    ['000010', [['lvl','    05'],['name',' WORK-BFRE'],['dot','.']]],
-    ['000011', [['lvl','        10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'HILSCHER'"],['dot','.']]],
-    ['000012', [['lvl','        10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'C DEVELOPER'"],['dot','.']]],
-    ['000013', [['lvl','        10'],['name',' TECH   '],['kw',' PIC X(40)'],['kw',' VALUE'],['val'," 'OPC UA - INDUSTRIAL AUTOMATION'"],['dot','.']]],
+const CARD_WORK_NOW: Line[] = [
+    ['000001', [['div','DATA DIVISION'],['dot','.']]],
+    ['000002', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
+    ['000003', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
+    ['000004', []],
+    ['000005', [['lvl','    05'],['name',' WORK-NOW'],['dot','.']]],
+    ['000006', [['lvl','        10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'RETROCODE'"],['dot','.']]],
+    ['000007', [['lvl','        10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
+    ['000008', [['lvl','        10'],['name',' SECTOR '],['kw',' PIC X(25)'],['kw',' VALUE'],['val'," 'FINANCIAL SECTOR'"],['dot','.']]],
+    ['000009', [['lvl','        10'],['name',' SINCE  '],['kw',' PIC 9(4) '],['kw',' VALUE'],['numval',' 2025'],['dot','.']]],
+    ['000010', []],
+    ['000011', []],
+    ['000012', []],
+    ['000013', []],
     ['000014', []],
-    ['000015', [['lvl','    05'],['name',' STUDIES'],['dot','.']]],
-    ['000016', [['lvl','        10'],['name',' DEGREE '],['kw',' PIC X(5) '],['kw',' VALUE'],['val'," 'MSC'"],['dot','.']]],
-    ['000017', [['lvl','        10'],['name',' FIELD  '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'ELECTRICAL ENGINEERING'"],['dot','.']]],
-    ['000018', [['lvl','        10'],['name',' GRADE  '],['kw',' PIC X(20)'],['kw',' VALUE'],['val'," 'WITH DISTINCTION'"],['dot','.']]],
+    ['000015', []],
+    ['000016', []],
+    ['000017', []],
+    ['000018', []],
 ];
 
-const CARD2_LINES: Line[] = [
-    ['000001', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
-    ['000002', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
-    ['000003', []],
-    ['000004', [['lvl','    05'],['name',' PRG-LANGUAGES'],['kw',' PIC X(10)'],['dot','.']]],
-    ['000005', [['lvl','        88'],['name',' COBOL     '],['kw','  VALUE'],['val'," 'PRIMARY'"],['dot','.']]],
-    ['000006', [['lvl','        88'],['name',' C         '],['kw','  VALUE'],['val'," 'PRIMARY'"],['dot','.']]],
-    ['000007', [['lvl','        88'],['name',' CPP       '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
-    ['000008', [['lvl','        88'],['name',' PYTHON    '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
-    ['000009', [['lvl','        88'],['name',' SQL-DB2   '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
-    ['000010', [['lvl','        88'],['name',' JCL       '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
-    ['000011', [['lvl','        88'],['name',' SHELL     '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
-    ['000012', [['lvl','        88'],['name',' JAVASCRIPT'],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
-    ['000013', [['lvl','        88'],['name',' OPC-UA    '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+const CARD_WORK_BFRE: Line[] = [
+    ['000001', [['div','DATA DIVISION'],['dot','.']]],
+    ['000002', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
+    ['000003', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
+    ['000004', []],
+    ['000005', [['lvl','    05'],['name',' WORK-BFRE'],['dot','.']]],
+    ['000006', [['lvl','        10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'HILSCHER'"],['dot','.']]],
+    ['000007', [['lvl','        10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'C DEVELOPER'"],['dot','.']]],
+    ['000008', [['lvl','        10'],['name',' DOMAIN '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'INDUSTRIAL AUTOMATION'"],['dot','.']]],
+    ['000009', [['lvl','        10'],['name',' TECH   '],['kw',' PIC X(40)'],['kw',' VALUE'],['val'," 'OPC UA / EMBEDDED C'"],['dot','.']]],
+    ['000010', []],
+    ['000011', []],
+    ['000012', []],
+    ['000013', []],
     ['000014', []],
-    ['000015', [['lvl','    05'],['name',' VOC-LANGUAGES'],['kw',' PIC X(10)'],['dot','.']]],
-    ['000016', [['lvl','        88'],['name',' GERMAN  '],['kw','  VALUE'],['val'," 'NATIVE'"],['dot','.']]],
-    ['000017', [['lvl','        88'],['name',' ENGLISH '],['kw','  VALUE'],['val'," 'C2'"],['dot','.']]],
-    ['000018', [['lvl','        88'],['name',' JAPANESE'],['kw','  VALUE'],['val'," 'BEGINNER'"],['dot','.']]],
+    ['000015', []],
+    ['000016', []],
+    ['000017', []],
+    ['000018', []],
 ];
+
+const CARD_STUDIES: Line[] = [
+    ['000001', [['div','DATA DIVISION'],['dot','.']]],
+    ['000002', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
+    ['000003', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
+    ['000004', []],
+    ['000005', [['lvl','    05'],['name',' STUDIES'],['dot','.']]],
+    ['000006', [['lvl','        10'],['name',' DEGREE '],['kw',' PIC X(5) '],['kw',' VALUE'],['val'," 'MSC'"],['dot','.']]],
+    ['000007', [['lvl','        10'],['name',' FIELD  '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'ELECTRICAL ENGINEERING'"],['dot','.']]],
+    ['000008', [['lvl','        10'],['name',' GRADE  '],['kw',' PIC X(20)'],['kw',' VALUE'],['val'," 'WITH DISTINCTION'"],['dot','.']]],
+    ['000009', []],
+    ['000010', []],
+    ['000011', []],
+    ['000012', []],
+    ['000013', []],
+    ['000014', []],
+    ['000015', []],
+    ['000016', []],
+    ['000017', []],
+    ['000018', []],
+];
+
+const CARD_PRG_LANGUAGES: Line[] = [
+    ['000001', [['div','DATA DIVISION'],['dot','.']]],
+    ['000002', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
+    ['000003', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
+    ['000004', []],
+    ['000005', [['lvl','    05'],['name',' PRG-LANGUAGES'],['kw',' PIC X(10)'],['dot','.']]],
+    ['000006', [['lvl','        88'],['name',' COBOL     '],['kw','  VALUE'],['val'," 'PRIMARY'"],['dot','.']]],
+    ['000007', [['lvl','        88'],['name',' C         '],['kw','  VALUE'],['val'," 'PRIMARY'"],['dot','.']]],
+    ['000008', [['lvl','        88'],['name',' CPP       '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000009', [['lvl','        88'],['name',' PYTHON    '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000010', [['lvl','        88'],['name',' SQL-DB2   '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000011', [['lvl','        88'],['name',' JCL       '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000012', [['lvl','        88'],['name',' SHELL     '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000013', [['lvl','        88'],['name',' JAVASCRIPT'],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000014', [['lvl','        88'],['name',' OPC-UA    '],['kw','  VALUE'],['val'," 'KNOWN'"],['dot','.']]],
+    ['000015', []],
+    ['000016', []],
+    ['000017', []],
+    ['000018', []],
+];
+
+const CARD_VOC_LANGUAGES: Line[] = [
+    ['000001', [['div','DATA DIVISION'],['dot','.']]],
+    ['000002', [['section','LOCAL-STORAGE SECTION'],['dot','.']]],
+    ['000003', [['lvl','01'],['name',' ABOUT-ME'],['dot','.']]],
+    ['000004', []],
+    ['000005', [['lvl','    05'],['name',' VOC-LANGUAGES'],['kw',' PIC X(10)'],['dot','.']]],
+    ['000006', [['lvl','        88'],['name',' GERMAN  '],['kw','  VALUE'],['val'," 'NATIVE'"],['dot','.']]],
+    ['000007', [['lvl','        88'],['name',' ENGLISH '],['kw','  VALUE'],['val'," 'C2'"],['dot','.']]],
+    ['000008', [['lvl','        88'],['name',' JAPANESE'],['kw','  VALUE'],['val'," 'BEGINNER'"],['dot','.']]],
+    ['000009', []],
+    ['000010', []],
+    ['000011', []],
+    ['000012', []],
+    ['000013', []],
+    ['000014', []],
+    ['000015', []],
+    ['000016', []],
+    ['000017', []],
+    ['000018', []],
+];
+
+const CARD_COUNT = 5;
 ---
 <section id="aboutme">
-    <div class="section-scroll-container" style="height: 176vh;">
+    <div class="section-scroll-container" style={`height: ${CARD_COUNT * 88}vh;`}>
         <div class="section-content-wrapper">
             <div class="pcf-stage-multi">
                 <PunchCard
@@ -57,7 +122,7 @@ const CARD2_LINES: Line[] = [
                     programmerName="SEBASTIAN SCHWINN"
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
-                    lines={CARD1_LINES}
+                    lines={CARD_WORK_NOW}
                 />
                 <PunchCard
                     noStage={true}
@@ -65,7 +130,31 @@ const CARD2_LINES: Line[] = [
                     programmerName="SEBASTIAN SCHWINN"
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
-                    lines={CARD2_LINES}
+                    lines={CARD_WORK_BFRE}
+                />
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={CARD_STUDIES}
+                />
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={CARD_PRG_LANGUAGES}
+                />
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={CARD_VOC_LANGUAGES}
                 />
             </div>
         </div>
@@ -73,6 +162,9 @@ const CARD2_LINES: Line[] = [
 </section>
 
 <script>
+const CARD_COUNT = 5;
+const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\-._*@#';
+
 const section = document.getElementById('aboutme');
 const cards = section
     ? (Array.from(section.querySelectorAll<HTMLElement>('.pcf-card')) as HTMLElement[])
@@ -83,51 +175,49 @@ let isTransitioning = false;
 
 if (cards[0]) cards[0].classList.add('pcf-card-active');
 
+// ── Noise scramble: scramble rows 2+ of the punch area (skip DIVISION + SECTION) ──
+
+function scrambleCardRows(area: HTMLElement, onComplete: () => void) {
+    const rows = Array.from(area.querySelectorAll<HTMLElement>('.pcf-line-row')).slice(2);
+    const spans = rows.flatMap(row =>
+        Array.from(row.querySelectorAll<HTMLElement>('.pcf-chars span')).filter(s => !!s.textContent)
+    );
+    if (!spans.length) { onComplete(); return; }
+    let frames = 4;
+    const handle = setInterval(() => {
+        spans.forEach(s => { s.textContent = NOISE[Math.floor(Math.random() * NOISE.length)]; });
+        if (--frames <= 0) { clearInterval(handle); onComplete(); }
+    }, 65);
+}
+
 function switchCard(newIdx: number) {
     if (newIdx === activeIdx || isTransitioning || cards.length < 2) return;
     isTransitioning = true;
 
-    const forward = newIdx > activeIdx;
-    const exitCard = cards[activeIdx];
-    const enterCard = cards[newIdx];
+    const oldCard = cards[activeIdx];
+    const newCard = cards[newIdx];
+    const area = oldCard.querySelector<HTMLElement>('.pcf-punch-area');
 
-    enterCard.style.transition = 'none';
-    enterCard.style.transform = forward ? 'translateX(100%)' : 'translateX(-100%)';
-    enterCard.style.opacity = '0';
-    enterCard.classList.remove('pcf-card-active');
+    const doSwap = () => {
+        oldCard.classList.remove('pcf-card-active');
+        newCard.style.opacity = '1';
+        newCard.classList.add('pcf-card-active');
+        activeIdx = newIdx;
+        requestAnimationFrame(() => { isTransitioning = false; });
+    };
 
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            exitCard.style.transition = 'transform 0.5s ease, opacity 0.4s ease';
-            exitCard.style.transform = forward ? 'translateX(-100%)' : 'translateX(100%)';
-            exitCard.style.opacity = '0';
-            exitCard.classList.remove('pcf-card-active');
-            exitCard.style.pointerEvents = 'none';
-
-            enterCard.style.transition = 'transform 0.5s ease, opacity 0.4s ease';
-            enterCard.style.transform = 'translateX(0)';
-            enterCard.style.opacity = '1';
-            enterCard.style.pointerEvents = 'auto';
-            enterCard.classList.add('pcf-card-active');
-
-            activeIdx = newIdx;
-
-            setTimeout(() => {
-                exitCard.style.transition = '';
-                exitCard.style.transform = '';
-                exitCard.style.opacity = '';
-                exitCard.style.pointerEvents = '';
-                enterCard.style.transition = '';
-                isTransitioning = false;
-            }, 550);
-        });
-    });
+    if (area?.dataset.rendered) {
+        scrambleCardRows(area, doSwap);
+    } else {
+        doSwap();
+    }
 }
 
 function onAboutMeScroll() {
     if (!section) return;
     const relScroll = window.scrollY - section.offsetTop;
-    const newIdx = relScroll >= section.scrollHeight / 2 ? 1 : 0;
+    const cardH = section.scrollHeight / CARD_COUNT;
+    const newIdx = Math.min(Math.floor(relScroll / cardH), CARD_COUNT - 1);
     switchCard(newIdx);
 }
 
