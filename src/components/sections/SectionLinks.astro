@@ -6,20 +6,20 @@ type Token = [TT, string];
 type Line  = [string, Token[]];
 
 const SERVICES_LINES: Line[] = [
-    ['000001', [['div','PROCEDURE DIVISION'],['dot','.']]],
-    ['000002', [['section','LINKS SECTION'],['dot','.']]],
+    ['000001', [['div',' PROCEDURE DIVISION'],['dot','.']]],
+    ['000002', [['section',' LINKS SECTION'],['dot','.']]],
     ['000003', []],
-    ['000004', [['para','SERVICES-PRGRPH'],['dot','.']]],
+    ['000004', [['para',' SERVICES-PRGRPH'],['dot','.']]],
     ['000005', [['comment','* Personal wiki and notes']]],
-    ['000006', [['kw','    CALL'],['val'," 'KB.SSCHW.DEV'"]]],
+    ['000006', [['kw','     CALL'],['val'," 'KB.SSCHW.DEV'"]]],
     ['000007', [['comment','* Directory management (LAN only)']]],
-    ['000008', [['kw','    CALL'],['val'," 'LLDAP'"]]],
+    ['000008', [['kw','     CALL'],['val'," 'LLDAP'"]]],
     ['000009', [['comment','* Password manager (LAN only)']]],
-    ['000010', [['kw','    CALL'],['val'," 'BITWARDEN'"]]],
+    ['000010', [['kw','     CALL'],['val'," 'BITWARDEN'"]]],
     ['000011', [['dot','.']]],
     ['000012', []],
     ['000013', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
-    ['000014', [['kw','    EXIT PARAGRAPH']]],
+    ['000014', [['kw','     EXIT PARAGRAPH']]],
     ['000015', [['dot','.']]],
     ['000016', []],
     ['000017', []],
@@ -27,18 +27,18 @@ const SERVICES_LINES: Line[] = [
 ];
 
 const SOCIALS_LINES: Line[] = [
-    ['000001', [['div','PROCEDURE DIVISION'],['dot','.']]],
-    ['000002', [['section','LINKS SECTION'],['dot','.']]],
+    ['000001', [['div',' PROCEDURE DIVISION'],['dot','.']]],
+    ['000002', [['section',' LINKS SECTION'],['dot','.']]],
     ['000003', []],
-    ['000004', [['para','SOCIALS-PRGRPH'],['dot','.']]],
+    ['000004', [['para',' SOCIALS-PRGRPH'],['dot','.']]],
     ['000005', [['comment','* LinkedIn: linkedin.com/in/sschwinn']]],
-    ['000006', [['kw','    CALL'],['val'," 'LINKEDIN'"]]],
+    ['000006', [['kw','     CALL'],['val'," 'LINKEDIN'"]]],
     ['000007', [['comment','* Instagram: instagram.com/s.schwinni']]],
-    ['000008', [['kw','    CALL'],['val'," 'INSTAGRAM'"]]],
+    ['000008', [['kw','     CALL'],['val'," 'INSTAGRAM'"]]],
     ['000009', [['dot','.']]],
     ['000010', []],
     ['000011', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
-    ['000012', [['kw','    EXIT PARAGRAPH']]],
+    ['000012', [['kw','     EXIT PARAGRAPH']]],
     ['000013', [['dot','.']]],
     ['000014', []],
     ['000015', []],
@@ -102,15 +102,20 @@ function scrambleCardRows(area: HTMLElement, onComplete: () => void) {
         Array.from(row.querySelectorAll<HTMLElement>('.pcf-chars span')).filter(s => !!s.textContent)
     );
     if (!spans.length) { onComplete(); return; }
+    const saved = spans.map(s => ({ text: s.textContent!, cls: s.className }));
     let frames = 4;
     const handle = setInterval(() => {
         spans.forEach(s => { s.textContent = NOISE[Math.floor(Math.random() * NOISE.length)]; });
-        if (--frames <= 0) { clearInterval(handle); onComplete(); }
+        if (--frames <= 0) {
+            clearInterval(handle);
+            spans.forEach((s, i) => { s.textContent = saved[i].text; s.className = saved[i].cls; });
+            onComplete();
+        }
     }, 65);
 }
 
 function switchCard(newIdx: number) {
-    if (newIdx === activeIdx || isTransitioning || cards.length < 2) return;
+    if (newIdx < 0 || newIdx >= cards.length || newIdx === activeIdx || isTransitioning || cards.length < 2) return;
     isTransitioning = true;
 
     const oldCard = cards[activeIdx];
@@ -136,7 +141,7 @@ function onLinksScroll() {
     if (!section) return;
     const relScroll = window.scrollY - section.offsetTop;
     const cardH = section.scrollHeight / CARD_COUNT;
-    const newIdx = Math.min(Math.floor(relScroll / cardH), CARD_COUNT - 1);
+    const newIdx = Math.max(0, Math.min(Math.floor(relScroll / cardH), CARD_COUNT - 1));
     switchCard(newIdx);
 }
 

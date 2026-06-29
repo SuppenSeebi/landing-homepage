@@ -10,29 +10,6 @@ import '../styles/global.css';
 ---
 <Layout>
     <Logo />
-    <!-- CONTROL-PRGRPH: fixed overlay visible only in PROCEDURE DIVISION sections -->
-    <div id="file-section-indicator">
-        <div class="ctrl-division">DATA DIVISION.</div>
-        <div class="ctrl-para-hdr">FILE SECTION.</div>
-        <a href="#top" class="ctrl-goback">
-            <span class="kw">FD</span>
-            <span class="name">SSCHW-DEV</span>
-        </a>
-        <div class="ctrl-data-record">
-            <span class="kw">DATA RECORD IS</span>
-            <span class="name">SSCHW-RECORD</span><span class="dot">.</span>
-            <a href="#top" class="call-comment">*&gt; go to WORKING-STORAGE SECTION</a>
-        </div>
-    </div>
-    <div id="control-prgrph">
-        <div class="ctrl-division">PROCEDURE DIVISION.</div>
-        <div class="ctrl-para-hdr ctrl-l1">CONTROL-PRGRPH.</div>
-        <a href="#top" class="ctrl-goback ctrl-l2">
-            <span class="kw">GOBACK</span>
-            <span class="call-comment">*&gt; return to top of WORKING-STORAGE SECTION</span>
-        </a>
-        <div class="ctrl-stmt-dot ctrl-l2">.</div>
-    </div>
     <SectionTop />
     <SectionAboutMe />
     <SectionWork />

@@ -4,8 +4,6 @@ const navDivProc    = document.getElementById("nav-div-proc");
 const navDivProto   = document.getElementById("nav-div-proto");
 const sections      = document.querySelectorAll<HTMLElement>("section");
 const logoWrapper   = document.getElementById("logo-wrapper")!;
-const controlPrgrph    = document.getElementById("control-prgrph");
-const fileSectionEl    = document.getElementById("file-section-indicator");
 
 const sectionRunners: Record<string, () => void> = {
     top:       () => (window as any).__topRun?.(),
@@ -101,19 +99,12 @@ function updateLogo(id: string) {
     else              logoWrapper.classList.remove("visible");
 }
 
-function updateControlPrgrph(id: string) {
-    const show = id === "links" || id === "impressum";
-    controlPrgrph?.classList.toggle("visible", show);
-    fileSectionEl?.classList.toggle("visible", id === "aboutme" || id === "work");
-}
-
 /* ── main scroll handler ───────────────────────── */
 function onScroll() {
     updateScrollDir();
     const id = getActiveSection();
     updateNav(id);
     updateLogo(id);
-    updateControlPrgrph(id);
 
     if (id !== activeSectionId) {
         transitionTo(id);

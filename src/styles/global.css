@@ -891,28 +891,28 @@ a.call-comment {
 .pcf-stage-multi::before {
     content: '';
     position: absolute;
-    top: calc(7vh + 5px);
-    bottom: calc(7vh - 5px);
-    left: calc(7% + 5px);
-    right: calc(7% - 5px);
+    top: calc(7vh + 8px);
+    bottom: calc(7vh - 8px);
+    left: calc(7% + 8px);
+    right: calc(7% - 8px);
     background: #F0E5C0;
     border: 1.5px solid #C2A840;
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
-    opacity: 0.65;
+    opacity: 0.85;
     z-index: 0;
     pointer-events: none;
 }
 .pcf-stage-multi::after {
     content: '';
     position: absolute;
-    top: calc(7vh + 10px);
-    bottom: calc(7vh - 10px);
-    left: calc(7% + 10px);
-    right: calc(7% - 10px);
+    top: calc(7vh + 16px);
+    bottom: calc(7vh - 16px);
+    left: calc(7% + 16px);
+    right: calc(7% - 16px);
     background: #EBE0BB;
     border: 1.5px solid #C2A840;
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
-    opacity: 0.4;
+    opacity: 0.60;
     z-index: 0;
     pointer-events: none;
 }
@@ -1150,6 +1150,19 @@ a.call-comment {
 .pcf-zone-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; }
 .pcf-zone-seq     { width: 72px; flex-shrink: 0; border-right: 1.5px solid #C2A840; }
 .pcf-zone-stmt    { flex: 1; }
+/* Area A / B subdivision in zone-row header */
+.pcf-zone-ind    { width: 1ch; flex-shrink: 0; }
+.pcf-zone-area-a {
+    width: 4ch; flex-shrink: 0;
+    font-size: 0.34rem; color: #7A5020; font-weight: 700; letter-spacing: 0.06em;
+    display: flex; align-items: center; justify-content: center;
+    border-left: 1px solid #D4C478; border-right: 1.5px solid #C2A840;
+}
+.pcf-zone-area-b {
+    flex: 1;
+    font-size: 0.34rem; color: #9B8050; letter-spacing: 0.08em;
+    display: flex; align-items: center; padding-left: 5px;
+}
 
 .pcf-ruler-row {
     height: 13px;
@@ -1173,7 +1186,6 @@ a.call-comment {
     text-align: center;
     font-size: 0.58rem;
     color: #9B8050;
-    opacity: 0.7;
 }
 .pcf-ruler-seq {
     width: 72px;
@@ -1207,12 +1219,11 @@ a.call-comment {
     overflow: hidden;
     padding-right: 4px;
 }
-/* Area A / Area B boundary markers in the column ruler */
-.pcf-rchars-tick.pcf-rchars-area {
-    color: #7A5020;
-    font-weight: 700;
-    opacity: 1;
-    font-size: 0.62rem;
+/* Single-position ticks (cols 1-8) — no right-padding, centered */
+.pcf-rchars-tick.pcf-rchars-single {
+    text-align: center;
+    padding-right: 0;
+    font-size: 0.46rem;
 }
 
 /* ── PUNCH AREA ─────────────────────────────────────────────────────────────── */
@@ -1342,14 +1353,14 @@ a.call-comment {
 /* ── INLINE SLOT BLOCK (slotAtLine — injects slot between two line ranges) ───── */
 .pcf-display-block {
     min-height: 0;
-    overflow-y: hidden;
+    overflow-y: auto;
     background: #F5EDD4;
     border-top: 1px dashed #C2A840;
     border-bottom: 1px dashed #C2A840;
-    padding: 6px 12px 6px calc(32px + 72px + 10px);
+    padding: 8px 16px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 /* Clickable CALL value in punch card coding area */

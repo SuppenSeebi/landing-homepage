@@ -147,7 +147,9 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
                 <div class="pcf-zone-row">
                     <div class="pcf-zone-linenum">LINE</div>
                     <div class="pcf-zone-seq">SEQUENCE</div>
-                    <div class="pcf-zone-stmt">COBOL STATEMENT</div>
+                    <div class="pcf-zone-ind"></div>
+                    <div class="pcf-zone-area-a">A</div>
+                    <div class="pcf-zone-area-b">B · COBOL STATEMENT</div>
                 </div>
                 <div class="pcf-ruler-row">
                     <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
@@ -269,7 +271,9 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
                     <div class="pcf-zone-row">
                         <div class="pcf-zone-linenum">LINE</div>
                         <div class="pcf-zone-seq">SEQUENCE</div>
-                        <div class="pcf-zone-stmt">COBOL STATEMENT</div>
+                        <div class="pcf-zone-ind"></div>
+                        <div class="pcf-zone-area-a">A</div>
+                        <div class="pcf-zone-area-b">B · COBOL STATEMENT</div>
                     </div>
                     <div class="pcf-ruler-row">
                         <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
@@ -416,19 +420,25 @@ function buildCharsRulerForCard(card: Element) {
     if (!sampleSpan) return;
     const chPx = sampleSpan.getBoundingClientRect().width;
     if (chPx <= 0) return;
-    const tickPx = chPx * 4;
     for (const key of ['chars-top', 'chars-btm']) {
         const el = card.querySelector<HTMLElement>(`[data-ruler="${key}"]`);
-        if (!el) continue;
+        if (!el || (el as HTMLElement).dataset.built) continue;
+        (el as HTMLElement).dataset.built = '1';
         el.innerHTML = '';
-        for (let c = 4; c <= 80; c += 4) {
+        // Individual ticks for positions 1-8 (1ch each)
+        for (let c = 1; c <= 8; c++) {
+            const s = document.createElement('span');
+            s.className = 'pcf-rchars-tick pcf-rchars-single';
+            s.textContent = String(c);
+            s.style.width = `${chPx}px`;
+            el.appendChild(s);
+        }
+        // 4-char ticks for positions 12, 16, 20 ... 80
+        for (let c = 12; c <= 80; c += 4) {
             const s = document.createElement('span');
             s.className = 'pcf-rchars-tick';
-            // Col 4 = end of Area A (COBOL cols 8-11), col 8 = start of Area B (col 12+)
-            if (c === 4)      { s.textContent = 'A'; s.classList.add('pcf-rchars-area'); }
-            else if (c === 8) { s.textContent = 'B'; s.classList.add('pcf-rchars-area'); }
-            else              { s.textContent = String(c); }
-            s.style.width = `${tickPx}px`;
+            s.textContent = String(c);
+            s.style.width = `${chPx * 4}px`;
             el.appendChild(s);
         }
     }
@@ -525,8 +535,7 @@ function initAllCards() {
     buildNavGroups();
     document.querySelectorAll<HTMLElement>('.pcf-card').forEach(card => {
         buildRulersForCard(card);
-        const area = card.querySelector<HTMLElement>('.pcf-punch-area');
-        if (area) renderLinesForArea(area);
+        card.querySelectorAll<HTMLElement>('.pcf-punch-area').forEach(renderLinesForArea);
     });
     requestAnimationFrame(() => {
         document.querySelectorAll<HTMLElement>('.pcf-card').forEach(buildCharsRulerForCard);

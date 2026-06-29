@@ -7,13 +7,13 @@ type Line  = [string, Token[]];
 
 // Static header + initial dynamic rows (item 0: IDENTITY)
 const LINES: Line[] = [
-    ['000001', [['div','DATA DIVISION'],['dot','.']]],
-    ['000002', [['section','WORKING-STORAGE SECTION'],['dot','.']]],
-    ['000003', [['lvl','01'],['name',' SSCHW-RECORD'],['dot','.']]],
-    ['000004', [['lvl','    05'],['name',' IDENTITY     '],['dot','.']]],
-    ['000005', [['lvl','        10'],['name',' NAME-VAL '],['kw',' PIC X(32)'],['kw','  VALUE'],['val',"'SEBASTIAN SCHWINN               '"],['dot','.']]],
-    ['000006', [['lvl','        10'],['name',' NAME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val',"'NAME     '"],['dot','.']]],
-    ['000007', []],
+    ['000001', [['div',' DATA DIVISION'],['dot','.']]],
+    ['000002', [['section',' WORKING-STORAGE SECTION'],['dot','.']]],
+    ['000003', []],
+    ['000004', [['lvl',' 01'],['name',' SSCHW-RECORD'],['dot','.']]],
+    ['000005', [['lvl','     05'],['name',' IDENTITY     '],['dot','.']]],
+    ['000006', [['lvl','       10'],['name',' NAME-VAL    '],['kw',' PIC X(32)'],['kw','  VALUE'],['val',"'SEBASTIAN SCHWINN               '"],['dot','.']]],
+    ['000007', [['lvl','       10'],['name',' NAME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val',"'NAME     '"],['dot','.']]],
     ['000008', []],
     ['000009', []],
     ['000010', []],
@@ -25,6 +25,7 @@ const LINES: Line[] = [
     ['000016', []],
     ['000017', []],
     ['000018', []],
+    ['000019', []],
 ];
 ---
 <section id="top">
@@ -75,19 +76,19 @@ const items = [
 ];
 
 // Span position constants (character offsets within each row's .pcf-chars)
-// Row 3 (index 3): ['lvl','    05'] = 6 chars, then ['name',' IDENTITY     '] = 14 chars
-const NAME_ROW = 3;
-const NAME_START = 6;
+// Row 4 (index 4): ['lvl','     05'] = 7 chars, then ['name',' IDENTITY     '] = 14 chars
+const NAME_ROW = 4;
+const NAME_START = 7;
 const NAME_LEN = 14;
 
-// Row 4 (index 4): lvl(10) + name(10) + kw(10) + kw(7) = 37, then val(34)
-const VAL_ROW = 4;
-const VAL_START = 37;
+// Row 5 (index 5): lvl(9) + name(13) + kw(10) + kw(7) = 39, then val(34)
+const VAL_ROW = 5;
+const VAL_START = 39;
 const VAL_LEN = 34;
 
-// Row 5 (index 5): lvl(10) + name(13) + kw(10) + kw(7) = 40, then val(11)
-const DESC_ROW = 5;
-const DESC_START = 40;
+// Row 6 (index 6): lvl(9) + name(13) + kw(10) + kw(7) = 39, then val(11)
+const DESC_ROW = 6;
+const DESC_START = 39;
 const DESC_LEN = 11;
 
 const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\-._*@#';
