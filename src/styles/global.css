@@ -1156,7 +1156,7 @@ a.call-comment {
 .pcf-zone-stmt    { flex: 1; }
 /* Area A / B subdivision in zone-row header */
 .pcf-zone-area-a {
-    width: 5ch; flex-shrink: 0;
+    width: 11ch; flex-shrink: 0;
     font-size: 0.34rem; color: #7A5020; font-weight: 700; letter-spacing: 0.06em;
     display: flex; align-items: center; justify-content: center;
     border-right: 1.5px solid #C2A840;
@@ -1164,8 +1164,14 @@ a.call-comment {
 .pcf-zone-area-b {
     flex: 1;
     font-size: 0.34rem; color: #9B8050; letter-spacing: 0.08em;
-    display: flex; align-items: center; justify-content: flex-start;
-    padding-left: 0.4ch;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+}
+.pcf-zone-area-b::before {
+    content: 'B';
+    position: absolute;
+    left: 0.4ch;
+    color: #7A5020; font-weight: 700; font-size: 0.34rem; letter-spacing: 0.06em;
 }
 
 .pcf-ruler-row {
