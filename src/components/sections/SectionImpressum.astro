@@ -5,83 +5,92 @@ type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
-// 10 lines: slot gets the remaining 8 rows of height (18 - 10 = 8)
 const LINES: Line[] = [
     ['000001', [['div',' PROCEDURE DIVISION'],['dot','.']]],
     ['000002', [['section',' IMPRESSUM-SECTION'],['dot','.']]],
     ['000003', []],
     ['000004', [['para',' IMPRESSUM-PRGRPH'],['dot','.']]],
     ['000005', [['kw','     DISPLAY']]],
-    // slot injected here (slotAtLine={5})
-    ['000006', [['kw','     END-DISPLAY']]],
+    ['000006', []],
     ['000007', []],
-    ['000008', [['comment','* GOBACK TO PROCEDURE DIVISION IMPRESSUM-SECTION']]],
-    ['000009', [['kw','     '],['val','EXIT PARAGRAPH']]],
-    ['000010', [['dot','     .']]],
+    ['000008', []],
+    ['000009', []],
+    ['000010', []],
+    ['000011', []],
+    ['000012', []],
+    ['000013', []],
+    ['000014', [['kw','     END-DISPLAY']]],
+    ['000015', []],
+    ['000016', [['comment','* GOBACK TO PROCEDURE DIVISION IMPRESSUM-SECTION']]],
+    ['000017', [['kw','     '],['val','EXIT PARAGRAPH']]],
+    ['000018', [['dot','     .']]],
 ];
 ---
 <section id="impressum">
     <div class="section-scroll-container pcf-section-height">
         <div class="section-content-wrapper">
-            <PunchCard
-                programName="SSCHW-DEV"
-                programmerName="SEBASTIAN SCHWINN"
-                currentSystem="RETROCODE GMBH"
-                identificationHref="#impressum"
-                lines={LINES}
-                slotAtLine={5}
-                callLinks={{ 'EXIT PARAGRAPH': '#impressum' }}
-            >
-                <div class="impressum-grid">
-                    <div class="impressum-col">
-                        <div class="impressum-section-title">Angaben gemäß § 5 TMG</div>
-                        <p class="impressum-text">
-                            Sebastian Schwinn<br />
-                            Werner-von-Siemens-Str. 64<br />
-                            64711 Erbach, Deutschland
-                        </p>
+            <div class="pcf-stage">
+                <PunchCard
+                    noStage={true}
+                    programName="SSCHW-DEV"
+                    programmerName="SEBASTIAN SCHWINN"
+                    currentSystem="RETROCODE GMBH"
+                    identificationHref="#impressum"
+                    lines={LINES}
+                    callLinks={{ 'EXIT PARAGRAPH': '#impressum' }}
+                />
+                <div class="impressum-overlay">
+                    <div class="impressum-grid">
+                        <div class="impressum-col">
+                            <div class="impressum-section-title">Angaben gemäß § 5 TMG</div>
+                            <p class="impressum-text">
+                                Sebastian Schwinn<br />
+                                Werner-von-Siemens-Str. 64<br />
+                                64711 Erbach, Deutschland
+                            </p>
 
-                        <div class="impressum-section-title">Kontakt</div>
-                        <p class="impressum-text">
-                            <a href="mailto:Seb.Schwinn@googlemail.com">Seb.Schwinn@googlemail.com</a>
-                        </p>
+                            <div class="impressum-section-title">Kontakt</div>
+                            <p class="impressum-text">
+                                <a href="mailto:Seb.Schwinn@googlemail.com">Seb.Schwinn@googlemail.com</a>
+                            </p>
 
-                        <div class="impressum-section-title">Verantwortlich nach § 18 Abs. 2 MStV</div>
-                        <p class="impressum-text">
-                            Sebastian Schwinn, Werner-von-Siemens-Str. 64, 64711 Erbach
-                        </p>
+                            <div class="impressum-section-title">Verantwortlich nach § 18 Abs. 2 MStV</div>
+                            <p class="impressum-text">
+                                Sebastian Schwinn, Werner-von-Siemens-Str. 64, 64711 Erbach
+                            </p>
 
-                        <div class="impressum-section-title">Datenschutz</div>
-                        <p class="impressum-text">
-                            Diese Website erhebt keine personenbezogenen Daten und setzt keine Cookies.
-                            Serverseitige Zugriffslogdaten (IP, Zeitstempel, URL) werden nicht an Dritte weitergegeben.
-                        </p>
-                    </div>
+                            <div class="impressum-section-title">Datenschutz</div>
+                            <p class="impressum-text">
+                                Diese Website erhebt keine personenbezogenen Daten und setzt keine Cookies.
+                                Serverseitige Zugriffslogdaten (IP, Zeitstempel, URL) werden nicht an Dritte weitergegeben.
+                            </p>
+                        </div>
 
-                    <div class="impressum-col">
-                        <div class="impressum-section-title">Haftung für Inhalte</div>
-                        <p class="impressum-text">
-                            Als Diensteanbieter bin ich gemäß § 7 Abs. 1 TMG für eigene Inhalte nach den allgemeinen Gesetzen
-                            verantwortlich. Nach §§ 8–10 TMG bin ich nicht verpflichtet, übermittelte fremde Informationen zu
-                            überwachen. Verpflichtungen zur Entfernung rechtswidriger Informationen bleiben hiervon unberührt.
-                        </p>
+                        <div class="impressum-col">
+                            <div class="impressum-section-title">Haftung für Inhalte</div>
+                            <p class="impressum-text">
+                                Als Diensteanbieter bin ich gemäß § 7 Abs. 1 TMG für eigene Inhalte nach den allgemeinen Gesetzen
+                                verantwortlich. Nach §§ 8–10 TMG bin ich nicht verpflichtet, übermittelte fremde Informationen zu
+                                überwachen. Verpflichtungen zur Entfernung rechtswidriger Informationen bleiben hiervon unberührt.
+                            </p>
 
-                        <div class="impressum-section-title">Haftung für Links</div>
-                        <p class="impressum-text">
-                            Für die Inhalte verlinkter Seiten sind stets deren Betreiber verantwortlich. Die verlinkten Seiten
-                            wurden zum Zeitpunkt der Verlinkung auf Rechtsverstöße überprüft — rechtswidrige Inhalte waren nicht
-                            erkennbar. Eine permanente Kontrolle ist ohne konkrete Anhaltspunkte nicht zumutbar.
-                        </p>
+                            <div class="impressum-section-title">Haftung für Links</div>
+                            <p class="impressum-text">
+                                Für die Inhalte verlinkter Seiten sind stets deren Betreiber verantwortlich. Die verlinkten Seiten
+                                wurden zum Zeitpunkt der Verlinkung auf Rechtsverstöße überprüft — rechtswidrige Inhalte waren nicht
+                                erkennbar. Eine permanente Kontrolle ist ohne konkrete Anhaltspunkte nicht zumutbar.
+                            </p>
 
-                        <div class="impressum-section-title">Urheberrecht</div>
-                        <p class="impressum-text">
-                            Die durch den Seitenbetreiber erstellten Inhalte unterliegen dem deutschen Urheberrecht.
-                            Vervielfältigung und Verbreitung bedürfen der schriftlichen Zustimmung. Downloads sind nur für den
-                            privaten, nicht kommerziellen Gebrauch gestattet.
-                        </p>
+                            <div class="impressum-section-title">Urheberrecht</div>
+                            <p class="impressum-text">
+                                Die durch den Seitenbetreiber erstellten Inhalte unterliegen dem deutschen Urheberrecht.
+                                Vervielfältigung und Verbreitung bedürfen der schriftlichen Zustimmung. Downloads sind nur für den
+                                privaten, nicht kommerziellen Gebrauch gestattet.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </PunchCard>
+            </div>
         </div>
     </div>
 </section>
@@ -89,4 +98,37 @@ const LINES: Line[] = [
 <script>
 export function statemachineImpressumRun() {}
 (window as any).__impressumRun = statemachineImpressumRun;
+
+function positionImpressumOverlay() {
+    const stage = document.querySelector('#impressum .pcf-stage') as HTMLElement | null;
+    const card = stage?.querySelector('.pcf-card') as HTMLElement | null;
+    const overlay = stage?.querySelector('.impressum-overlay') as HTMLElement | null;
+    if (!stage || !card || !overlay) return;
+
+    const rows = card.querySelectorAll('.pcf-line-row');
+    if (rows.length < 13) return;
+
+    const stageRect = stage.getBoundingClientRect();
+    const cardRect  = card.getBoundingClientRect();
+    const startRow  = rows[5] as HTMLElement;  // line 6: first empty line after DISPLAY
+    const endRow    = rows[12] as HTMLElement; // line 13: last empty line before END-DISPLAY
+    const startRect = startRow.getBoundingClientRect();
+    const endRect   = endRow.getBoundingClientRect();
+
+    const chars     = startRow.querySelector('.pcf-chars') as HTMLElement | null;
+    const charsLeft = chars
+        ? chars.getBoundingClientRect().left - stageRect.left
+        : cardRect.left - stageRect.left + 32 + 72;
+
+    overlay.style.top    = `${startRect.top  - stageRect.top}px`;
+    overlay.style.height = `${endRect.bottom - startRect.top}px`;
+    overlay.style.left   = `${charsLeft}px`;
+    overlay.style.right  = `${stageRect.right - cardRect.right}px`;
+}
+
+requestAnimationFrame(() => {
+    positionImpressumOverlay();
+    document.fonts?.ready?.then(positionImpressumOverlay);
+});
+window.addEventListener('resize', positionImpressumOverlay);
 </script>

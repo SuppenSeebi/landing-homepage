@@ -872,6 +872,7 @@ a.call-comment {
 
 /* ── STAGE ──────────────────────────────────────────────────────────────────── */
 .pcf-stage {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1356,39 +1357,19 @@ a.call-comment {
 /* ── INLINE SLOT BLOCK (slotAtLine — injects slot between two line ranges) ───── */
 .pcf-display-block {
     min-height: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: row;
-    border-top: 1px solid #D4C478;
-    border-bottom: 1px solid #D4C478;
-}
-.pcf-display-spacer {
-    width: calc(32px + 72px + 5ch);
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: row;
-}
-.pcf-display-linenum {
-    width: 32px;
-    flex-shrink: 0;
-    background: #EDE0A8;
-    border-right: 1px solid #D4C478;
-}
-.pcf-display-seq {
-    width: 72px;
-    flex-shrink: 0;
-    background: #EDE0A8;
-    border-right: 1.5px solid #C2A840;
-}
-.pcf-display-content {
-    flex: 1;
-    min-height: 0;
     overflow-y: auto;
-    background: #F5EDD4;
-    padding: 8px 16px 8px 1ch;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+}
+
+/* ── IMPRESSUM OVERLAY ──────────────────────────────────────────────────────── */
+.impressum-overlay {
+    position: absolute;
+    overflow-y: auto;
+    background: #F5EDD4;
+    padding: 8px 16px;
+    z-index: 2;
+    pointer-events: auto;
 }
 
 /* Clickable CALL value in punch card coding area */
