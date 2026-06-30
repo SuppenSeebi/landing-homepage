@@ -1356,12 +1356,21 @@ a.call-comment {
 /* ── INLINE SLOT BLOCK (slotAtLine — injects slot between two line ranges) ───── */
 .pcf-display-block {
     min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+}
+.pcf-display-spacer {
+    width: calc(32px + 72px + 5ch);
+    flex-shrink: 0;
+}
+.pcf-display-content {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     background: #F5EDD4;
     border-top: 1px dashed #C2A840;
     border-bottom: 1px dashed #C2A840;
-    margin-left: calc(32px + 72px + 5ch);
-    width: 75ch;
     padding: 8px 16px 8px 1ch;
     display: flex;
     flex-direction: column;
