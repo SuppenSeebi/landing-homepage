@@ -1155,17 +1155,17 @@ a.call-comment {
 .pcf-zone-seq     { width: 72px; flex-shrink: 0; border-right: 1.5px solid #C2A840; }
 .pcf-zone-stmt    { flex: 1; }
 /* Area A / B subdivision in zone-row header */
-.pcf-zone-ind    { width: 1ch; flex-shrink: 0; }
 .pcf-zone-area-a {
-    width: 4ch; flex-shrink: 0;
+    width: 5ch; flex-shrink: 0;
     font-size: 0.34rem; color: #7A5020; font-weight: 700; letter-spacing: 0.06em;
     display: flex; align-items: center; justify-content: center;
-    border-left: 1px solid #D4C478; border-right: 1.5px solid #C2A840;
+    border-right: 1.5px solid #C2A840;
 }
 .pcf-zone-area-b {
     flex: 1;
     font-size: 0.34rem; color: #9B8050; letter-spacing: 0.08em;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: flex-start;
+    padding-left: 0.4ch;
 }
 
 .pcf-ruler-row {
