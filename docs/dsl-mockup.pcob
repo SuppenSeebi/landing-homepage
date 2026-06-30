@@ -1,0 +1,164 @@
+@REM ============================================================================
+@REM  Punch Card DSL — syntax mockup (NOT wired to any compiler yet)
+@REM  Extension: .pcob  ("pseudo-COBOL"). This file exists to be argued about.
+@REM ============================================================================
+@REM
+@REM  THE ONE RULE THAT MAKES TEXT VS. COMMAND UNAMBIGUOUS:
+@REM
+@REM    A line whose first non-space character is "@" is a DSL DIRECTIVE.
+@REM    Every other line is CARD TEXT, rendered close to verbatim.
+@REM
+@REM  Directives are always whole-line and always start at column 1 (no
+@REM  leading whitespace) — that makes them trivially greppable/scannable,
+@REM  and guarantees a line can never be ambiguous between "structure" and
+@REM  "text" no matter what the text itself contains.
+@REM
+@REM  Inside CARD TEXT lines, the only other reserved syntax is the inline
+@REM  span tag: {{name:param}} ... {{/name}}. Two braces in a row is rare
+@REM  enough in COBOL-flavoured text that real collisions shouldn't happen;
+@REM  if they ever do, \{{ escapes a literal brace.
+@REM
+@REM  Everything else on a card-text line — spaces, quotes, dots, asterisks —
+@REM  is exactly what gets rendered. No normalization, no smart reflow.
+
+
+@REM ── ROW COUNT ────────────────────────────────────────────────────────────
+@REM  @ROWS sets the default row count for every SECTION declared after it.
+@REM  A SECTION can override it with rows=N. (A per-CARD override would be
+@REM  `@CARD NAME rows=N` — not used below, but the grammar allows it.)
+@ROWS 19
+
+
+@REM ============================================================================
+@REM  DATA DIVISION example — WORKING-STORAGE (today's SectionTop/"#top")
+@REM ============================================================================
+@DIVISION DATA
+
+@REM  id= is the section's anchor (renders as href="#top"). record= is this
+@REM  DATA DIVISION section's "01 <name>." group line — required only for
+@REM  DATA sections (PROCEDURE sections don't have one, see LINKS below).
+@REM  identification= is only needed when a section IS the impressum
+@REM  target — see IMPRESSUM below.
+@SECTION WORKING-STORAGE id=top record=SSCHW-RECORD
+
+@REM  Each @CARD is one COBOL paragraph AND one punch card. DIVISION/SECTION
+@REM  boilerplate lines (the " DATA DIVISION." / " WORKING-STORAGE SECTION."
+@REM  rows) plus the "01 SSCHW-RECORD." line above are NOT written per-card —
+@REM  the compiler stamps them onto every card in this section automatically.
+@CARD IDENTITY
+05 IDENTITY.
+10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'SEBASTIAN SCHWINN'{{/cycle}}.
+10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'NAME'{{/cycle}}.
+
+@CARD BACKGROUND
+05 BACKGROUND.
+10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'MSC ELECTRICAL ENGINEERING'{{/cycle}}.
+10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'EDUCATION'{{/cycle}}.
+
+@REM  ^ {{cycle:groupId}} replaces today's NAME_START/VAL_START/DESC_START
+@REM  character-offset constants in SectionTop.astro. The compiler knows
+@REM  exactly which span in the compiled 80-col row a cycle tag landed on,
+@REM  so the client script can target it by groupId instead of doing
+@REM  fragile character-offset math that breaks if text length changes.
+@REM
+@REM  Note what's NOT marked up here: PIC clause text, the exact spacing
+@REM  between NAME-VAL and PIC, and any trailing padding on a name for
+@REM  sibling alignment. Those stay literal, author-typed text — the
+@REM  compiler only derives: sequence numbers, LINE numbers, the
+@REM  level-number-based indent (10 → 7 leading spaces, per the existing
+@REM  convention), and a single space before the level name. If you want
+@REM  two fields' PIC clauses to visually line up, you type the padding
+@REM  spaces yourself, same as today — the compiler won't guess at that
+@REM  for you (this is the "column budget" boundary we agreed on).
+
+
+@REM ============================================================================
+@REM  DATA DIVISION example — LOCAL-STORAGE (today's SectionAboutMe/"#aboutme"),
+@REM  showing a 88-level condition-name field (PRG-LANGUAGES card)
+@REM ============================================================================
+@SECTION LOCAL-STORAGE id=aboutme record=ABOUT-ME
+
+@CARD WORK-NOW
+05 WORK-NOW.
+10 COMPANY PIC X(30) VALUE 'RETROCODE'.
+10 ROLE    PIC X(30) VALUE 'COBOL DEVELOPER'.
+10 SECTOR  PIC X(25) VALUE 'FINANCIAL SECTOR'.
+10 SINCE   PIC 9(4)  VALUE 2025.
+
+@CARD PRG-LANGUAGES
+05 PRG-LANGUAGES PIC X(10).
+88 COBOL   VALUE 'PRIMARY'.
+88 PYTHON  VALUE 'KNOWN'.
+
+@REM  ^ a bare number (2025) instead of '...' renders as a numval token
+@REM  instead of val — same rule as today (PIC 9 fields get numval).
+
+
+@REM ============================================================================
+@REM  PROCEDURE DIVISION example — LINKS ("#links"), showing CALL/EXIT and
+@REM  both kinds of {{link}} target: an external URL and a self-reference.
+@REM ============================================================================
+@DIVISION PROCEDURE
+
+@REM  No record= here — PROCEDURE DIVISION sections have no 01-level group,
+@REM  so there's nothing to auto-stamp besides DIVISION/SECTION lines.
+@SECTION LINKS id=links
+
+@CARD SERVICES-PRGRPH
+* Personal wiki and notes
+CALL {{link:'https://kb.sschw.dev'}}'KB.SSCHW.DEV'{{/link}}
+* Directory management (LAN only)
+CALL 'LLDAP'
+.
+
+* GOBACK TO PROCEDURE DIVISION LINKS SECTION
+EXIT PARAGRAPH {{link:self}}
+.
+
+@REM  ^ CALL 'LLDAP' has no {{link}} wrapper at all — it's intentionally
+@REM  not clickable (LAN-only), same as today. {{link:self}} resolves to
+@REM  this section's own id (#links) without repeating it by hand.
+
+
+@REM ============================================================================
+@REM  PROCEDURE DIVISION example — IMPRESSUM ("#impressum"), showing the
+@REM  SLOT escape hatch and a section that IS the identification target.
+@REM ============================================================================
+@SECTION IMPRESSUM id=impressum identification=self
+
+@CARD IMPRESSUM-SECTION
+DISPLAY
+@SLOT impressum-legal rows=11
+END-DISPLAY
+* GOBACK TO PROCEDURE DIVISION LINKS SECTION
+EXIT SECTION {{link:'#impressum'}}
+.
+
+@REM  ^ @SLOT reserves 11 blank rendered rows between DISPLAY and
+@REM  END-DISPLAY; it does NOT define what fills them. The Impressum
+@REM  section's own component still owns the actual HTML overlay
+@REM  (2-column German legal text) and positions it with JS against the
+@REM  reserved rows, exactly like it does today. Slots are deliberately
+@REM  outside the text/token model — rich HTML isn't a punch-card row.
+@REM
+@REM  identification=self marks that this section's own header
+@REM  IDENTIFICATION link shouldn't act like a normal cross-section link
+@REM  to itself. Exact treatment (suppressed vs. "you are here" style) is
+@REM  still an open decision — not resolved by this mockup.
+
+
+@REM ============================================================================
+@REM  ASCII-noise transition tag — not used by any current card, included
+@REM  here purely to settle the syntax before it's needed for real.
+@REM ============================================================================
+@REM  {{noise}}...{{/noise}} marks a span that should scramble/resolve via
+@REM  the noise transition when it scrolls into view (today's
+@REM  scrambleRange/scrambleCardRows behaviour, currently wired by hand
+@REM  per-section). Example, if WORK-CURRENT's company name should noise-in:
+@REM
+@REM    10 COMPANY PIC X(30) VALUE {{noise}}'RETROCODE'{{/noise}}.
+@REM
+@REM  Tags compose by nesting, e.g. a cycling field that should ALSO
+@REM  noise-transition between cycle values:
+@REM
+@REM    10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}{{noise}}'SEBASTIAN SCHWINN'{{/noise}}{{/cycle}}.
