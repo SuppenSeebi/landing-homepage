@@ -33,5 +33,5 @@ export const PARAS_BY_SECTION: Record<string, { label: string; href: string }[]>
     ],
     'work':      [{ label: 'WORK-CURRENT.', href: '#work' }, { label: 'WORK-PREV.', href: '#work' }],
     'links':     [{ label: 'SERVICES-PRGRPH.', href: '#links' }, { label: 'SOCIALS-PRGRPH.', href: '#links' }],
-    'impressum': [{ label: 'IMPRESSUM-PRGRPH.', href: '#impressum' }],
+    'impressum': [{ label: 'IMPRESSUM-SECTION.', href: '#impressum' }],
 };
