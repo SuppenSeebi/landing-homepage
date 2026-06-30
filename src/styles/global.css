@@ -1156,7 +1156,7 @@ a.call-comment {
 .pcf-zone-stmt    { flex: 1; }
 /* Area A / B subdivision in zone-row header */
 .pcf-zone-area-a {
-    width: 4ch; flex-shrink: 0;
+    width: 5ch; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     border-right: 1.5px solid #C2A840;
 }
@@ -1237,6 +1237,10 @@ a.call-comment {
     text-align: center;
     padding-right: 0;
     font-size: 0.46rem;
+}
+.pcf-rchars-spacer {
+    display: inline-block;
+    flex-shrink: 0;
 }
 
 /* ── PUNCH AREA ─────────────────────────────────────────────────────────────── */

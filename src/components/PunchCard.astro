@@ -402,7 +402,7 @@ function buildRulersForCard(card: Element) {
     const buildSeqRuler = (el: Element | null) => {
         if (!el || (el as HTMLElement).dataset.built) return;
         (el as HTMLElement).dataset.built = '1';
-        for (let i = 1; i <= 8; i++) {
+        for (let i = 1; i <= 6; i++) {
             const s = document.createElement('span');
             s.className = 'pcf-rseq-tick'; s.textContent = String(i);
             el.appendChild(s);
@@ -424,6 +424,19 @@ function buildCharsRulerForCard(card: Element) {
         if (!el || (el as HTMLElement).dataset.built) continue;
         (el as HTMLElement).dataset.built = '1';
         el.innerHTML = '';
+        // single ticks for indicator (7) and first char of Area A (8)
+        for (const n of ['7', '8']) {
+            const s = document.createElement('span');
+            s.className = 'pcf-rchars-tick pcf-rchars-single';
+            s.textContent = n;
+            s.style.width = `${chPx}px`;
+            el.appendChild(s);
+        }
+        // blank spacer for cols 9-11 so the col-12 tick lands on the 6th char
+        const spacer = document.createElement('span');
+        spacer.className = 'pcf-rchars-spacer';
+        spacer.style.width = `${chPx * 3}px`;
+        el.appendChild(spacer);
         // 4-char ticks for positions 12, 16, 20 ... 80
         for (let c = 12; c <= 80; c += 4) {
             const s = document.createElement('span');
