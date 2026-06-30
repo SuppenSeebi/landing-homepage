@@ -1,0 +1,80 @@
+# `.pcob` Language Reference
+
+Status: **syntax agreed in discussion, not yet compiled** — see `docs/dsl-mockup.pcob` for a
+full worked example and `docs/punch-card-content-system.md` for the project plan this belongs to.
+
+## What it is
+
+A plain-text format for authoring punch-card content (Division → Section → Card → Line) without
+touching TypeScript. You write near-literal COBOL-flavoured text; a compiler turns it into the
+`Line[]` data `PunchCard.astro`'s renderer already consumes, deriving sequence numbers, line
+numbers, indentation, and row-padding so you don't have to.
+
+## The one rule
+
+> A line whose first non-space character is `@` is a **directive**. Every other line is
+> **card text**, rendered close to verbatim.
+
+Directives are always whole-line, always start at column 1. This is the entire boundary between
+"structure" and "text" — nothing else in the grammar can blur it.
+
+## Directives
+
+| Directive | Where | Purpose |
+|---|---|---|
+| `@@ ...` | anywhere | Comment. Entire line is discarded, never rendered. |
+| `@ROWS N` | before any `DIVISION`; right after a `SECTION`; inside a `CARD` | Sets the row count for everything from here down until a more specific `@ROWS` overrides it. Precedence: Card > Section > program default. |
+| `@DIVISION DATA \| PROCEDURE` | top level | Starts a division. |
+| `@SECTION NAME attr=val ...` | inside a division | Starts a section. See attributes below. |
+| `@CARD NAME` | inside a section | Starts one card = one COBOL paragraph. `NAME` is also its nav label. |
+| `@SLOT name rows=N` | inside a card | Reserves N blank rows for a section-owned HTML overlay (e.g. Impressum's legal text). Doesn't define the content — the section component still owns that. |
+
+### `@SECTION` attributes
+
+| Attribute | Required | Meaning |
+|---|---|---|
+| `id=` | always | Anchor id (`#id`) and the name other content links to it by. |
+| `record=` | DATA DIVISION sections only | Generates the shared `01 <name>.` group line stamped onto every card in the section. |
+| `identification=self` | only on the section that IS the impressum target | Marks that this section's own header IDENTIFICATION link shouldn't behave like a normal cross-section link. |
+
+## Card text
+
+Everything not starting with `@` is rendered text, line for line. Recognized line *shapes* get
+their canonical formatting auto-applied; anything else is passed through literally:
+
+| You write | What happens |
+|---|---|
+| (blank line) | Blank rendered row. |
+| `.` | Standalone closing dot. |
+| `* some text` | Comment row (column 1, never indented). |
+| `01 / 05 / 10 / 88 NAME ...` | Level row — compiler applies the canonical indent for that level number (01→1 space, 05→5, 10/88→7). Everything after the name (PIC clause, VALUE, spacing between them) is literal, author-controlled text. |
+| `CALL '...'`, `EXIT PARAGRAPH`, `EXIT SECTION`, `DISPLAY`, `END-DISPLAY` | Statement row — compiler applies the standard 5-space statement indent. |
+
+**Leading whitespace you type before a recognized line shape is ignored** — the compiler always
+emits its own canonical indent for that shape, regardless of how the source was indented. Indent
+your `.pcob` source however is easiest for you to read; it has no effect on the rendered card.
+Internal spacing *after* the recognized prefix (e.g. padding to line up sibling `PIC` clauses) is
+left exactly as typed — the compiler never reflows that.
+
+## Inline tags
+
+Used inside card text to mark a span without leaving plain-text mode. All follow the same shape:
+`{{name:param}} ... {{/name}}`.
+
+| Tag | Meaning |
+|---|---|
+| `{{link:name}}...{{/link}}` | Internal link to an anchor (a `@SECTION id=` or an `{{anchor:}}`), referenced by bare name. |
+| `{{link:'https://...'}}...{{/link}}` | External link — quotes mean "literal URL," distinguishing it from an internal anchor name. |
+| `{{anchor:name}}...{{/anchor}}` | Declares a named link target finer-grained than a whole section. Shares one namespace with `@SECTION id=` — names must be unique document-wide. |
+| `{{cycle:groupId}}...{{/cycle}}` | Marks a span as a rotating/dynamic value belonging to cycle-group `groupId` (replaces today's hand-counted character-offset constants). |
+| `{{noise}}...{{/noise}}` | Marks a span to noise/ASCII-scramble in on scroll. Composable by nesting with other tags. |
+
+Tags can nest (e.g. a cycling field that also noise-transitions). A literal `{{` in text, if ever
+needed, is escaped as `\{{`.
+
+## Open / not yet decided
+
+- Exact `identification=self` rendering treatment (suppressed link vs. "you are here" styling).
+- Anchor/`{{link}}` resolution and uniqueness-checking is a compiler responsibility, not yet built.
+- DATA DIVISION boilerplate beyond what's shown (deeper field/condition patterns) gets added to
+  the table above as real migrations surface them — this reference grows with the grammar.

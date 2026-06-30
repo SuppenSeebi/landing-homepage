@@ -95,65 +95,30 @@ before the next begins.
 Decision made: **plain-text DSL**, not TypeScript object literals. Rationale: Sebastian should
 be able to open a text file and change a value or add a line without writing TypeScript.
 
-Working sketch (subject to revision once we actually start building it):
+**Syntax finalized** (after a dedicated discussion round) in two artifacts:
+- `docs/dsl-mockup.pcob` — a full worked example with inline commentary explaining each construct.
+- `docs/pcob-reference.md` — the terse keyword/tag reference to actually write `.pcob` files from.
 
-```
-DIVISION DATA
-  SECTION WORKING-STORAGE id=top rows=19
-    PARAGRAPH SSCHW-RECORD
-      01 SSCHW-RECORD.
-      05 IDENTITY.
-        10 NAME-VAL PIC X(32) VALUE {{CYCLE:identity}}'SEBASTIAN SCHWINN'.
-        10 NAME-DSCRPTN PIC X(9) VALUE {{CYCLE:identity-desc}}'NAME'.
-      05 BACKGROUND.
-        10 ...
-
-  SECTION LOCAL-STORAGE id=aboutme rows=19
-    PARAGRAPH WORK-NOW
-      05 WORK-NOW.
-        10 COMPANY PIC X(30) VALUE 'RETROCODE'.
-        10 ROLE    PIC X(30) VALUE 'COBOL DEVELOPER'.
-    PARAGRAPH WORK-BFRE
-      05 WORK-BFRE.
-        10 COMPANY PIC X(30) VALUE 'HILSCHER'.
-
-DIVISION PROCEDURE
-  SECTION LINKS id=links rows=19
-    PARAGRAPH SERVICES-PRGRPH
-      * Personal wiki and notes
-      CALL {{LINKTO:'https://kb.sschw.dev'}}'KB.SSCHW.DEV'
-      .
-      * GOBACK TO PROCEDURE DIVISION LINKS SECTION
-      EXIT PARAGRAPH {{LINKTO:self}}
-      .
-
-  SECTION IMPRESSUM id=impressum rows=19 identification=self
-    PARAGRAPH IMPRESSUM-SECTION
-      DISPLAY
-      SLOT impressum-legal rows=11
-      END-DISPLAY
-      * GOBACK TO PROCEDURE DIVISION LINKS SECTION
-      EXIT SECTION {{LINKTO:'#impressum'}}
-      .
-```
-
-Notes on this sketch:
-- Indentation expresses the Division → Section → Paragraph → field hierarchy (like YAML/Pug) —
-  no braces to balance.
-- DIVISION/SECTION boilerplate text is written **once** per section, not per card; the
-  compiler stamps it onto every paragraph/card automatically.
-- `rows=` is declared once per section (override-able per paragraph later if ever needed) and
-  drives auto-padding — this directly replaces manual blank-line counting.
-- Sequence numbers and `LINE` numbers are never written — always derived from position.
-- `{{TAG:param}}` is the one piece of "syntax" to learn; everything else is just COBOL-flavored
-  text, matching how the page already reads. `{{LINKTO:...}}`, `{{CYCLE:groupId}}` cover today's
-  link and dynamic-field-cycling needs; more tags get added on request (see process below).
-- `SLOT name rows=N` is the explicit escape hatch for non-text regions (Impressum's legal grid).
-  It reserves blank rows; the section's own component still owns the actual HTML/positioning —
-  slots are intentionally not absorbed into the text model.
-- `identification=self` on a section flags that its own header IDENTIFICATION link shouldn't
-  behave as a normal cross-section link (exact UI treatment — suppressed vs. "you are here"
-  styling — still open, see Decisions Log).
+Headline decisions from that discussion (superseding the earlier indentation-based sketch that
+used to live in this section):
+- **Text vs. directive split**: a line is a directive only if its first non-space character is
+  `@`; everything else is rendered card text. No indentation-sensitive parsing.
+- **Comments**: `@@ ...` (not a special keyword like `REM`).
+- **Indentation is non-semantic**: leading whitespace before a recognized line shape (a level
+  number, a statement verb) is always ignored — the compiler emits its own canonical indent.
+  Internal spacing after that prefix (e.g. padding to line up sibling `PIC` clauses) is left
+  exactly as typed.
+- **`@ROWS N`** is one directive, usable at program level, right after a `SECTION`, or inside a
+  `CARD` — nearest one wins (Card > Section > program default). Replaces the earlier `rows=`
+  attribute idea with a single, uniformly-scoped mechanism.
+- **Linking has no implicit `self`.** `{{link:name}}` references an anchor by bare name (a
+  `@SECTION id=` is automatically one); `{{link:'https://...'}}` (quoted) is an external URL.
+  `{{anchor:name}}` declares a finer-grained target below section level, sharing one namespace
+  with section ids.
+- **`{{cycle:groupId}}`** replaces `SectionTop`'s character-offset constants; **`{{noise}}`** is
+  the (not-yet-needed) ASCII-scramble tag, included now so the syntax exists before it's required.
+- **`@SLOT name rows=N`** stays the escape hatch for Impressum's floating legal-text overlay —
+  reserves rows, doesn't model the HTML.
 
 Process for extending the tag vocabulary: when Sebastian wants something the current tags can't
 express, that's a short scoped conversation ("add a `{{TAG}}` that does X"), not a request to
@@ -191,12 +156,18 @@ edit renderer internals. The format grows by request, not by guessing future nee
 Use this section as a running list — append rather than rewrite, so we keep a record of what
 was decided and why, and what was found not to port cleanly.
 
+### Resolved decisions
+- [x] File extension: **`.pcob`**, location `src/content/punchcard/*.pcob` (to be created during
+      Phase 2/3 — not yet wired anywhere).
+- [x] Comment syntax: `@@ ...`, not a keyword like `REM`.
+- [x] `@ROWS` scoping: Card > Section > program default, one directive for all three levels.
+- [x] No implicit `self` for links — see `{{link:name}}` / `{{anchor:name}}` in Phase 1 above.
+
 ### Open decisions (need an answer before/while building)
 - [ ] Exact suppressed/"you are here" treatment for Impressum's self-referencing
       `identification=self` header link.
-- [ ] File extension / location for the new content files (e.g. `src/content/*.pcard`?).
-- [ ] Exact tag syntax details: case sensitivity, how `{{LINKTO:self}}` resolves to "the current
-      section's anchor" without hardcoding it twice.
+- [ ] Anchor/link resolution + uniqueness validation (one namespace shared by `@SECTION id=` and
+      `{{anchor:name}}`) is a compiler responsibility — not yet built, no validation rules coded.
 
 ### Risks to keep in mind while building (carried over from initial design discussion)
 - **Column-budget tension**: the DSL must not auto-layout `PIC X(N)` padding or column
@@ -218,7 +189,7 @@ was decided and why, and what was found not to port cleanly.
 | Phase | Status |
 |---|---|
 | 0 — Fix `#top` height asymmetry | Implemented (`align-self: stretch` on `.top-punch-wrapper`); pending Sebastian's visual confirmation |
-| 1 — Format design | Sketch above; format choice (plain-text DSL) confirmed |
+| 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Not started |
 | 3 — Pilot migration (Links) | Not started |
 | 4 — Full migration | Not started |
