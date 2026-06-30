@@ -116,13 +116,14 @@ function positionImpressumOverlay() {
     const endRect   = endRow.getBoundingClientRect();
 
     const chars     = startRow.querySelector('.pcf-chars') as HTMLElement | null;
-    const charsLeft = chars
-        ? chars.getBoundingClientRect().left - stageRect.left
-        : cardRect.left - stageRect.left + 32 + 72;
+    const charsRect = chars?.getBoundingClientRect();
+    const charsLeft = charsRect ? charsRect.left - stageRect.left : cardRect.left - stageRect.left + 32 + 72;
+    const chWidth   = charsRect ? charsRect.width / 80 : 0;
+    const INDENT    = 7; // 5 (DISPLAY indent) + 2
 
     overlay.style.top    = `${startRect.top  - stageRect.top}px`;
     overlay.style.height = `${endRect.bottom - startRect.top}px`;
-    overlay.style.left   = `${charsLeft}px`;
+    overlay.style.left   = `${charsLeft + INDENT * chWidth}px`;
     overlay.style.right  = `${stageRect.right - cardRect.right}px`;
 }
 
