@@ -432,10 +432,12 @@ function buildCharsRulerForCard(card: Element) {
             s.style.width = `${chPx}px`;
             el.appendChild(s);
         }
-        // blank spacer for cols 9-11 so the col-12 tick lands on the 6th char
+        // half-char spacer: the "12" label sits right-aligned inside its 4-char
+        // tick box, so the box needs to start ~2.5 chars in (not a full 5) for
+        // the digits to visually land over the 6th character
         const spacer = document.createElement('span');
         spacer.className = 'pcf-rchars-spacer';
-        spacer.style.width = `${chPx * 3}px`;
+        spacer.style.width = `${chPx * 0.5}px`;
         el.appendChild(spacer);
         // 4-char ticks for positions 12, 16, 20 ... 80
         for (let c = 12; c <= 80; c += 4) {
