@@ -8,9 +8,9 @@ type Line  = [string, Token[]];
 const LINES: Line[] = [
     ['000001', [['div',' PROCEDURE DIVISION'],['dot','.']]],
     ['000002', [['section',' IMPRESSUM-SECTION'],['dot','.']]],
-    ['000003', []],
-    ['000004', [['para',' IMPRESSUM-PRGRPH'],['dot','.']]],
-    ['000005', [['kw','     DISPLAY']]],
+    ['000003', [['kw','     DISPLAY']]],
+    ['000004', []],
+    ['000005', []],
     ['000006', []],
     ['000007', []],
     ['000008', []],
@@ -19,10 +19,10 @@ const LINES: Line[] = [
     ['000011', []],
     ['000012', []],
     ['000013', []],
-    ['000014', [['kw','     END-DISPLAY']]],
-    ['000015', []],
-    ['000016', [['comment','* GOBACK TO PROCEDURE DIVISION IMPRESSUM-SECTION']]],
-    ['000017', [['kw','     '],['val','EXIT PARAGRAPH']]],
+    ['000014', []],
+    ['000015', [['kw','     END-DISPLAY']]],
+    ['000016', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
+    ['000017', [['kw','     '],['val','EXIT SECTION']]],
     ['000018', [['dot','     .']]],
 ];
 ---
@@ -37,7 +37,7 @@ const LINES: Line[] = [
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
                     lines={LINES}
-                    callLinks={{ 'EXIT PARAGRAPH': '#impressum' }}
+                    callLinks={{ 'EXIT SECTION': '#impressum' }}
                 />
                 <div class="impressum-overlay">
                     <div class="impressum-grid">
@@ -110,8 +110,8 @@ function positionImpressumOverlay() {
 
     const stageRect = stage.getBoundingClientRect();
     const cardRect  = card.getBoundingClientRect();
-    const startRow  = rows[5] as HTMLElement;  // line 6: first empty line after DISPLAY
-    const endRow    = rows[12] as HTMLElement; // line 13: last empty line before END-DISPLAY
+    const startRow  = rows[3] as HTMLElement;  // line 4: first empty line after DISPLAY
+    const endRow    = rows[13] as HTMLElement; // line 14: last empty line before END-DISPLAY
     const startRect = startRow.getBoundingClientRect();
     const endRect   = endRow.getBoundingClientRect();
 
