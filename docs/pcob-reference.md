@@ -78,3 +78,50 @@ needed, is escaped as `\{{`.
 - Anchor/`{{link}}` resolution and uniqueness-checking is a compiler responsibility, not yet built.
 - DATA DIVISION boilerplate beyond what's shown (deeper field/condition patterns) gets added to
   the table above as real migrations surface them — this reference grows with the grammar.
+
+## Complete example
+
+Every directive, attribute, line shape, and tag from this reference, used at least once. This
+example must stay in sync with the tables above — see the upkeep rule in `CLAUDE.md`.
+
+```pcob
+@@ comment — never rendered
+@ROWS 8
+
+@DIVISION DATA
+@SECTION DEMO-DATA id=demo-data record=DEMO-RECORD
+@CARD DEMO-FIELDS
+05 DEMO-FIELDS.
+10 LABEL PIC X(10) VALUE {{anchor:demo-label}}{{cycle:demo}}{{noise}}'HELLO'{{/noise}}{{/cycle}}{{/anchor}}.
+10 COUNT PIC 9(2) VALUE 7.
+88 IS-READY VALUE 'YES'.
+
+@DIVISION PROCEDURE
+@SECTION DEMO-PROC id=demo-proc identification=self
+@ROWS 14
+@CARD DEMO-CARD
+@ROWS 20
+* a comment row
+DISPLAY
+@SLOT demo-slot rows=2
+END-DISPLAY
+CALL {{link:'https://example.com'}}'EXAMPLE'{{/link}}
+CALL {{link:demo-label}}'JUMP TO LABEL'{{/link}}
+.
+
+EXIT PARAGRAPH {{link:demo-proc}}
+.
+EXIT SECTION {{link:demo-proc}}
+.
+```
+
+What's exercised, in order: `@@` comment, program-level `@ROWS`, `@DIVISION DATA`, `@SECTION` with
+`id=`/`record=`, a `05` group with a `10 PIC X` field (quoted `val`, plus `{{anchor}}`/`{{cycle}}`/
+`{{noise}}` nested on one span), a `10 PIC 9` field with a bare numeric value (`numval`), an `88`
+condition; the decorative blank line before `@DIVISION PROCEDURE` (discarded, since it precedes a
+directive); `@SECTION` with `identification=self` and a section-level `@ROWS` override; a
+card-level `@ROWS` override; a comment row; `DISPLAY`/`@SLOT`/`END-DISPLAY`; a `CALL` with an
+external (quoted) `{{link}}` and one with an internal (bare-name) `{{link}}` to the `{{anchor}}`
+declared earlier; a standalone `.`; a content blank line (kept, since it precedes card text, not
+a directive); and both `EXIT PARAGRAPH` and `EXIT SECTION`, each linking back to their own
+section by explicit name (no implicit `self`).
