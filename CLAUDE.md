@@ -4,6 +4,8 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 
 **Every prompt that results in code changes must end with a git commit. No confirmation needed.**
 
+**Testing scope: only check syntax and semantics (type errors, build errors, logic correctness). Do not start the dev server or verify visuals/rendering — the user tests visual results themselves after each commit.**
+
 ---
 
 ## File map
