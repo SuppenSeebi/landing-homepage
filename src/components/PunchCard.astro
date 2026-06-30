@@ -159,7 +159,7 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
                 {useSlot ? (
                     <>
                         <div class="pcf-punch-area" data-lines={preLinesJson} data-call-links={callLinksJson} style={`flex: ${preLines.length};`}></div>
-                        <div class="pcf-display-block" style={`flex: ${slotFlex};`}><div class="pcf-display-spacer"></div><div class="pcf-display-content"><slot /></div></div>
+                        <div class="pcf-display-block" style={`flex: ${slotFlex};`}><div class="pcf-display-spacer"><div class="pcf-display-linenum"></div><div class="pcf-display-seq"></div></div><div class="pcf-display-content"><slot /></div></div>
                         <div class="pcf-punch-area" data-lines={postLinesJson} data-call-links={callLinksJson} style={`flex: ${postLines.length};`}></div>
                     </>
                 ) : (
@@ -283,7 +283,7 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
                     {useSlot ? (
                         <>
                             <div class="pcf-punch-area" data-lines={preLinesJson} data-call-links={callLinksJson} style={`flex: ${preLines.length};`}></div>
-                            <div class="pcf-display-block" style={`flex: ${slotFlex};`}><div class="pcf-display-spacer"></div><div class="pcf-display-content"><slot /></div></div>
+                            <div class="pcf-display-block" style={`flex: ${slotFlex};`}><div class="pcf-display-spacer"><div class="pcf-display-linenum"></div><div class="pcf-display-seq"></div></div><div class="pcf-display-content"><slot /></div></div>
                             <div class="pcf-punch-area" data-lines={postLinesJson} data-call-links={callLinksJson} style={`flex: ${postLines.length};`}></div>
                         </>
                     ) : (
