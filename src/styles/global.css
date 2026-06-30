@@ -1156,7 +1156,7 @@ a.call-comment {
 .pcf-zone-stmt    { flex: 1; }
 /* Area A / B subdivision in zone-row header */
 .pcf-zone-area-a {
-    width: 11ch; flex-shrink: 0;
+    width: 4ch; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     border-right: 1.5px solid #C2A840;
 }
