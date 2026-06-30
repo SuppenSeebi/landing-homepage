@@ -1443,6 +1443,7 @@ a.call-comment {
 /* ── TOP SECTION LAYOUT WITH PUNCH CARD ─────────────────────────────────────── */
 .top-punch-wrapper {
     flex: 1;
+    align-self: stretch;
     display: flex;
     flex-direction: column;
     align-items: flex-start;

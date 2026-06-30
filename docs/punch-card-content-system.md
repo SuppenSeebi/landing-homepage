@@ -52,7 +52,8 @@ from code.
   this is the seam a compiler can sit behind without touching the renderer.
 
 ### Known bug: card row height still differs between sections
-Root cause identified (not yet fixed, not yet visually confirmed by Sebastian):
+Root cause identified and Phase 0 fix applied (`align-self: stretch` added to
+`.top-punch-wrapper` in `global.css`) — pending Sebastian's visual confirmation:
 - `#top` (WORKING-STORAGE): `.top-container` is a row-flex with `align-items: center`.
   `.top-punch-wrapper`'s `flex: 1` only affects width in that row direction, so the wrapper
   (and everything inside it, down to each `.pcf-line-row`) sizes to its own min-content height —
@@ -216,7 +217,7 @@ was decided and why, and what was found not to port cleanly.
 
 | Phase | Status |
 |---|---|
-| 0 — Fix `#top` height asymmetry | Not started |
+| 0 — Fix `#top` height asymmetry | Implemented (`align-self: stretch` on `.top-punch-wrapper`); pending Sebastian's visual confirmation |
 | 1 — Format design | Sketch above; format choice (plain-text DSL) confirmed |
 | 2 — Parser/compiler | Not started |
 | 3 — Pilot migration (Links) | Not started |
