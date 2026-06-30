@@ -1363,6 +1363,7 @@ a.call-comment {
 .pcf-display-spacer {
     width: calc(32px + 72px + 5ch);
     flex-shrink: 0;
+    background: linear-gradient(to right, #EDE0A8 calc(32px + 72px), #F5EDD4 calc(32px + 72px));
 }
 .pcf-display-content {
     flex: 1;
