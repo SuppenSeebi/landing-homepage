@@ -41,10 +41,14 @@ from code.
 
 **The rendered COBOL STATEMENT text (the punch card's coding area) is a 1:1 rendering of what
 Sebastian typed in the `.pcob` file.** Strip out `{{tags}}` and every remaining character in a
-rendered card must trace back to literal text he wrote — the compiler never invents, injects, or
-auto-generates a visible line. This applies without exception: DIVISION headers, SECTION
-headers, paragraph names, record group lines — if any of these should appear, Sebastian types
-them himself, per card, same as any other line.
+rendered card — including leading and internal whitespace — must trace back to literal text he
+wrote — the compiler never invents, injects, auto-generates, or re-indents a visible line. This
+applies without exception: DIVISION headers, SECTION headers, paragraph names, record group
+lines — if any of these should appear, Sebastian types them himself, per card, same as any other
+line, indentation included. There is no canonical/auto-applied indent for any recognized line
+shape (level rows, statements, headers); want a statement indented five spaces, or a standalone
+`.` under column 12? Type the spaces — the compiler classifies characters into colored tokens, it
+never adds or discards any.
 
 Directives (`@DIVISION`, `@SECTION`, `@CARD`, `@ROWS`, `@SLOT`) and inline tags (`{{link}}`,
 `{{anchor}}`, `{{cycle}}`, `{{noise}}`) only ever affect things *around* the text — anchors, nav
@@ -126,10 +130,12 @@ used to live in this section):
 - **Text vs. directive split**: a line is a directive only if its first non-space character is
   `@`; everything else is rendered card text. No indentation-sensitive parsing.
 - **Comments**: `@@ ...` (not a special keyword like `REM`).
-- **Indentation is non-semantic**: leading whitespace before a recognized line shape (a level
-  number, a statement verb) is always ignored — the compiler emits its own canonical indent.
-  Internal spacing after that prefix (e.g. padding to line up sibling `PIC` clauses) is left
-  exactly as typed.
+- ~~Indentation is non-semantic: leading whitespace before a recognized line shape is always
+  ignored — the compiler emits its own canonical indent.~~ **Superseded** — see the Core rule
+  above. Indentation is just more literal text; there is no canonical/auto-applied indent for
+  any line shape. Every example in `docs/dsl-mockup.pcob` types its own indentation (following
+  this project's visual convention — 01→1 space, 05→5, 10/88→7, statements/standalone `.`→5,
+  headers→1 — by choice, not compiler enforcement).
 - **`@ROWS N`** is one directive, usable at program level, right after a `SECTION`, or inside a
   `CARD` — nearest one wins (Card > Section > program default). Replaces the earlier `rows=`
   attribute idea with a single, uniformly-scoped mechanism.
@@ -245,6 +251,23 @@ was decided and why, and what was found not to port cleanly.
   `{{/link}}`) — inconsistent with every other tag use and with the "always paired, no bare
   shorthand" decision. Fixed in `docs/dsl-mockup.pcob` and `docs/pcob-reference.md` to
   `{{link:name}}EXIT PARAGRAPH{{/link}}`.
+- **No implicit indentation either — WYSIWYG extends to whitespace.** After the pilot's Links
+  section was live and visible, Sebastian extended the "no implicit lines" rule to indentation:
+  the compiler previously auto-applied a canonical indent per line shape (01→1 space, 05→5,
+  10/88→7, statements→5), discarding whatever leading whitespace was actually typed. That's the
+  same category of implicit behavior as auto-generated lines. `tokenizeCardLine.ts` no longer
+  computes any indent; every line shape's leading/internal whitespace is preserved exactly as
+  typed, and `.pcob` sources (including both example files) now type their own indentation.
+- **Card height is intrinsic to row count, not stretched to fill a fixed region.** Also
+  surfaced by the pilot: shrinking `links.pcob`'s `@ROWS` made the row *height* grow instead of
+  the card getting shorter, because `.pcf-card`/`.pcf-punch-area` filled a fixed viewport region
+  (`top:7vh;bottom:7vh` etc.) and CSS Grid distributed that fixed budget across however many
+  rows existed. Fixed by removing the forced-stretch chain — row height now comes purely from
+  `.pcf-chars span`'s `line-height`, uniform and font-driven, and a card's total height is
+  exactly `rows * that height`. Multi-card sections now center the active card instead of
+  top/bottom-anchoring it. The card-stack ghost silhouettes still use fixed-region sizing
+  (unchanged) since matching them to a dynamically-sized active card needs JS, not just CSS —
+  a known, accepted mismatch, most visible on cards with an unusual `@ROWS`.
 - **Gap found comparing the compiler against real site content**: today's `SectionLinks.astro`
   renders a paragraph-name line (`SERVICES-PRGRPH.`, styled `para`) that neither the grammar docs
   nor the Phase 2 compiler accounted for. Resolved by adding paragraph-name as a recognized (not

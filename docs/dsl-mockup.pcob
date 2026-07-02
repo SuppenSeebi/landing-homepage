@@ -19,23 +19,20 @@
 @@  enough in COBOL-flavoured text that real collisions shouldn't happen;
 @@  if they ever do, \{{ escapes a literal brace.
 @@
-@@  Everything else on a card-text line — quotes, dots, asterisks, and any
-@@  INTERNAL spacing (e.g. padding between a name and its PIC clause) — is
-@@  exactly what gets rendered, no normalization, no smart reflow. The one
-@@  exception: LEADING whitespace on a recognized line shape (a level
-@@  number, a statement verb) is always ignored and replaced by the
-@@  compiler's own canonical indent for that shape — see INDENTATION below.
+@@  CARD TEXT IS WYSIWYG — THE COMPILER NEVER GENERATES OR RE-INDENTS A LINE:
 @@
-@@  CARD TEXT IS WYSIWYG — THE COMPILER NEVER GENERATES A VISIBLE LINE:
-@@
-@@    Strip out {{tags}} and every character left in a rendered card must
-@@    trace back to something typed here. @DIVISION/@SECTION/@CARD name
-@@    things for the navbar and for {{link}} targets — they do NOT stamp
-@@    matching text into the card. Want "DATA DIVISION." to show up? Type
-@@    it, in every card that should show it, same as any other line. The
-@@    machine-readable name (@SECTION WORKING-STORAGE id=top) and the
+@@    Strip out {{tags}} and every character left in a rendered card —
+@@    including LEADING and internal whitespace — must trace back to
+@@    something typed here. @DIVISION/@SECTION/@CARD name things for the
+@@    navbar and for {{link}} targets — they do NOT stamp matching text
+@@    into the card, and they do NOT decide how that text is indented.
+@@    Want "DATA DIVISION." to show up, indented one space? Type it that
+@@    way, in every card that should show it, same as any other line.
+@@    The machine-readable name (@SECTION WORKING-STORAGE id=top) and the
 @@    human-readable text you type to represent it are two independent
-@@    things — keeping them looking related is on you, not the compiler.
+@@    things — keeping them looking related, spacing included, is on you,
+@@    not the compiler. See INDENTATION below for what this means in
+@@    practice for level rows and statements.
 
 
 @@ ── ROW COUNT ────────────────────────────────────────────────────────────
@@ -50,17 +47,21 @@
 
 
 @@ ── INDENTATION ──────────────────────────────────────────────────────────
-@@  These two are equivalent — try both and you'll get byte-identical output:
+@@  There is no canonical or auto-applied indent for any line shape —
+@@  leading whitespace is just more literal text, exactly like everything
+@@  else on the line. These two are NOT equivalent; they render differently:
 @@
-@@    01 SOME-VAL.            05 SOME-OTHER.
-@@    05 SOME-OTHER.     vs.      10 SOME-THIRD.
-@@        10 SOME-THIRD.   01 SOME-VAL.
+@@    01 SOME-VAL.              vs.    01 SOME-VAL.
+@@        05 SOME-OTHER.                05 SOME-OTHER.
 @@
-@@  The compiler reads the level NUMBER (01/05/10/88), not the column it
-@@  started in, and always emits the established indent for that number
-@@  (01 → 1 space, 05 → 5 spaces, 10/88 → 7 spaces). Source indentation is
-@@  purely for YOUR readability — write it however makes the file easiest
-@@  for you to scan; it has zero effect on the rendered card.
+@@  (the left one's "05" line has 8 leading spaces, the right one has 4 —
+@@  whatever you type is exactly what's rendered, character for character).
+@@  This project's own convention — which every example below follows,
+@@  because it's what the site's aesthetic expects, not because the
+@@  compiler enforces it — is: 01 → 1 space, 05 → 5 spaces, 10/88 → 7
+@@  spaces, statement verbs (CALL/DISPLAY/EXIT ...) and a closing standalone
+@@  "." → 5 spaces, DIVISION/SECTION/paragraph-name lines → 1 space. Type
+@@  those spaces yourself; nothing below is computed from a level number.
 
 
 @@ ============================================================================
@@ -76,20 +77,20 @@
 @@  compiler will not stamp them in. That repetition is the accepted cost
 @@  of "no implicit lines"; see the note at the top of this file.
 @CARD IDENTITY
-DATA DIVISION.
-WORKING-STORAGE SECTION.
-01 SSCHW-RECORD.
-05 IDENTITY.
-10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'SEBASTIAN SCHWINN'{{/cycle}}.
-10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'NAME'{{/cycle}}.
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+ 01 SSCHW-RECORD.
+     05 IDENTITY.
+       10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'SEBASTIAN SCHWINN'{{/cycle}}.
+       10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'NAME'{{/cycle}}.
 
 @CARD BACKGROUND
-DATA DIVISION.
-WORKING-STORAGE SECTION.
-01 SSCHW-RECORD.
-05 BACKGROUND.
-10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'MSC ELECTRICAL ENGINEERING'{{/cycle}}.
-10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'EDUCATION'{{/cycle}}.
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+ 01 SSCHW-RECORD.
+     05 BACKGROUND.
+       10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'MSC ELECTRICAL ENGINEERING'{{/cycle}}.
+       10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'EDUCATION'{{/cycle}}.
 
 @@  ^ {{cycle:groupId}} replaces today's NAME_START/VAL_START/DESC_START
 @@  character-offset constants in SectionTop.astro. The compiler knows
@@ -99,12 +100,12 @@ WORKING-STORAGE SECTION.
 @@
 @@  Note what's NOT marked up here: PIC clause text, the exact spacing
 @@  between NAME-VAL and PIC, and any trailing padding on a name for
-@@  sibling alignment. Those stay literal, author-typed text — the
-@@  compiler only derives sequence numbers, LINE numbers, and the
-@@  leading indent (see INDENTATION above). If you want two fields' PIC
-@@  clauses to visually line up, you type the padding spaces yourself,
-@@  same as today — the compiler won't guess at that for you (this is
-@@  the "column budget" boundary we agreed on).
+@@  sibling alignment. Those stay literal, author-typed text, same as
+@@  the leading indent (see INDENTATION above) — the compiler only
+@@  derives sequence numbers and LINE numbers. If you want two fields'
+@@  PIC clauses to visually line up, you type the padding spaces
+@@  yourself, same as today — the compiler won't guess at that for you
+@@  (this is the "column budget" boundary we agreed on).
 
 
 @@ ============================================================================
@@ -114,26 +115,26 @@ WORKING-STORAGE SECTION.
 @SECTION LOCAL-STORAGE id=aboutme
 
 @CARD WORK-NOW
-DATA DIVISION.
-LOCAL-STORAGE SECTION.
-01 ABOUT-ME.
-05 WORK-NOW.
-10 COMPANY PIC X(30) VALUE 'RETROCODE'.
-10 ROLE    PIC X(30) VALUE 'COBOL DEVELOPER'.
-10 SECTOR  PIC X(25) VALUE 'FINANCIAL SECTOR'.
-10 SINCE   PIC 9(4)  VALUE 2025.
+ DATA DIVISION.
+ LOCAL-STORAGE SECTION.
+ 01 ABOUT-ME.
+     05 WORK-NOW.
+       10 COMPANY PIC X(30) VALUE 'RETROCODE'.
+       10 ROLE    PIC X(30) VALUE 'COBOL DEVELOPER'.
+       10 SECTOR  PIC X(25) VALUE 'FINANCIAL SECTOR'.
+       10 SINCE   PIC 9(4)  VALUE 2025.
 
 @CARD PRG-LANGUAGES
 @ROWS 18
 @@ ^ just for this card, e.g. because it has one fewer row of content
 @@ that's intentional rather than padding. Every other card in this
 @@ section still uses the section/program default of 19.
-DATA DIVISION.
-LOCAL-STORAGE SECTION.
-01 ABOUT-ME.
-05 PRG-LANGUAGES PIC X(10).
-88 COBOL   VALUE 'PRIMARY'.
-88 PYTHON  VALUE 'KNOWN'.
+ DATA DIVISION.
+ LOCAL-STORAGE SECTION.
+ 01 ABOUT-ME.
+     05 PRG-LANGUAGES PIC X(10).
+       88 COBOL   VALUE 'PRIMARY'.
+       88 PYTHON  VALUE 'KNOWN'.
 
 @@  ^ a bare number (2025) instead of '...' renders as a numval token
 @@  instead of val — same rule as today (PIC 9 fields get numval).
@@ -148,18 +149,18 @@ LOCAL-STORAGE SECTION.
 @SECTION LINKS id=links
 
 @CARD SERVICES-PRGRPH
-PROCEDURE DIVISION.
-LINKS SECTION.
-SERVICES-PRGRPH.
+ PROCEDURE DIVISION.
+ LINKS SECTION.
+ SERVICES-PRGRPH.
 * Personal wiki and notes
-CALL {{link:'https://kb.sschw.dev'}}'KB.SSCHW.DEV'{{/link}}
+     CALL {{link:'https://kb.sschw.dev'}}'KB.SSCHW.DEV'{{/link}}
 * Directory management (LAN only)
-CALL 'LLDAP'
-.
+     CALL 'LLDAP'
+     .
 
 * GOBACK TO PROCEDURE DIVISION LINKS SECTION
-{{link:links}}EXIT PARAGRAPH{{/link}}
-.
+     {{link:links}}EXIT PARAGRAPH{{/link}}
+     .
 
 @@  ^ CALL 'LLDAP' has no {{link}} wrapper at all — it's intentionally
 @@  not clickable (LAN-only), same as today. That distinction (clickable
@@ -180,15 +181,15 @@ CALL 'LLDAP'
 @SECTION IMPRESSUM id=impressum
 
 @CARD IMPRESSUM-SECTION
-PROCEDURE DIVISION.
-IMPRESSUM SECTION.
-IMPRESSUM-SECTION.
-DISPLAY
+ PROCEDURE DIVISION.
+ IMPRESSUM SECTION.
+ IMPRESSUM-SECTION.
+     DISPLAY
 @SLOT impressum-legal rows=11
-END-DISPLAY
+     END-DISPLAY
 * GOBACK TO PROCEDURE DIVISION LINKS SECTION
-{{link:impressum}}EXIT SECTION{{/link}}
-.
+     {{link:impressum}}EXIT SECTION{{/link}}
+     .
 
 @@  ^ @SLOT reserves 11 blank rendered rows between DISPLAY and
 @@  END-DISPLAY; it does NOT define what fills them. The Impressum
@@ -211,11 +212,11 @@ END-DISPLAY
 @@  primitive exists once something needs finer granularity than a section.
 @@ ============================================================================
 @@
-@@    05 WORK-NOW.
-@@    10 COMPANY PIC X(30) VALUE {{anchor:current-role}}'RETROCODE'{{/anchor}}.
+@@        05 WORK-NOW.
+@@          10 COMPANY PIC X(30) VALUE {{anchor:current-role}}'RETROCODE'{{/anchor}}.
 @@
 @@    ... elsewhere, possibly in a different section entirely ...
-@@    CALL {{link:current-role}}'SEE CURRENT ROLE'{{/link}}
+@@        CALL {{link:current-role}}'SEE CURRENT ROLE'{{/link}}
 @@
 @@  {{anchor:name}} and a @SECTION's id= share one namespace — names must
 @@  be unique across the whole document, the compiler should error on a
@@ -231,9 +232,9 @@ END-DISPLAY
 @@  scrambleRange/scrambleCardRows behaviour, currently wired by hand
 @@  per-section). Example, if WORK-CURRENT's company name should noise-in:
 @@
-@@    10 COMPANY PIC X(30) VALUE {{noise}}'RETROCODE'{{/noise}}.
+@@          10 COMPANY PIC X(30) VALUE {{noise}}'RETROCODE'{{/noise}}.
 @@
 @@  Tags compose by nesting, e.g. a cycling field that should ALSO
 @@  noise-transition between cycle values:
 @@
-@@    10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}{{noise}}'SEBASTIAN SCHWINN'{{/noise}}{{/cycle}}.
+@@          10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}{{noise}}'SEBASTIAN SCHWINN'{{/noise}}{{/cycle}}.

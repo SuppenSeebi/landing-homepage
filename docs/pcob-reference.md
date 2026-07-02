@@ -8,7 +8,7 @@ full worked example and `docs/punch-card-content-system.md` for the project plan
 A plain-text format for authoring punch-card content (Division → Section → Card → Line) without
 touching TypeScript. You write near-literal COBOL-flavoured text; a compiler turns it into the
 `Line[]` data `PunchCard.astro`'s renderer already consumes, deriving sequence numbers, line
-numbers, indentation, and row-padding so you don't have to.
+numbers, and row-padding so you don't have to — indentation is yours to type, see below.
 
 ## The one rule
 
@@ -20,12 +20,15 @@ Directives are always whole-line, always start at column 1. This is the entire b
 
 ## Card text is WYSIWYG
 
-**The compiler never generates a visible card-text line.** Strip out `{{tags}}` and every
-character left in a rendered card must trace back to something you literally typed. Directives
-and inline tags only ever affect things *around* the text — anchors, nav labels, link targets,
-row budget — never the text itself. Want a `DATA DIVISION.` line to appear? Type it, in every
+**The compiler never generates a visible card-text line, and never re-indents one.** Strip out
+`{{tags}}` and every character left in a rendered card — including leading and internal
+whitespace — must trace back to something you literally typed. Directives and inline tags only
+ever affect things *around* the text — anchors, nav labels, link targets, row budget — never the
+text itself, and never its indentation. Want a `DATA DIVISION.` line to appear? Type it, in every
 card that should show it, same as any other line — the compiler doesn't stamp it in for you, even
-though `@DIVISION DATA` already told it which division this is.
+though `@DIVISION DATA` already told it which division this is. Want that line indented one
+space, or a statement indented five? Type the spaces; there is no canonical/auto-applied indent
+for any line shape.
 
 ## Directives
 
@@ -46,26 +49,25 @@ though `@DIVISION DATA` already told it which division this is.
 
 ## Card text
 
-Everything not starting with `@` is rendered text, line for line. Recognized line *shapes* get
-their canonical formatting auto-applied — but a shape is only ever applied to text you actually
-wrote; the compiler doesn't add lines you didn't type. Anything not matching a recognized shape
-is passed through literally:
+Everything not starting with `@` is rendered text, line for line, exactly as typed. Recognized
+line *shapes* get their characters classified into colored tokens (level/statement/header/etc.)
+— but classification never changes what's rendered, and a shape is only ever applied to text you
+actually wrote; the compiler doesn't add lines you didn't type. Anything not matching a
+recognized shape is passed through literally, same as everything else:
 
 | You write | What happens |
 |---|---|
 | (blank line) | Blank rendered row. |
-| `.` | Standalone closing dot. |
-| `* some text` | Comment row (column 1, never indented). |
-| `01 / 05 / 10 / 88 NAME ...` | Level row — compiler applies the canonical indent for that level number (01→1 space, 05→5, 10/88→7). Everything after the name (PIC clause, VALUE, spacing between them) is literal, author-controlled text. |
-| `CALL '...'`, `EXIT PARAGRAPH`, `EXIT SECTION`, `DISPLAY`, `END-DISPLAY` | Statement row — compiler applies the standard 5-space statement indent. |
-| `... DIVISION` / `... SECTION` (optionally followed by `.`) | Header row — colored as a DIVISION/SECTION heading, canonical 1-space indent (same as an `01` level). Purely recognition of text you wrote; `@DIVISION`/`@SECTION` do not generate this line for you. |
-| A single bare word, e.g. `SERVICES-PRGRPH.` | Paragraph-name row — colored as a paragraph heading, canonical 1-space indent. Same rule: `@CARD` names the nav entry, it does not stamp this line into the card. |
+| `.` (anywhere on the line, alone) | Standalone closing dot, exactly as indented — a bare `.` renders unindented; `     .` renders with 5 leading spaces. Nothing is added. |
+| `* some text` | Comment row, rendered exactly as typed. |
+| `01 / 05 / 10 / 88 NAME ...` | Level row — leading whitespace before the level number, and the whitespace between the number and the name, are both kept exactly as typed. Everything after the name (PIC clause, VALUE, spacing between them) is likewise literal, author-controlled text. |
+| `CALL '...'`, `EXIT PARAGRAPH`, `EXIT SECTION`, `DISPLAY`, `END-DISPLAY` | Statement row — leading whitespace before the verb is kept exactly as typed (want the usual 5-space Area B indent? type 5 spaces). |
+| `... DIVISION` / `... SECTION` (optionally followed by `.`) | Header row — colored as a DIVISION/SECTION heading. Purely recognition of text you wrote, indentation included; `@DIVISION`/`@SECTION` do not generate this line for you. |
+| A single bare word, e.g. `SERVICES-PRGRPH.` | Paragraph-name row — colored as a paragraph heading. Same rule: `@CARD` names the nav entry, it does not stamp this line into the card. |
 
-**Leading whitespace you type before a recognized line shape is ignored** — the compiler always
-emits its own canonical indent for that shape, regardless of how the source was indented. Indent
-your `.pcob` source however is easiest for you to read; it has no effect on the rendered card.
-Internal spacing *after* the recognized prefix (e.g. padding to line up sibling `PIC` clauses) is
-left exactly as typed — the compiler never reflows that.
+**There is no canonical or auto-applied indent for any line shape.** Leading whitespace is just
+more literal text, same as everything else on the line — type it exactly the way you want it
+rendered. This is the same WYSIWYG rule as line generation, applied to indentation too.
 
 ## Inline tags
 
@@ -112,47 +114,50 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
 @DIVISION DATA
 @SECTION DEMO-DATA id=demo-data
 @CARD DEMO-FIELDS
-DATA DIVISION.
-DEMO-DATA SECTION.
-01 DEMO-RECORD.
-05 DEMO-FIELDS.
-10 LABEL PIC X(10) VALUE {{anchor:demo-label}}{{cycle:demo}}{{noise}}'HELLO'{{/noise}}{{/cycle}}{{/anchor}}.
-10 COUNT PIC 9(2) VALUE 7.
-88 IS-READY VALUE 'YES'.
+ DATA DIVISION.
+ DEMO-DATA SECTION.
+ 01 DEMO-RECORD.
+     05 DEMO-FIELDS.
+       10 LABEL PIC X(10) VALUE {{anchor:demo-label}}{{cycle:demo}}{{noise}}'HELLO'{{/noise}}{{/cycle}}{{/anchor}}.
+       10 COUNT PIC 9(2) VALUE 7.
+       88 IS-READY VALUE 'YES'.
 
 @DIVISION PROCEDURE
 @SECTION DEMO-PROC id=demo-proc
 @ROWS 14
 @CARD DEMO-CARD
 @ROWS 20
-PROCEDURE DIVISION.
-DEMO-PROC SECTION.
-DEMO-CARD.
+ PROCEDURE DIVISION.
+ DEMO-PROC SECTION.
+ DEMO-CARD.
 * a comment row
-DISPLAY
+     DISPLAY
 @SLOT demo-slot rows=2
-END-DISPLAY
-CALL {{link:'https://example.com'}}'EXAMPLE'{{/link}}
-CALL {{link:demo-label}}'JUMP TO LABEL'{{/link}}
-.
+     END-DISPLAY
+     CALL {{link:'https://example.com'}}'EXAMPLE'{{/link}}
+     CALL {{link:demo-label}}'JUMP TO LABEL'{{/link}}
+     .
 
-{{link:demo-proc}}EXIT PARAGRAPH{{/link}}
-.
-{{link:demo-proc}}EXIT SECTION{{/link}}
-.
+     {{link:demo-proc}}EXIT PARAGRAPH{{/link}}
+     .
+     {{link:demo-proc}}EXIT SECTION{{/link}}
+     .
 ```
 
 What's exercised, in order: `@@` comment, program-level `@ROWS`, `@DIVISION DATA`, `@SECTION`
 with `id=`; a literal `DATA DIVISION.` / `DEMO-DATA SECTION.` (header row shape — written by
-hand, not generated), an `01` group, a `05` group with a `10 PIC X` field (quoted `val`, plus
-`{{anchor}}`/`{{cycle}}`/`{{noise}}` nested on one span), a `10 PIC 9` field with a bare numeric
-value (`numval`), an `88` condition; the decorative blank line before `@DIVISION PROCEDURE`
-(discarded, since it precedes a directive); `@SECTION` with a section-level `@ROWS` override; a
-card-level `@ROWS` override; a literal `PROCEDURE DIVISION.` / `DEMO-PROC SECTION.` (header row
-shape again) and a literal `DEMO-CARD.` (paragraph-name row shape — also hand-written, matching
-the `@CARD` name because Sebastian chose to type it that way, not because the compiler enforces
-it); a comment row; `DISPLAY`/`@SLOT`/`END-DISPLAY`; a `CALL` with an external (quoted)
-`{{link}}` and one with an internal (bare-name) `{{link}}` to the `{{anchor}}` declared earlier;
-a standalone `.`; a content blank line (kept, since it precedes card text, not a directive); and
-both `EXIT PARAGRAPH` and `EXIT SECTION`, each linking back to their own section by explicit name
-(no implicit `self`).
+hand, not generated, indentation typed by hand too), an `01` group, a `05` group with a `10 PIC
+X` field (quoted `val`, plus `{{anchor}}`/`{{cycle}}`/`{{noise}}` nested on one span; note the
+level indentation — 1/5/7 spaces — is typed, not computed, though it happens to match the COBOL
+convention this project follows), a `10 PIC 9` field with a bare numeric value (`numval`), an
+`88` condition; the decorative blank line before `@DIVISION PROCEDURE` (discarded, since it
+precedes a directive); `@SECTION` with a section-level `@ROWS` override; a card-level `@ROWS`
+override; a literal `PROCEDURE DIVISION.` / `DEMO-PROC SECTION.` (header row shape again) and a
+literal `DEMO-CARD.` (paragraph-name row shape — also hand-typed, matching the `@CARD` name
+because Sebastian chose to type it that way, not because the compiler enforces it); a comment
+row (column 1, exactly as typed); `DISPLAY`/`@SLOT`/`END-DISPLAY` (each statement's 5-space
+indent typed by hand); a `CALL` with an external (quoted) `{{link}}` and one with an internal
+(bare-name) `{{link}}` to the `{{anchor}}` declared earlier; a standalone `.` indented to match
+the statements above it (also typed, not automatic); a content blank line (kept, since it
+precedes card text, not a directive); and both `EXIT PARAGRAPH` and `EXIT SECTION`, each linking
+back to their own section by explicit name (no implicit `self`).
