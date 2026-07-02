@@ -1245,8 +1245,8 @@ a.call-comment {
 
 /* ── PUNCH AREA ─────────────────────────────────────────────────────────────── */
 .pcf-punch-area {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-auto-rows: minmax(0, 1fr);
     flex: 1;
     min-height: 0;
     overflow: hidden;
@@ -1254,10 +1254,8 @@ a.call-comment {
         radial-gradient(ellipse 9% 7% at 74% 68%, rgba(125,75,10,0.10) 0%, rgba(125,75,10,0.03) 55%, transparent 100%);
 }
 .pcf-line-row {
-    flex: 1;
     min-height: 0;
     border-bottom: 1px solid #D4C478;
-    flex-shrink: 1;
 }
 .pcf-line-row:last-child { border-bottom: none; }
 .pcf-line-row:nth-child(4n+1) { border-bottom-color: #CEB870; }
