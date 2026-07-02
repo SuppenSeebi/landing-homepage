@@ -162,12 +162,21 @@ was decided and why, and what was found not to port cleanly.
 - [x] Comment syntax: `@@ ...`, not a keyword like `REM`.
 - [x] `@ROWS` scoping: Card > Section > program default, one directive for all three levels.
 - [x] No implicit `self` for links — see `{{link:name}}` / `{{anchor:name}}` in Phase 1 above.
+- [x] No special "you are here" treatment for self-referencing links (e.g. Impressum's own
+      `IDENTIFICATION` header pointing at `#impressum`). There is no such thing as a self-link in
+      the model — a card only ever *defines* an anchor or *links to* one by name; if the resolved
+      anchor happens to match the page you're already on, that's not a distinct case the DSL or
+      compiler needs to know about or suppress.
+- [x] Anchor/link uniqueness: **anchors** (`@SECTION id=` and `{{anchor:name}}`) share one flat
+      namespace and must be globally unique — this is a compiler validation responsibility (not
+      yet built). **Links** (`{{link:name}}` / `{{link:'url'}}`) may reference the same anchor any
+      number of times — duplicates are normal, not an error. Paragraph nav entries are just
+      labelled links into that same namespace, so they're covered by this rule already, not a
+      separate case. `DIVISION` (`data` / `proc`) is a small fixed grouping attribute on sections,
+      not an authored/anchored identifier, so it isn't part of this uniqueness check.
 
 ### Open decisions (need an answer before/while building)
-- [ ] Exact suppressed/"you are here" treatment for Impressum's self-referencing
-      `identification=self` header link.
-- [ ] Anchor/link resolution + uniqueness validation (one namespace shared by `@SECTION id=` and
-      `{{anchor:name}}`) is a compiler responsibility — not yet built, no validation rules coded.
+*(empty — see Resolved decisions above)*
 
 ### Risks to keep in mind while building (carried over from initial design discussion)
 - **Column-budget tension**: the DSL must not auto-layout `PIC X(N)` padding or column
@@ -188,7 +197,7 @@ was decided and why, and what was found not to port cleanly.
 
 | Phase | Status |
 |---|---|
-| 0 — Fix `#top` height asymmetry | Implemented (`align-self: stretch` on `.top-punch-wrapper`); pending Sebastian's visual confirmation |
+| 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper` plus switching `.pcf-punch-area` from flex-column to CSS Grid (`minmax(0, 1fr)` rows) to fix uneven row heights between text and empty rows |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Not started |
 | 3 — Pilot migration (Links) | Not started |
