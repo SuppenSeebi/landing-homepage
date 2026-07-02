@@ -175,7 +175,7 @@ the durable record, not the conversation.
 | 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard>` props. | **Done** — `SERVICES-PRGRPH`/`SOCIALS-PRGRPH` cards looked up by name from the compiled section; hand-written `LINES`/`CALL_LINKS` arrays deleted. |
 | 3.4 | Verify structural equivalence against the current hand-written arrays. | **Done** — compiled `lines` are byte-identical to both hand-written arrays (verified via a scratch diff script, not committed — no test runner configured yet). `callLinks` differ from the old shared object by design/improvement: the compiler emits precise per-card link maps instead of one object with irrelevant keys reused across both cards; functionally equivalent since `PunchCard.astro` only looks up keys that exist in that card's own rendered text. `astro build` (via `node_modules/.bin/astro build`, since neither `pnpm` nor `npx astro` were on PATH in this shell) completed with no errors; output HTML contains the expected compiled text. |
 | 3.5 | Decide `punch-nav.ts` fate for this pilot. | **Done** — applied the stated default: left untouched. Links' nav entries in `src/config/punch-nav.ts` are still the hand-written ones; nav consolidation is deferred to Phase 4. |
-| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started — **blocked on Sebastian**, not on further work. |
+| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started — **blocked on the row-height regression** (see Migration findings' "Open bug carried into next session"), fix that first so the confirmation is actually meaningful. |
 
 Anything that doesn't port cleanly gets written into the Migration findings below, not
 silently worked around.
@@ -268,6 +268,37 @@ was decided and why, and what was found not to port cleanly.
   top/bottom-anchoring it. The card-stack ghost silhouettes still use fixed-region sizing
   (unchanged) since matching them to a dynamically-sized active card needs JS, not just CSS —
   a known, accepted mismatch, most visible on cards with an unusual `@ROWS`.
+  **⚠ REOPENED (2026-07-03, end of session) — see entry below, the fix above regressed the
+  uneven-row-height bug it was never actually about.**
+
+### ⚠ Open bug carried into next session: uneven row height is back
+Reported by Sebastian right as this session ended, not yet investigated or fixed. **Start here
+next time.**
+
+- **Symptom**: empty rows are visibly slimmer than rows with text again — the exact bug fixed
+  earlier this session (originally via switching `.pcf-punch-area` to CSS Grid with
+  `grid-auto-rows: minmax(0, 1fr)`, see the git log around "Fix uneven punch-card row heights").
+- **Likely cause**: the "card height is intrinsic" fix (entry above, same session, later) removed
+  that Grid/`minmax(0,1fr)` distribution entirely, switching `.pcf-punch-area` to plain block
+  flow so each `.pcf-line-row` sizes to its own intrinsic content height. The assumption was that
+  every row has identical intrinsic height regardless of content, since blank rows still render
+  80 `.pcc-empty` spans with the same `line-height: calc(1em + 8px)` as text rows. That assumption
+  now looks wrong in practice — Sebastian's report suggests rows with real glyphs still compute a
+  taller natural height than rows of only space characters, even under identical `line-height`,
+  once nothing is forcing uniform distribution.
+- **What this means**: the earlier Grid `minmax(0,1fr)` fix wasn't just working around a flex
+  distribution quirk — it was doing real work forcing uniformity against a genuine
+  content-dependent height difference (likely a font/glyph-metrics rendering quirk, browser-
+  dependent, not yet root-caused). "Card height intrinsic to row count" and "row height uniform
+  regardless of content" are in tension: forcing uniformity via `minmax(0,1fr)` requires
+  distributing a *fixed* container budget, which is exactly what intrinsic sizing removes.
+- **Plan to try next**: use CSS Grid on `.pcf-punch-area` again, but with `grid-auto-rows` set to
+  an explicit **fixed length** (not `minmax(0,1fr)`) — e.g. a value close to what
+  `calc(1em + 8px)` naturally produces for a text row. A fixed-length track forces every row to
+  that exact height regardless of content (solving the unevenness) while still summing to
+  `rows * fixedHeight` for the grid's own auto height (preserving "intrinsic to row count").
+  Needs a concrete px/em value chosen and cross-checked visually — can't be verified without
+  Sebastian looking at it.
 - **Gap found comparing the compiler against real site content**: today's `SectionLinks.astro`
   renders a paragraph-name line (`SERVICES-PRGRPH.`, styled `para`) that neither the grammar docs
   nor the Phase 2 compiler accounted for. Resolved by adding paragraph-name as a recognized (not
@@ -282,6 +313,6 @@ was decided and why, and what was found not to port cleanly.
 | 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper` plus switching `.pcf-punch-area` from flex-column to CSS Grid (`minmax(0, 1fr)` rows) to fix uneven row heights between text and empty rows |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
-| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section now renders from `src/content/_punchcard/links.pcob` via the compiler. Blocked on 3.6, Sebastian's visual confirmation, before Phase 4 starts |
+| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section renders from `src/content/_punchcard/links.pcob` via the compiler. **⚠ Open bug carried into next session: uneven row height regressed** (see Migration findings) — fix that before asking for 3.6's visual confirmation, since it makes the confirmation unreliable |
 | 4 — Full migration | Not started |
 | 5 — Animation tags | Deferred |
