@@ -1,0 +1,37 @@
+@@ LINKS section — Phase 3 pilot migration of SectionLinks.astro
+@ROWS 19
+
+@DIVISION PROCEDURE
+@SECTION LINKS id=links
+
+@CARD SERVICES-PRGRPH
+PROCEDURE DIVISION.
+LINKS SECTION.
+
+SERVICES-PRGRPH.
+* Personal wiki and notes
+CALL {{link:'https://kb.sschw.dev'}}'KB.SSCHW.DEV'{{/link}}
+* Directory management (LAN only)
+CALL 'LLDAP'
+* Password manager (LAN only)
+CALL 'BITWARDEN'
+.
+
+* GOBACK TO PROCEDURE DIVISION LINKS SECTION
+{{link:links}}EXIT PARAGRAPH{{/link}}
+.
+
+@CARD SOCIALS-PRGRPH
+PROCEDURE DIVISION.
+LINKS SECTION.
+
+SOCIALS-PRGRPH.
+* LinkedIn: linkedin.com/in/sschwinn
+CALL {{link:'https://www.linkedin.com/in/sschwinn/'}}'LINKEDIN'{{/link}}
+* Instagram: instagram.com/s.schwinni
+CALL {{link:'https://www.instagram.com/s.schwinni/'}}'INSTAGRAM'{{/link}}
+.
+
+* GOBACK TO PROCEDURE DIVISION LINKS SECTION
+{{link:links}}EXIT PARAGRAPH{{/link}}
+.

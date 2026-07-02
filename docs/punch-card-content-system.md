@@ -164,12 +164,12 @@ the durable record, not the conversation.
 
 | # | Step | State |
 |---|---|---|
-| 3.1 | Decide + implement how a `.pcob` file gets from disk into `compileProgram()` at Astro build time (e.g. a Vite `?raw` import in a section's frontmatter). | Not started |
-| 3.2 | Write `src/content/punchcard/links.pcob` — author LINKS section content (`SERVICES-PRGRPH`, `SOCIALS-PRGRPH`) matching today's `SectionLinks.astro` data 1:1 (same links, same targets). Per the WYSIWYG core rule, this includes typing the `PROCEDURE DIVISION.`/`LINKS SECTION.`/paragraph-name lines explicitly in every card — same repetition as today's `Line[]` arrays, not eliminated by the compiler. | Not started |
-| 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard lines=... callLinks=...>` props, replacing the hand-written `LINES`/`CALL_LINKS` arrays. | Not started |
-| 3.4 | Verify structural equivalence: diff compiled output against the current hand-written arrays; confirm the only difference is the already-flagged cosmetic nav-label wording (see Migration findings below) — card *text* content should match exactly, since it's hand-typed either way. Type-check + build check — no dev server per testing scope. | Not started |
-| 3.5 | Decide `punch-nav.ts` fate for this pilot: default plan is to leave it untouched (hand-written) during Phase 3, and only fold nav derivation in during Phase 4's full migration, so a partial/hybrid nav config never exists. Flag here if that default changes. | Not started |
-| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started |
+| 3.1 | Decide + implement how a `.pcob` file gets from disk into `compileProgram()` at Astro build time. | **Done** — Vite `?raw` string import in `SectionLinks.astro`'s frontmatter (`import linksSource from '../../content/punchcard/links.pcob?raw'`), then `compileProgram(linksSource)`. No Astro config changes needed; `astro/client` ambient types already cover `?raw`. |
+| 3.2 | Write `src/content/punchcard/links.pcob` — author LINKS section content matching today's `SectionLinks.astro` data 1:1. | **Done** — `src/content/punchcard/links.pcob`, hand-typed DIVISION/SECTION/paragraph-name lines per the WYSIWYG rule. |
+| 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard>` props. | **Done** — `SERVICES-PRGRPH`/`SOCIALS-PRGRPH` cards looked up by name from the compiled section; hand-written `LINES`/`CALL_LINKS` arrays deleted. |
+| 3.4 | Verify structural equivalence against the current hand-written arrays. | **Done** — compiled `lines` are byte-identical to both hand-written arrays (verified via a scratch diff script, not committed — no test runner configured yet). `callLinks` differ from the old shared object by design/improvement: the compiler emits precise per-card link maps instead of one object with irrelevant keys reused across both cards; functionally equivalent since `PunchCard.astro` only looks up keys that exist in that card's own rendered text. `astro build` (via `node_modules/.bin/astro build`, since neither `pnpm` nor `npx astro` were on PATH in this shell) completed with no errors; output HTML contains the expected compiled text. |
+| 3.5 | Decide `punch-nav.ts` fate for this pilot. | **Done** — applied the stated default: left untouched. Links' nav entries in `src/config/punch-nav.ts` are still the hand-written ones; nav consolidation is deferred to Phase 4. |
+| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started — **blocked on Sebastian**, not on further work. |
 
 Anything that doesn't port cleanly gets written into the Migration findings below, not
 silently worked around.
@@ -257,6 +257,6 @@ was decided and why, and what was found not to port cleanly.
 | 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper` plus switching `.pcf-punch-area` from flex-column to CSS Grid (`minmax(0, 1fr)` rows) to fix uneven row heights between text and empty rows |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
-| 3 — Pilot migration (Links) | Not started — see the step-by-step table (3.1–3.6) under Phase 3 above for granular state |
+| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section now renders from `src/content/punchcard/links.pcob` via the compiler. Blocked on 3.6, Sebastian's visual confirmation, before Phase 4 starts |
 | 4 — Full migration | Not started |
 | 5 — Animation tags | Deferred |

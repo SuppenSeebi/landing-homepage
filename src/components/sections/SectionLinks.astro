@@ -1,60 +1,12 @@
 ---
 import PunchCard from '../PunchCard.astro';
+import { compileProgram } from '../../pcob/compile';
+import linksSource from '../../content/punchcard/links.pcob?raw';
 
-type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
-type Token = [TT, string];
-type Line  = [string, Token[]];
-
-const SERVICES_LINES: Line[] = [
-    ['000001', [['div',' PROCEDURE DIVISION'],['dot','.']]],
-    ['000002', [['section',' LINKS SECTION'],['dot','.']]],
-    ['000003', []],
-    ['000004', [['para',' SERVICES-PRGRPH'],['dot','.']]],
-    ['000005', [['comment','* Personal wiki and notes']]],
-    ['000006', [['kw','     CALL'],['val'," 'KB.SSCHW.DEV'"]]],
-    ['000007', [['comment','* Directory management (LAN only)']]],
-    ['000008', [['kw','     CALL'],['val'," 'LLDAP'"]]],
-    ['000009', [['comment','* Password manager (LAN only)']]],
-    ['000010', [['kw','     CALL'],['val'," 'BITWARDEN'"]]],
-    ['000011', [['dot','     .']]],
-    ['000012', []],
-    ['000013', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
-    ['000014', [['kw','     '],['val','EXIT PARAGRAPH']]],
-    ['000015', [['dot','     .']]],
-    ['000016', []],
-    ['000017', []],
-    ['000018', []],
-    ['000019', []],
-];
-
-const SOCIALS_LINES: Line[] = [
-    ['000001', [['div',' PROCEDURE DIVISION'],['dot','.']]],
-    ['000002', [['section',' LINKS SECTION'],['dot','.']]],
-    ['000003', []],
-    ['000004', [['para',' SOCIALS-PRGRPH'],['dot','.']]],
-    ['000005', [['comment','* LinkedIn: linkedin.com/in/sschwinn']]],
-    ['000006', [['kw','     CALL'],['val'," 'LINKEDIN'"]]],
-    ['000007', [['comment','* Instagram: instagram.com/s.schwinni']]],
-    ['000008', [['kw','     CALL'],['val'," 'INSTAGRAM'"]]],
-    ['000009', [['dot','     .']]],
-    ['000010', []],
-    ['000011', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
-    ['000012', [['kw','     '],['val','EXIT PARAGRAPH']]],
-    ['000013', [['dot','     .']]],
-    ['000014', []],
-    ['000015', []],
-    ['000016', []],
-    ['000017', []],
-    ['000018', []],
-    ['000019', []],
-];
-
-const CALL_LINKS: Record<string, string> = {
-    " 'KB.SSCHW.DEV'": 'https://kb.sschw.dev',
-    " 'LINKEDIN'":      'https://www.linkedin.com/in/sschwinn/',
-    " 'INSTAGRAM'":     'https://www.instagram.com/s.schwinni/',
-    'EXIT PARAGRAPH':   '#links',
-};
+const compiled = compileProgram(linksSource);
+const linksSection = compiled.sections.find(s => s.id === 'links')!;
+const servicesCard = linksSection.cards.find(c => c.name === 'SERVICES-PRGRPH')!;
+const socialsCard = linksSection.cards.find(c => c.name === 'SOCIALS-PRGRPH')!;
 
 const CARD_COUNT = 2;
 ---
@@ -68,8 +20,8 @@ const CARD_COUNT = 2;
                     programmerName="SEBASTIAN SCHWINN"
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
-                    lines={SERVICES_LINES}
-                    callLinks={CALL_LINKS}
+                    lines={servicesCard.lines}
+                    callLinks={servicesCard.callLinks}
                 />
                 <PunchCard
                     noStage={true}
@@ -77,8 +29,8 @@ const CARD_COUNT = 2;
                     programmerName="SEBASTIAN SCHWINN"
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
-                    lines={SOCIALS_LINES}
-                    callLinks={CALL_LINKS}
+                    lines={socialsCard.lines}
+                    callLinks={socialsCard.callLinks}
                 />
             </div>
         </div>
