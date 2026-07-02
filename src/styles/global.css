@@ -1267,7 +1267,7 @@ a.call-comment {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    font-size: 0.58rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     background: #EDE0A8;
     border-right: 1px solid #D4C478;
@@ -1280,7 +1280,7 @@ a.call-comment {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    font-size: 0.58rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     background: #EDE0A8;
     border-right: 1.5px solid #C2A840;
@@ -1297,7 +1297,7 @@ a.call-comment {
     display: inline-block;
     width: 1ch;
     text-align: center;
-    line-height: 1;
+    line-height: calc(1em + 8px);
     position: relative;
     flex-shrink: 0;
 }
