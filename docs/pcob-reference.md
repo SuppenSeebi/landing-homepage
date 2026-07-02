@@ -35,7 +35,6 @@ Directives are always whole-line, always start at column 1. This is the entire b
 |---|---|---|
 | `id=` | always | Anchor id (`#id`) and the name other content links to it by. |
 | `record=` | DATA DIVISION sections only | Generates the shared `01 <name>.` group line stamped onto every card in the section. |
-| `identification=self` | only on the section that IS the impressum target | Marks that this section's own header IDENTIFICATION link shouldn't behave like a normal cross-section link. |
 
 ## Card text
 
@@ -74,10 +73,16 @@ needed, is escaped as `\{{`.
 
 ## Open / not yet decided
 
-- Exact `identification=self` rendering treatment (suppressed link vs. "you are here" styling).
-- Anchor/`{{link}}` resolution and uniqueness-checking is a compiler responsibility, not yet built.
 - DATA DIVISION boilerplate beyond what's shown (deeper field/condition patterns) gets added to
   the table above as real migrations surface them — this reference grows with the grammar.
+
+## Deferred to the compiler (Phase 2, design already settled)
+
+- Anchor uniqueness: `@SECTION id=` and `{{anchor:name}}` share one flat namespace and must be
+  globally unique — not yet implemented as a validation rule. `{{link}}` references may duplicate
+  freely; that's normal.
+- There is no self-link concept. A card only ever defines an anchor or links to one by name; if
+  the resolved target happens to be the current page, that's not special-cased.
 
 ## Complete example
 
@@ -97,7 +102,7 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
 88 IS-READY VALUE 'YES'.
 
 @DIVISION PROCEDURE
-@SECTION DEMO-PROC id=demo-proc identification=self
+@SECTION DEMO-PROC id=demo-proc
 @ROWS 14
 @CARD DEMO-CARD
 @ROWS 20
@@ -119,7 +124,7 @@ What's exercised, in order: `@@` comment, program-level `@ROWS`, `@DIVISION DATA
 `id=`/`record=`, a `05` group with a `10 PIC X` field (quoted `val`, plus `{{anchor}}`/`{{cycle}}`/
 `{{noise}}` nested on one span), a `10 PIC 9` field with a bare numeric value (`numval`), an `88`
 condition; the decorative blank line before `@DIVISION PROCEDURE` (discarded, since it precedes a
-directive); `@SECTION` with `identification=self` and a section-level `@ROWS` override; a
+directive); `@SECTION` with a section-level `@ROWS` override; a
 card-level `@ROWS` override; a comment row; `DISPLAY`/`@SLOT`/`END-DISPLAY`; a `CALL` with an
 external (quoted) `{{link}}` and one with an internal (bare-name) `{{link}}` to the `{{anchor}}`
 declared earlier; a standalone `.`; a content blank line (kept, since it precedes card text, not

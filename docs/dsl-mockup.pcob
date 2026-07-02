@@ -156,7 +156,7 @@ EXIT PARAGRAPH {{link:links}}
 @@  PROCEDURE DIVISION example — IMPRESSUM ("#impressum"), showing the
 @@  SLOT escape hatch and a section that IS the identification target.
 @@ ============================================================================
-@SECTION IMPRESSUM id=impressum identification=self
+@SECTION IMPRESSUM id=impressum
 
 @CARD IMPRESSUM-SECTION
 DISPLAY
@@ -173,10 +173,12 @@ EXIT SECTION {{link:impressum}}
 @@  reserved rows, exactly like it does today. Slots are deliberately
 @@  outside the text/token model — rich HTML isn't a punch-card row.
 @@
-@@  identification=self (on @SECTION, not a {{tag}}) marks that THIS
-@@  section's own header IDENTIFICATION link shouldn't act like a normal
-@@  cross-section link to itself. Exact treatment (suppressed vs.
-@@  "you are here" style) is still an open decision — not resolved here.
+@@  There is no identification=self attribute (or any self-link concept
+@@  at all). The form header's IDENTIFICATION field always points at
+@@  #impressum, on every card, including Impressum's own — same as
+@@  today's PunchCard.astro default. If that happens to be the page
+@@  you're already on, that's not a distinct case the DSL needs to model
+@@  or the compiler needs to suppress; it's just a link.
 
 
 @@ ============================================================================
