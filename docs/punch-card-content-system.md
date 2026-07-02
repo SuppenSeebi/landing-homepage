@@ -37,6 +37,28 @@ context, can he confidently change one line of text or add one card without fear
 the page?* If the answer is no, the design needs to move further toward plain text and away
 from code.
 
+### Core rule: the coding-area text is WYSIWYG
+
+**The rendered COBOL STATEMENT text (the punch card's coding area) is a 1:1 rendering of what
+Sebastian typed in the `.pcob` file.** Strip out `{{tags}}` and every remaining character in a
+rendered card must trace back to literal text he wrote — the compiler never invents, injects, or
+auto-generates a visible line. This applies without exception: DIVISION headers, SECTION
+headers, paragraph names, record group lines — if any of these should appear, Sebastian types
+them himself, per card, same as any other line.
+
+Directives (`@DIVISION`, `@SECTION`, `@CARD`, `@ROWS`, `@SLOT`) and inline tags (`{{link}}`,
+`{{anchor}}`, `{{cycle}}`, `{{noise}}`) only ever affect things *around* the text — anchors, nav
+labels, link targets, row budget, future animation — never the text itself. Naming used for
+navigation (a `@SECTION`'s name, a `@CARD`'s name) is independent of whatever text Sebastian
+chooses to write to visually represent that division/section/paragraph in the card (which may
+need different casing, spacing, or wording) — keeping the two in sync, if he wants them in sync,
+is his responsibility, not the compiler's.
+
+Concretely: wanting a link means setting an anchor and a link tag, explicitly, both ends. Wanting
+a DIVISION heading in the navbar means naming it in `@DIVISION`/`@SECTION`; wanting that heading
+to *also* show as a line of card text means typing that line, separately, as card text. Nothing
+implicit.
+
 ---
 
 ## B. Current state (as of this conversation)
@@ -70,15 +92,15 @@ Root cause identified and Phase 0 fix applied (`align-self: stretch` added to
   pixel height will sub-pixel round, causing up to ~1px jitter between rows. A fixed-px row
   height (computed once, applied directly) avoids this; flex-grow distribution doesn't.
 
-### DRY violations found (concrete, to be eliminated by the new model)
-| Data | Where | Issue |
-|---|---|---|
-| `DATA DIVISION.` / `LOCAL-STORAGE SECTION.` header lines | Every `SectionAboutMe`/`SectionWork` card array | Identical literal tuples repeated 7×|
-| Sequence numbers (`000001`…) | Every `Line` tuple | Always strictly sequential — pure index math typed by hand |
-| Paragraph nav labels (`WORK-NOW.`, etc.) | `punch-nav.ts` `PARAS_BY_SECTION` | Hand-mirrors text already in card data; two sources of truth |
-| Link targets | Per-section `callLinks: Record<string,string>` | Lives apart from the token it applies to |
-| Dynamic field offsets (`NAME_START=7`, `VAL_START=39`, …) | `SectionTop.astro` | Character-offset math into a flattened row; silently breaks if text length changes |
-| Row-count padding | Manually appended `['0000NN', []]` entries | Magic number, easy to get wrong (this is what was just fixed by hand) |
+### DRY violations found
+| Data | Where | Issue | Eliminated by the new model? |
+|---|---|---|---|
+| `DATA DIVISION.` / `LOCAL-STORAGE SECTION.` header lines | Every `SectionAboutMe`/`SectionWork` card array | Identical literal tuples repeated 7× | **No, by design** — see [Core rule](#core-rule-the-coding-area-text-is-wysiwyg) above. The compiler never injects visible text; Sebastian types these per card if he wants them, same repetition as today. |
+| Sequence numbers (`000001`…) | Every `Line` tuple | Always strictly sequential — pure index math typed by hand | Yes — derived from row position. |
+| Paragraph nav labels (`WORK-NOW.`, etc.) | `punch-nav.ts` `PARAS_BY_SECTION` | Hand-mirrors text already in card data; two sources of truth | Yes — derived from `@CARD` name. |
+| Link targets | Per-section `callLinks: Record<string,string>` | Lives apart from the token it applies to | Yes — derived from `{{link}}`/`{{anchor}}` tags at the point of use. |
+| Dynamic field offsets (`NAME_START=7`, `VAL_START=39`, …) | `SectionTop.astro` | Character-offset math into a flattened row; silently breaks if text length changes | Deferred to Phase 5 — `{{cycle:groupId}}` replaces the offset constants, not yet wired to the renderer. |
+| Row-count padding | Manually appended `['0000NN', []]` entries | Magic number, easy to get wrong (this is what was just fixed by hand) | Yes — derived from resolved `@ROWS`. |
 
 ---
 
@@ -143,9 +165,9 @@ the durable record, not the conversation.
 | # | Step | State |
 |---|---|---|
 | 3.1 | Decide + implement how a `.pcob` file gets from disk into `compileProgram()` at Astro build time (e.g. a Vite `?raw` import in a section's frontmatter). | Not started |
-| 3.2 | Write `src/content/punchcard/links.pcob` — author LINKS section content (`SERVICES-PRGRPH`, `SOCIALS-PRGRPH`) matching today's `SectionLinks.astro` data 1:1 (same links, same targets). | Not started |
+| 3.2 | Write `src/content/punchcard/links.pcob` — author LINKS section content (`SERVICES-PRGRPH`, `SOCIALS-PRGRPH`) matching today's `SectionLinks.astro` data 1:1 (same links, same targets). Per the WYSIWYG core rule, this includes typing the `PROCEDURE DIVISION.`/`LINKS SECTION.`/paragraph-name lines explicitly in every card — same repetition as today's `Line[]` arrays, not eliminated by the compiler. | Not started |
 | 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard lines=... callLinks=...>` props, replacing the hand-written `LINES`/`CALL_LINKS` arrays. | Not started |
-| 3.4 | Verify structural equivalence: diff compiled output against the current hand-written arrays; confirm the only differences are the already-flagged cosmetic section-label wording (see Migration findings below). Type-check + build check — no dev server per testing scope. | Not started |
+| 3.4 | Verify structural equivalence: diff compiled output against the current hand-written arrays; confirm the only difference is the already-flagged cosmetic nav-label wording (see Migration findings below) — card *text* content should match exactly, since it's hand-typed either way. Type-check + build check — no dev server per testing scope. | Not started |
 | 3.5 | Decide `punch-nav.ts` fate for this pilot: default plan is to leave it untouched (hand-written) during Phase 3, and only fold nav derivation in during Phase 4's full migration, so a partial/hybrid nav config never exists. Flag here if that default changes. | Not started |
 | 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started |
 
@@ -202,17 +224,29 @@ was decided and why, and what was found not to port cleanly.
   pixel height rather than flex-grow distribution if 1px jitter is visible.
 
 ### Migration findings (fill in during Phase 3/4)
-- **Section boilerplate/nav label wording will change cosmetically.** The compiler always
-  renders `@SECTION NAME` as `NAME SECTION.` (both in-card and in nav labels), uniformly.
-  Today's hand-written labels aren't uniform — `WORKING-STORAGE.` / `LOCAL-STORAGE.` (no
-  "SECTION" suffix) vs `LINKS SECTION.` vs `IMPRESSUM-SECTION.` (hyphenated, no space). When
-  a section migrates, expect its rendered/nav text to shift to the uniform `NAME SECTION.`
-  form unless the `@SECTION` name itself is chosen to reproduce today's exact wording.
+- **No implicit lines, ever — DIVISION/SECTION/paragraph-name lines are hand-typed per card.**
+  Per direct clarification, the compiler must never generate a visible card-text line; it only
+  recognizes and colors DIVISION/SECTION/paragraph-name shapes when Sebastian types them himself
+  (see the Core rule near the top of this doc). This reverses `compile.ts`'s original
+  auto-stamping behavior. Concretely: migrated `.pcob` cards repeat their `DATA DIVISION.` /
+  `LOCAL-STORAGE SECTION.` / `01 ABOUT-ME.` lines by hand, same as today's `Line[]` arrays do —
+  that specific DRY violation is *not* eliminated by the new model, by design. See the DRY
+  violations table in section B for the full accounting of what is/isn't eliminated.
+- **Nav label wording will still change cosmetically** (this part *is* auto-derived). The
+  compiler always renders a `sectionsByDiv` nav label as `NAME SECTION.`, uniformly. Today's
+  hand-written labels aren't uniform — `WORKING-STORAGE.` / `LOCAL-STORAGE.` (no "SECTION"
+  suffix) vs `LINKS SECTION.` vs `IMPRESSUM-SECTION.` (hyphenated, no space). When a section
+  migrates, expect its nav text to shift to the uniform `NAME SECTION.` form unless the
+  `@SECTION` name is chosen to reproduce today's exact wording.
 - **Bug found in both DSL example files while building the compiler**: `EXIT PARAGRAPH`/
   `EXIT SECTION` were written with a trailing, unclosed `{{link:name}}` (no wrapping, no
   `{{/link}}`) — inconsistent with every other tag use and with the "always paired, no bare
   shorthand" decision. Fixed in `docs/dsl-mockup.pcob` and `docs/pcob-reference.md` to
   `{{link:name}}EXIT PARAGRAPH{{/link}}`.
+- **Gap found comparing the compiler against real site content**: today's `SectionLinks.astro`
+  renders a paragraph-name line (`SERVICES-PRGRPH.`, styled `para`) that neither the grammar docs
+  nor the Phase 2 compiler accounted for. Resolved by adding paragraph-name as a recognized (not
+  generated) card-text line shape — a bare `NAME.` line with nothing else on it.
 
 ---
 

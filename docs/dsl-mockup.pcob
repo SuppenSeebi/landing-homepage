@@ -25,6 +25,17 @@
 @@  exception: LEADING whitespace on a recognized line shape (a level
 @@  number, a statement verb) is always ignored and replaced by the
 @@  compiler's own canonical indent for that shape — see INDENTATION below.
+@@
+@@  CARD TEXT IS WYSIWYG — THE COMPILER NEVER GENERATES A VISIBLE LINE:
+@@
+@@    Strip out {{tags}} and every character left in a rendered card must
+@@    trace back to something typed here. @DIVISION/@SECTION/@CARD name
+@@    things for the navbar and for {{link}} targets — they do NOT stamp
+@@    matching text into the card. Want "DATA DIVISION." to show up? Type
+@@    it, in every card that should show it, same as any other line. The
+@@    machine-readable name (@SECTION WORKING-STORAGE id=top) and the
+@@    human-readable text you type to represent it are two independent
+@@    things — keeping them looking related is on you, not the compiler.
 
 
 @@ ── ROW COUNT ────────────────────────────────────────────────────────────
@@ -58,21 +69,24 @@
 @DIVISION DATA
 
 @@  id= is the section's anchor (also usable as a {{link:top}} target).
-@@  record= is this DATA DIVISION section's "01 <name>." group line —
-@@  required only for DATA sections (PROCEDURE sections don't have one,
-@@  see LINKS below).
-@SECTION WORKING-STORAGE id=top record=SSCHW-RECORD
+@SECTION WORKING-STORAGE id=top
 
-@@  Each @CARD is one COBOL paragraph AND one punch card. DIVISION/SECTION
-@@  boilerplate lines (the " DATA DIVISION." / " WORKING-STORAGE SECTION."
-@@  rows) plus the "01 SSCHW-RECORD." line above are NOT written per-card —
-@@  the compiler stamps them onto every card in this section automatically.
+@@  Each @CARD is one COBOL paragraph AND one punch card. DIVISION/SECTION/
+@@  record-group lines are repeated on every card BY HAND, on purpose — the
+@@  compiler will not stamp them in. That repetition is the accepted cost
+@@  of "no implicit lines"; see the note at the top of this file.
 @CARD IDENTITY
+DATA DIVISION.
+WORKING-STORAGE SECTION.
+01 SSCHW-RECORD.
 05 IDENTITY.
 10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'SEBASTIAN SCHWINN'{{/cycle}}.
 10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'NAME'{{/cycle}}.
 
 @CARD BACKGROUND
+DATA DIVISION.
+WORKING-STORAGE SECTION.
+01 SSCHW-RECORD.
 05 BACKGROUND.
 10 NAME-VAL PIC X(32) VALUE {{cycle:identity-name}}'MSC ELECTRICAL ENGINEERING'{{/cycle}}.
 10 NAME-DSCRPTN PIC X(9) VALUE {{cycle:identity-desc}}'EDUCATION'{{/cycle}}.
@@ -97,9 +111,12 @@
 @@  DATA DIVISION example — LOCAL-STORAGE (today's SectionAboutMe/"#aboutme"),
 @@  showing a 88-level condition-name field, and a per-CARD @ROWS override
 @@ ============================================================================
-@SECTION LOCAL-STORAGE id=aboutme record=ABOUT-ME
+@SECTION LOCAL-STORAGE id=aboutme
 
 @CARD WORK-NOW
+DATA DIVISION.
+LOCAL-STORAGE SECTION.
+01 ABOUT-ME.
 05 WORK-NOW.
 10 COMPANY PIC X(30) VALUE 'RETROCODE'.
 10 ROLE    PIC X(30) VALUE 'COBOL DEVELOPER'.
@@ -111,6 +128,9 @@
 @@ ^ just for this card, e.g. because it has one fewer row of content
 @@ that's intentional rather than padding. Every other card in this
 @@ section still uses the section/program default of 19.
+DATA DIVISION.
+LOCAL-STORAGE SECTION.
+01 ABOUT-ME.
 05 PRG-LANGUAGES PIC X(10).
 88 COBOL   VALUE 'PRIMARY'.
 88 PYTHON  VALUE 'KNOWN'.
@@ -125,11 +145,12 @@
 @@ ============================================================================
 @DIVISION PROCEDURE
 
-@@  No record= here — PROCEDURE DIVISION sections have no 01-level group,
-@@  so there's nothing to auto-stamp besides DIVISION/SECTION lines.
 @SECTION LINKS id=links
 
 @CARD SERVICES-PRGRPH
+PROCEDURE DIVISION.
+LINKS SECTION.
+SERVICES-PRGRPH.
 * Personal wiki and notes
 CALL {{link:'https://kb.sschw.dev'}}'KB.SSCHW.DEV'{{/link}}
 * Directory management (LAN only)
@@ -159,6 +180,9 @@ CALL 'LLDAP'
 @SECTION IMPRESSUM id=impressum
 
 @CARD IMPRESSUM-SECTION
+PROCEDURE DIVISION.
+IMPRESSUM SECTION.
+IMPRESSUM-SECTION.
 DISPLAY
 @SLOT impressum-legal rows=11
 END-DISPLAY

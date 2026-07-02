@@ -4,8 +4,12 @@
 //   1. Walk the tree to register every anchor (@SECTION id= and {{anchor:name}}) in one
 //      flat namespace and reject duplicates, before any link needs resolving.
 //   2. Walk it again to tokenize card text, resolve {{link}} targets against the now-
-//      complete registry, stamp DIVISION/SECTION/record boilerplate, and pad/validate
-//      each card's row count.
+//      complete registry, and pad/validate each card's row count.
+//
+// The compiler never synthesizes visible card-text lines (no DIVISION/SECTION/paragraph-
+// name auto-stamping) — see the "coding-area text is WYSIWYG" rule in
+// docs/punch-card-content-system.md. Nav data (divisionMap/sectionsByDiv/parasBySection)
+// is derived freely, since that's structure *around* the text, not the text itself.
 //
 // {{cycle}}/{{noise}} tags are parsed and validated (so malformed usage errors out here,
 // not silently) but otherwise inert — wiring them into the renderer is Phase 5, deferred
@@ -14,9 +18,7 @@
 import { extractTags } from './tags';
 import { type AnchorRegistry, makeSeq, tokenizeCardLine } from './tokenizeCardLine';
 import { type RawCard, type RawDivision, type RawProgram, type RawSection, parseSource } from './parseSource';
-import { type CompiledCard, type CompiledProgram, type CompiledSection, type DivisionId, type Line, PcobError } from './types';
-
-const DIVISION_KEYWORD: Record<DivisionId, string> = { data: 'DATA', proc: 'PROCEDURE' };
+import { type CompiledCard, type CompiledProgram, type CompiledSection, type Line, PcobError } from './types';
 
 // PunchCard.astro's slot mechanic reserves the slot's rows itself (`slotFlex` in
 // PunchCard.astro, derived from its own fixed row target minus lines.length) — the
@@ -81,17 +83,6 @@ function resolveRows(card: RawCard, section: RawSection, division: RawDivision, 
     return resolved;
 }
 
-function boilerplateLines(division: RawDivision, section: RawSection): Line[] {
-    const lines: Line[] = [
-        ['', [['div', ` ${DIVISION_KEYWORD[division.id]} DIVISION`], ['dot', '.']]],
-        ['', [['section', ` ${section.name} SECTION`], ['dot', '.']]],
-    ];
-    if (section.record) {
-        lines.push(['', [['lvl', ' 01'], ['name', ` ${section.record}`], ['dot', '.']]]);
-    }
-    return lines;
-}
-
 function compileCard(
     card: RawCard,
     section: RawSection,
@@ -100,9 +91,8 @@ function compileCard(
     anchors: AnchorRegistry,
 ): CompiledCard {
     const resolvedRows = resolveRows(card, section, division, program);
-    const boilerplate = boilerplateLines(division, section);
 
-    const lines: Line[] = [...boilerplate];
+    const lines: Line[] = [];
     const callLinks: Record<string, string> = {};
     let slotAtLine: number | undefined;
 

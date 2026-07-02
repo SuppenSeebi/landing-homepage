@@ -16,7 +16,6 @@ export interface RawCard {
 export interface RawSection {
     name: string;
     id: string;
-    record?: string;
     rowsOverride?: number;
     lineNo: number;
     cards: RawCard[];
@@ -117,7 +116,11 @@ export function parseSource(source: string): RawProgram {
             if (!division) throw new PcobError('@SECTION outside of any @DIVISION', lineNo);
             const attrs = parseAttrs(sectionMatch[2] ?? '', lineNo);
             if (!attrs.id) throw new PcobError(`@SECTION ${sectionMatch[1]} is missing required id=`, lineNo);
-            section = { name: sectionMatch[1], id: attrs.id, record: attrs.record, lineNo, cards: [] };
+            const unknownAttrs = Object.keys(attrs).filter(k => k !== 'id');
+            if (unknownAttrs.length) {
+                throw new PcobError(`@SECTION ${sectionMatch[1]} has unknown attribute(s): ${unknownAttrs.join(', ')}`, lineNo);
+            }
+            section = { name: sectionMatch[1], id: attrs.id, lineNo, cards: [] };
             division.sections.push(section);
             card = null;
             continue;
