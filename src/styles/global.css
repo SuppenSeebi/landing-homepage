@@ -926,8 +926,6 @@ a.call-comment {
     display: flex;
     flex-direction: column;
     width: fit-content;
-    flex: 1;
-    min-height: 0;
     background-color: #F5EDD4;
     background-image:
         radial-gradient(ellipse 80% 60% at 6% 94%,  rgba(155,95,15,0.16) 0%, transparent 55%),
@@ -943,14 +941,16 @@ a.call-comment {
     font-size: clamp(0.9rem, 1.5vw, 1.4rem);
 }
 
-/* Multi-card: all cards absolutely stacked, hidden by default */
+/* Multi-card: all cards absolutely stacked, hidden by default.
+   Height is intrinsic (row count * font-driven row height) - centered, not stretched,
+   so a shorter card (fewer @ROWS) doesn't get stretched-out rows to fill a fixed region. */
 .pcf-stage-multi .pcf-card {
     position: absolute;
-    top: 7vh;
-    bottom: 7vh;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: fit-content;
+    max-height: 86vh;
     flex: none;
     opacity: 0;
     pointer-events: none;
@@ -961,8 +961,9 @@ a.call-comment {
     pointer-events: auto;
 }
 
-/* In top-punch-wrapper, card fills available height without growing unbounded */
-.top-punch-wrapper .pcf-card { flex: 1; min-height: 0; }
+/* In top-punch-wrapper, card height is intrinsic (see .pcf-card comment above); capped so
+   it can't grow past the wrapper's padded region on a short viewport. */
+.top-punch-wrapper .pcf-card { max-height: 86vh; }
 
 /* ── TITLE BAR ──────────────────────────────────────────────────────────────── */
 .pcf-title-bar {
@@ -1244,17 +1245,16 @@ a.call-comment {
 }
 
 /* ── PUNCH AREA ─────────────────────────────────────────────────────────────── */
+/* Plain block flow: each .pcf-line-row takes its own intrinsic height (driven by
+   .pcf-chars span's line-height), so every row is naturally the same height - no
+   flex/grid distribution needed, and a card's total height is exactly rows * that
+   height rather than being stretched to fill a fixed region. */
 .pcf-punch-area {
-    display: grid;
-    grid-auto-rows: minmax(0, 1fr);
-    flex: 1;
-    min-height: 0;
     overflow: hidden;
     background-image:
         radial-gradient(ellipse 9% 7% at 74% 68%, rgba(125,75,10,0.10) 0%, rgba(125,75,10,0.03) 55%, transparent 100%);
 }
 .pcf-line-row {
-    min-height: 0;
     border-bottom: 1px solid #D4C478;
 }
 .pcf-line-row:last-child { border-bottom: none; }
