@@ -1,14 +1,12 @@
 // Turns one card-text line (already known not to be a directive) into Token[] per the
 // documented line shapes, resolving inline {{link}}/{{anchor}} tags along the way.
 //
-// No shape is ever generated here that the author didn't type — see the "coding-area text
-// is WYSIWYG" rule in docs/punch-card-content-system.md. This module only recognizes and
-// colors what's already literal text (level rows, statement rows, DIVISION/SECTION/
-// paragraph-name header lines); everything else is a fixed literal shape. Whitespace-only
-// differences in *where* a token boundary falls inside a run of spaces are visually
-// invisible — PunchCard.astro's renderer recolors every space character to `.pcc-empty`
-// regardless of which token it belongs to — so the splitting rules below favor simplicity
-// over exactly mirroring hand-authored legacy spacing.
+// Strict WYSIWYG: strip {{tags}} out of a line and every remaining character — including
+// leading/internal whitespace — must reappear in the rendered tokens unchanged. This module
+// never adds, removes, or re-indents a character; it only classifies which existing
+// characters belong to which colored token (level rows, statement rows, DIVISION/SECTION/
+// paragraph-name header lines, or a plain fallback). Indentation is entirely author-typed:
+// there is no canonical/auto-applied indent for any line shape.
 
 import { extractTags, isFullyCoveredBy, type TagSpan } from './tags';
 import type { Token } from './types';
@@ -24,7 +22,6 @@ export interface LineResult {
     callLinks: Record<string, string>;
 }
 
-const LEVEL_INDENT: Record<string, number> = { '01': 1, '05': 5, '10': 7, '88': 7 };
 const STATEMENT_VERBS = ['END-DISPLAY', 'DISPLAY', 'EXIT PARAGRAPH', 'EXIT SECTION', 'CALL'] as const;
 
 function findWord(haystack: string, word: string, from = 0): number {
@@ -79,10 +76,10 @@ function tokenizeLevelLine(
     callLinks: Record<string, string>,
     lineNo?: number,
 ): Token[] | null {
-    const m = clean.match(/^(01|05|10|88)\s+(.*)$/s);
+    const m = clean.match(/^(\s*)(01|05|10|88)(\s+)(.*)$/s);
     if (!m) return null;
-    const [, level, restRaw] = m;
-    const offset = clean.length - (level.length + 1 + restRaw.length); // start offset of `restRaw` in clean, usually 0
+    const [, leadWs, level, sepWs, restRaw] = m;
+    const restOffset = leadWs.length + level.length + sepWs.length;
 
     let rest = restRaw;
     let hasDot = false;
@@ -91,25 +88,25 @@ function tokenizeLevelLine(
         hasDot = true;
     }
 
-    const tokens: Token[] = [['lvl', ' '.repeat(LEVEL_INDENT[level]) + level]];
+    const tokens: Token[] = [['lvl', leadWs + level]];
 
     const picIdx = findWord(rest, 'PIC');
     const valueIdx = findWord(rest, 'VALUE', picIdx >= 0 ? picIdx + 3 : 0);
     const firstKwIdx = picIdx >= 0 ? picIdx : valueIdx;
 
-    const nameEnd = firstKwIdx >= 0 ? Math.max(firstKwIdx - 1, 0) : rest.length;
-    tokens.push(['name', ' ' + rest.slice(0, nameEnd)]);
+    const nameEnd = firstKwIdx >= 0 ? firstKwIdx : rest.length;
+    tokens.push(['name', sepWs + rest.slice(0, nameEnd)]);
 
     if (picIdx >= 0) {
-        const picClauseEnd = valueIdx >= 0 ? Math.max(valueIdx - 1, picIdx) : rest.length;
-        tokens.push(['kw', ' ' + rest.slice(picIdx, picClauseEnd)]);
+        const picClauseEnd = valueIdx >= 0 ? valueIdx : rest.length;
+        tokens.push(['kw', rest.slice(picIdx, picClauseEnd)]);
     }
 
     if (valueIdx >= 0) {
-        tokens.push(['kw', ' VALUE']);
+        tokens.push(['kw', rest.slice(valueIdx, valueIdx + 'VALUE'.length)]);
         const valueText = rest.slice(valueIdx + 'VALUE'.length);
-        if (valueText.trim().length > 0) {
-            const absStart = offset + level.length + 1 + valueIdx + 'VALUE'.length;
+        if (valueText.length > 0) {
+            const absStart = restOffset + valueIdx + 'VALUE'.length;
             tokens.push(classifyValueRun(valueText, absStart, spans, anchors, callLinks, lineNo));
         }
     }
@@ -125,31 +122,35 @@ function tokenizeStatementLine(
     callLinks: Record<string, string>,
     lineNo?: number,
 ): Token[] | null {
-    const verb = STATEMENT_VERBS.find(v => clean === v || clean.startsWith(v + ' ') || clean.startsWith(v + "'"));
+    const leadMatch = clean.match(/^(\s*)/)!;
+    const leadWs = leadMatch[1];
+    const afterLead = clean.slice(leadWs.length);
+    const verb = STATEMENT_VERBS.find(v => afterLead === v || afterLead.startsWith(v + ' ') || afterLead.startsWith(v + "'"));
     if (!verb) return null;
 
-    const remainder = clean.slice(verb.length);
-    const verbCoveredByLink = isFullyCoveredBy(spans, 'link', 0, verb.length);
+    const verbAbsStart = leadWs.length;
+    const remainder = afterLead.slice(verb.length);
+    const verbCoveredByLink = isFullyCoveredBy(spans, 'link', verbAbsStart, verbAbsStart + verb.length);
 
     const tokens: Token[] = [];
     if (verbCoveredByLink) {
-        tokens.push(['kw', '     ']);
-        tokens.push(classifyValueRun(verb, 0, spans, anchors, callLinks, lineNo));
+        if (leadWs.length > 0) tokens.push(['kw', leadWs]);
+        tokens.push(classifyValueRun(verb, verbAbsStart, spans, anchors, callLinks, lineNo));
     } else {
-        tokens.push(['kw', '     ' + verb]);
+        tokens.push(['kw', leadWs + verb]);
     }
 
-    if (remainder.trim().length > 0) {
-        tokens.push(classifyValueRun(remainder, verb.length, spans, anchors, callLinks, lineNo));
+    if (remainder.length > 0) {
+        tokens.push(classifyValueRun(remainder, verbAbsStart + verb.length, spans, anchors, callLinks, lineNo));
     }
     return tokens;
 }
 
 /**
- * DIVISION/SECTION/paragraph-name header lines — recognized (and canonically colored) when
- * the author types them, never auto-generated. Same Area-A single-space indent as an 01-level
- * line. Checked after statement-row so e.g. "EXIT SECTION" (a statement) isn't mistaken for a
- * section header just because it also ends in the word "SECTION".
+ * DIVISION/SECTION/paragraph-name header lines — recognized (and colored) when the author
+ * types them, never auto-generated, never re-indented. Checked after statement-row so e.g.
+ * "EXIT SECTION" (a statement) isn't mistaken for a section header just because it also ends
+ * in the word "SECTION".
  */
 function tokenizeHeaderLine(clean: string): Token[] | null {
     let text = clean;
@@ -158,21 +159,21 @@ function tokenizeHeaderLine(clean: string): Token[] | null {
         text = text.slice(0, -1);
         hasDot = true;
     }
-    const trimmed = text.trim();
-    if (trimmed === '') return null;
+    const forShapeCheck = text.trim();
+    if (forShapeCheck === '') return null;
 
     let tt: 'div' | 'section' | 'para' | null = null;
-    if (/ DIVISION$/.test(trimmed)) tt = 'div';
-    else if (/ SECTION$/.test(trimmed)) tt = 'section';
-    else if (/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(trimmed)) tt = 'para';
+    if (/ DIVISION$/.test(forShapeCheck)) tt = 'div';
+    else if (/ SECTION$/.test(forShapeCheck)) tt = 'section';
+    else if (/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(forShapeCheck)) tt = 'para';
     if (!tt) return null;
 
-    const tokens: Token[] = [[tt, ' ' + trimmed]];
+    const tokens: Token[] = [[tt, text]];
     if (hasDot) tokens.push(['dot', '.']);
     return tokens;
 }
 
-/** Fallback for lines that match no recognized shape: passed through close to verbatim. */
+/** Fallback for lines that match no recognized shape: passed through verbatim. */
 function tokenizeFallbackLine(
     clean: string,
     spans: TagSpan[],
@@ -185,24 +186,22 @@ function tokenizeFallbackLine(
 
 export function tokenizeCardLine(raw: string, anchors: AnchorRegistry, lineNo?: number): LineResult {
     const { clean, spans } = extractTags(raw, lineNo);
-    const trimmed = clean.trim();
+    const trimmedBoth = clean.trim();
     const callLinks: Record<string, string> = {};
 
-    if (trimmed === '') return { tokens: [], callLinks };
-    // A standalone "." closes a statement block (CALL/DISPLAY/EXIT ...), so it takes the
-    // same 5-space statement indent, not a bare dot — matches every real occurrence on the
-    // live site (there is no bare-indent standalone dot anywhere in current card data).
-    if (trimmed === '.') return { tokens: [['dot', '     .']], callLinks };
-    if (trimmed.startsWith('*')) return { tokens: [['comment', trimmed]], callLinks };
+    if (trimmedBoth === '') return { tokens: [], callLinks };
+    // A standalone "." — rendered exactly as typed, including whatever indent (if any) the
+    // author wrote. No canonical indent is applied; want it under column 12? Type it.
+    if (trimmedBoth === '.') return { tokens: [['dot', clean]], callLinks };
+    if (clean.trimStart().startsWith('*')) return { tokens: [['comment', clean]], callLinks };
 
-    const leftTrimmed = clean.replace(/^\s+/, '');
-    const level = tokenizeLevelLine(leftTrimmed, spans, anchors, callLinks, lineNo);
+    const level = tokenizeLevelLine(clean, spans, anchors, callLinks, lineNo);
     if (level) return { tokens: level, callLinks };
 
-    const statement = tokenizeStatementLine(leftTrimmed, spans, anchors, callLinks, lineNo);
+    const statement = tokenizeStatementLine(clean, spans, anchors, callLinks, lineNo);
     if (statement) return { tokens: statement, callLinks };
 
-    const header = tokenizeHeaderLine(leftTrimmed);
+    const header = tokenizeHeaderLine(clean);
     if (header) return { tokens: header, callLinks };
 
     return { tokens: tokenizeFallbackLine(clean, spans, anchors, callLinks, lineNo), callLinks };
