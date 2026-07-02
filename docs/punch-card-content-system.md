@@ -134,10 +134,23 @@ edit renderer internals. The format grows by request, not by guessing future nee
 - Runs at Astro build time (frontmatter), zero runtime cost.
 
 ### Phase 3 — Pilot migration (one section)
-- Migrate the smallest section (Links — 2 short paragraphs) to the new format end-to-end.
-- Visual check by Sebastian against the current rendering before touching anything else.
-- Anything that doesn't port cleanly gets written into the Decisions Log below, not silently
-  worked around.
+
+Broken into small, independently-committable steps so a fresh session (or a context reset
+mid-phase) can read this table and know exactly what's done, without needing prior chat
+history. Update the **State** column in the same commit as the step it describes — that's
+the durable record, not the conversation.
+
+| # | Step | State |
+|---|---|---|
+| 3.1 | Decide + implement how a `.pcob` file gets from disk into `compileProgram()` at Astro build time (e.g. a Vite `?raw` import in a section's frontmatter). | Not started |
+| 3.2 | Write `src/content/punchcard/links.pcob` — author LINKS section content (`SERVICES-PRGRPH`, `SOCIALS-PRGRPH`) matching today's `SectionLinks.astro` data 1:1 (same links, same targets). | Not started |
+| 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard lines=... callLinks=...>` props, replacing the hand-written `LINES`/`CALL_LINKS` arrays. | Not started |
+| 3.4 | Verify structural equivalence: diff compiled output against the current hand-written arrays; confirm the only differences are the already-flagged cosmetic section-label wording (see Migration findings below). Type-check + build check — no dev server per testing scope. | Not started |
+| 3.5 | Decide `punch-nav.ts` fate for this pilot: default plan is to leave it untouched (hand-written) during Phase 3, and only fold nav derivation in during Phase 4's full migration, so a partial/hybrid nav config never exists. Flag here if that default changes. | Not started |
+| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started |
+
+Anything that doesn't port cleanly gets written into the Migration findings below, not
+silently worked around.
 
 ### Phase 4 — Migrate remaining sections
 - AboutMe (5 paragraphs), Work (2), Impressum (1, with its `SLOT` special case), Top (1).
@@ -210,6 +223,6 @@ was decided and why, and what was found not to port cleanly.
 | 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper` plus switching `.pcf-punch-area` from flex-column to CSS Grid (`minmax(0, 1fr)` rows) to fix uneven row heights between text and empty rows |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
-| 3 — Pilot migration (Links) | Not started |
+| 3 — Pilot migration (Links) | Not started — see the step-by-step table (3.1–3.6) under Phase 3 above for granular state |
 | 4 — Full migration | Not started |
 | 5 — Animation tags | Deferred |
