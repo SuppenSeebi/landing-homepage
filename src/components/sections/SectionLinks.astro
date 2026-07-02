@@ -1,7 +1,7 @@
 ---
 import PunchCard from '../PunchCard.astro';
 import { compileProgram } from '../../pcob/compile';
-import linksSource from '../../content/punchcard/links.pcob?raw';
+import linksSource from '../../content/_punchcard/links.pcob?raw';
 
 const compiled = compileProgram(linksSource);
 const linksSection = compiled.sections.find(s => s.id === 'links')!;

@@ -165,7 +165,7 @@ the durable record, not the conversation.
 | # | Step | State |
 |---|---|---|
 | 3.1 | Decide + implement how a `.pcob` file gets from disk into `compileProgram()` at Astro build time. | **Done** — Vite `?raw` string import in `SectionLinks.astro`'s frontmatter (`import linksSource from '../../content/punchcard/links.pcob?raw'`), then `compileProgram(linksSource)`. No Astro config changes needed; `astro/client` ambient types already cover `?raw`. |
-| 3.2 | Write `src/content/punchcard/links.pcob` — author LINKS section content matching today's `SectionLinks.astro` data 1:1. | **Done** — `src/content/punchcard/links.pcob`, hand-typed DIVISION/SECTION/paragraph-name lines per the WYSIWYG rule. |
+| 3.2 | Write `src/content/_punchcard/links.pcob` — author LINKS section content matching today's `SectionLinks.astro` data 1:1. | **Done** — `src/content/_punchcard/links.pcob`, hand-typed DIVISION/SECTION/paragraph-name lines per the WYSIWYG rule. |
 | 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard>` props. | **Done** — `SERVICES-PRGRPH`/`SOCIALS-PRGRPH` cards looked up by name from the compiled section; hand-written `LINES`/`CALL_LINKS` arrays deleted. |
 | 3.4 | Verify structural equivalence against the current hand-written arrays. | **Done** — compiled `lines` are byte-identical to both hand-written arrays (verified via a scratch diff script, not committed — no test runner configured yet). `callLinks` differ from the old shared object by design/improvement: the compiler emits precise per-card link maps instead of one object with irrelevant keys reused across both cards; functionally equivalent since `PunchCard.astro` only looks up keys that exist in that card's own rendered text. `astro build` (via `node_modules/.bin/astro build`, since neither `pnpm` nor `npx astro` were on PATH in this shell) completed with no errors; output HTML contains the expected compiled text. |
 | 3.5 | Decide `punch-nav.ts` fate for this pilot. | **Done** — applied the stated default: left untouched. Links' nav entries in `src/config/punch-nav.ts` are still the hand-written ones; nav consolidation is deferred to Phase 4. |
@@ -192,8 +192,10 @@ Use this section as a running list — append rather than rewrite, so we keep a 
 was decided and why, and what was found not to port cleanly.
 
 ### Resolved decisions
-- [x] File extension: **`.pcob`**, location `src/content/punchcard/*.pcob` (to be created during
-      Phase 2/3 — not yet wired anywhere).
+- [x] File extension: **`.pcob`**, location `src/content/_punchcard/*.pcob` — underscore-prefixed
+      directory so Astro's content-layer scanner (which only understands its own collection
+      types) doesn't warn about files it doesn't recognize; unrelated to how the compiler reads
+      them (a plain Vite `?raw` string import, not an Astro content collection).
 - [x] Comment syntax: `@@ ...`, not a keyword like `REM`.
 - [x] `@ROWS` scoping: Card > Section > program default, one directive for all three levels.
 - [x] No implicit `self` for links — see `{{link:name}}` / `{{anchor:name}}` in Phase 1 above.
@@ -257,6 +259,6 @@ was decided and why, and what was found not to port cleanly.
 | 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper` plus switching `.pcf-punch-area` from flex-column to CSS Grid (`minmax(0, 1fr)` rows) to fix uneven row heights between text and empty rows |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
-| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section now renders from `src/content/punchcard/links.pcob` via the compiler. Blocked on 3.6, Sebastian's visual confirmation, before Phase 4 starts |
+| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section now renders from `src/content/_punchcard/links.pcob` via the compiler. Blocked on 3.6, Sebastian's visual confirmation, before Phase 4 starts |
 | 4 — Full migration | Not started |
 | 5 — Animation tags | Deferred |
