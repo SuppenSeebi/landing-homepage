@@ -1,0 +1,166 @@
+// Walks a parsed .pcob AST and produces exactly what PunchCard.astro's renderer already
+// consumes: per-card Line[] + callLinks, plus SECTIONS_BY_DIV/PARAS_BY_SECTION-shaped nav
+// data (replacing today's hand-maintained src/config/punch-nav.ts). Two passes:
+//   1. Walk the tree to register every anchor (@SECTION id= and {{anchor:name}}) in one
+//      flat namespace and reject duplicates, before any link needs resolving.
+//   2. Walk it again to tokenize card text, resolve {{link}} targets against the now-
+//      complete registry, stamp DIVISION/SECTION/record boilerplate, and pad/validate
+//      each card's row count.
+//
+// {{cycle}}/{{noise}} tags are parsed and validated (so malformed usage errors out here,
+// not silently) but otherwise inert — wiring them into the renderer is Phase 5, deferred
+// by design (see docs/punch-card-content-system.md).
+
+import { extractTags } from './tags';
+import { type AnchorRegistry, makeSeq, tokenizeCardLine } from './tokenizeCardLine';
+import { type RawCard, type RawDivision, type RawProgram, type RawSection, parseSource } from './parseSource';
+import { type CompiledCard, type CompiledProgram, type CompiledSection, type DivisionId, type Line, PcobError } from './types';
+
+const DIVISION_KEYWORD: Record<DivisionId, string> = { data: 'DATA', proc: 'PROCEDURE' };
+
+// PunchCard.astro's slot mechanic reserves the slot's rows itself (`slotFlex` in
+// PunchCard.astro, derived from its own fixed row target minus lines.length) — the
+// compiler doesn't pad or validate rows= against that, it just records where the split
+// falls (slotAtLine) and leaves the reservation math to the renderer, unchanged.
+
+interface AnchorEntry {
+    sectionId: string;
+    kind: 'section' | 'anchor';
+    lineNo: number;
+}
+
+function buildAnchorRegistry(program: RawProgram): Map<string, AnchorEntry> {
+    const registry = new Map<string, AnchorEntry>();
+    const declare = (name: string, sectionId: string, kind: AnchorEntry['kind'], lineNo: number) => {
+        const existing = registry.get(name);
+        if (existing) {
+            throw new PcobError(
+                `Duplicate anchor "${name}" — already declared as ${existing.kind} in section "${existing.sectionId}"`,
+                lineNo,
+            );
+        }
+        registry.set(name, { sectionId, kind, lineNo });
+    };
+
+    for (const division of program.divisions) {
+        for (const section of division.sections) {
+            declare(section.id, section.id, 'section', section.lineNo);
+            for (const card of section.cards) {
+                for (const bodyLine of card.body) {
+                    if (!bodyLine.raw) continue;
+                    const { spans } = extractTags(bodyLine.raw, bodyLine.lineNo);
+                    for (const span of spans) {
+                        if (span.tag === 'anchor' && span.param) {
+                            declare(span.param, section.id, 'anchor', bodyLine.lineNo);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return registry;
+}
+
+function makeAnchorRegistry(registry: Map<string, AnchorEntry>): AnchorRegistry {
+    return {
+        resolveAnchor(name, lineNo) {
+            const entry = registry.get(name);
+            if (!entry) {
+                throw new PcobError(`{{link:${name}}} does not match any @SECTION id= or {{anchor:}}`, lineNo);
+            }
+            return `#${entry.sectionId}`;
+        },
+    };
+}
+
+function resolveRows(card: RawCard, section: RawSection, division: RawDivision, program: RawProgram): number {
+    const resolved = card.rowsOverride ?? section.rowsOverride ?? division.rowsOverride ?? program.defaultRows;
+    if (resolved === undefined) {
+        throw new PcobError(`No @ROWS resolvable for card "${card.name}" (not set at card, section, or program level)`, card.lineNo);
+    }
+    return resolved;
+}
+
+function boilerplateLines(division: RawDivision, section: RawSection): Line[] {
+    const lines: Line[] = [
+        ['', [['div', ` ${DIVISION_KEYWORD[division.id]} DIVISION`], ['dot', '.']]],
+        ['', [['section', ` ${section.name} SECTION`], ['dot', '.']]],
+    ];
+    if (section.record) {
+        lines.push(['', [['lvl', ' 01'], ['name', ` ${section.record}`], ['dot', '.']]]);
+    }
+    return lines;
+}
+
+function compileCard(
+    card: RawCard,
+    section: RawSection,
+    division: RawDivision,
+    program: RawProgram,
+    anchors: AnchorRegistry,
+): CompiledCard {
+    const resolvedRows = resolveRows(card, section, division, program);
+    const boilerplate = boilerplateLines(division, section);
+
+    const lines: Line[] = [...boilerplate];
+    const callLinks: Record<string, string> = {};
+    let slotAtLine: number | undefined;
+
+    card.body.forEach((bodyLine, bodyIdx) => {
+        if (card.slot && card.slot.atBodyIndex === bodyIdx) {
+            slotAtLine = lines.length;
+        }
+        const { tokens, callLinks: lineLinks } = tokenizeCardLine(bodyLine.raw, anchors, bodyLine.lineNo);
+        lines.push(['', tokens]);
+        Object.assign(callLinks, lineLinks);
+    });
+    if (card.slot && card.slot.atBodyIndex === card.body.length) {
+        slotAtLine = lines.length;
+    }
+
+    if (!card.slot) {
+        if (lines.length > resolvedRows) {
+            throw new PcobError(
+                `Card "${card.name}" has ${lines.length} lines, exceeding its resolved @ROWS ${resolvedRows}`,
+                card.lineNo,
+            );
+        }
+        while (lines.length < resolvedRows) lines.push(['', []]);
+    }
+
+    const seqedLines: Line[] = lines.map(([, tokens], idx) => [makeSeq(idx), tokens]);
+
+    return {
+        name: card.name,
+        lines: seqedLines,
+        callLinks,
+        ...(slotAtLine !== undefined ? { slotAtLine } : {}),
+    };
+}
+
+export function compileProgram(source: string): CompiledProgram {
+    const program = parseSource(source);
+    const registry = buildAnchorRegistry(program);
+    const anchors = makeAnchorRegistry(registry);
+
+    const sections: CompiledSection[] = [];
+    const divisionMap: CompiledProgram['divisionMap'] = { data: [], proc: [] };
+    const sectionsByDiv: CompiledProgram['sectionsByDiv'] = { data: [], proc: [] };
+    const parasBySection: CompiledProgram['parasBySection'] = {};
+
+    for (const division of program.divisions) {
+        for (const section of division.sections) {
+            divisionMap[division.id].push(section.id);
+            sectionsByDiv[division.id].push({ label: `${section.name} SECTION.`, href: `#${section.id}` });
+            parasBySection[section.id] = section.cards.map(card => ({
+                label: `${card.name}.`,
+                href: `#${section.id}`,
+            }));
+
+            const cards = section.cards.map(card => compileCard(card, section, division, program, anchors));
+            sections.push({ id: section.id, name: section.name, division: division.id, cards });
+        }
+    }
+
+    return { sections, divisionMap, sectionsByDiv, parasBySection };
+}

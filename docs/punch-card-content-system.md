@@ -189,7 +189,17 @@ was decided and why, and what was found not to port cleanly.
   pixel height rather than flex-grow distribution if 1px jitter is visible.
 
 ### Migration findings (fill in during Phase 3/4)
-*(empty — populate as sections are migrated)*
+- **Section boilerplate/nav label wording will change cosmetically.** The compiler always
+  renders `@SECTION NAME` as `NAME SECTION.` (both in-card and in nav labels), uniformly.
+  Today's hand-written labels aren't uniform — `WORKING-STORAGE.` / `LOCAL-STORAGE.` (no
+  "SECTION" suffix) vs `LINKS SECTION.` vs `IMPRESSUM-SECTION.` (hyphenated, no space). When
+  a section migrates, expect its rendered/nav text to shift to the uniform `NAME SECTION.`
+  form unless the `@SECTION` name itself is chosen to reproduce today's exact wording.
+- **Bug found in both DSL example files while building the compiler**: `EXIT PARAGRAPH`/
+  `EXIT SECTION` were written with a trailing, unclosed `{{link:name}}` (no wrapping, no
+  `{{/link}}`) — inconsistent with every other tag use and with the "always paired, no bare
+  shorthand" decision. Fixed in `docs/dsl-mockup.pcob` and `docs/pcob-reference.md` to
+  `{{link:name}}EXIT PARAGRAPH{{/link}}`.
 
 ---
 
@@ -199,7 +209,7 @@ was decided and why, and what was found not to port cleanly.
 |---|---|
 | 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper` plus switching `.pcf-punch-area` from flex-column to CSS Grid (`minmax(0, 1fr)` rows) to fix uneven row heights between text and empty rows |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
-| 2 — Parser/compiler | Not started |
+| 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
 | 3 — Pilot migration (Links) | Not started |
 | 4 — Full migration | Not started |
 | 5 — Animation tags | Deferred |
