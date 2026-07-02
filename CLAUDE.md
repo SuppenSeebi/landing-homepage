@@ -264,7 +264,7 @@ Slot content: `.impressum-grid` 2-column CSS grid with German legal text.
 
 - All sections share the same PunchCard header values: `programName="SSCHW-DEV"`, `programmerName="SEBASTIAN SCHWINN"`, `currentSystem="RETROCODE GMBH"`, `identificationHref="#impressum"`
 - Empty COBOL lines: `['000003', []]`
-- Standalone dot line: `['000015', [['dot','.']]]`
+- Standalone dot line (closes a statement block): `['000015', [['dot','     .']]]` — 5-space statement indent, not bare
 - Comment lines: `['000013', [['comment','* GOBACK TO ...']]]`
 - `callLinks` maps the exact val token string (including leading space and quotes) → URL
 - Font: `"Share Tech Mono", monospace` throughout

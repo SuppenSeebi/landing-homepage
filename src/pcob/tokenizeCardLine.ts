@@ -189,7 +189,10 @@ export function tokenizeCardLine(raw: string, anchors: AnchorRegistry, lineNo?: 
     const callLinks: Record<string, string> = {};
 
     if (trimmed === '') return { tokens: [], callLinks };
-    if (trimmed === '.') return { tokens: [['dot', '.']], callLinks };
+    // A standalone "." closes a statement block (CALL/DISPLAY/EXIT ...), so it takes the
+    // same 5-space statement indent, not a bare dot — matches every real occurrence on the
+    // live site (there is no bare-indent standalone dot anywhere in current card data).
+    if (trimmed === '.') return { tokens: [['dot', '     .']], callLinks };
     if (trimmed.startsWith('*')) return { tokens: [['comment', trimmed]], callLinks };
 
     const leftTrimmed = clean.replace(/^\s+/, '');
