@@ -71,6 +71,10 @@ Used inside card text to mark a span without leaving plain-text mode. All follow
 Tags can nest (e.g. a cycling field that also noise-transitions). A literal `{{` in text, if ever
 needed, is escaped as `\{{`.
 
+Every tag is always an open/close pair wrapping the exact text it applies to — there is no bare
+or self-closing shorthand. To make a whole phrase clickable (e.g. `EXIT PARAGRAPH`), wrap the
+phrase itself: `{{link:name}}EXIT PARAGRAPH{{/link}}`, not a trailing unwrapped `{{link:name}}`.
+
 ## Open / not yet decided
 
 - DATA DIVISION boilerplate beyond what's shown (deeper field/condition patterns) gets added to
@@ -114,9 +118,9 @@ CALL {{link:'https://example.com'}}'EXAMPLE'{{/link}}
 CALL {{link:demo-label}}'JUMP TO LABEL'{{/link}}
 .
 
-EXIT PARAGRAPH {{link:demo-proc}}
+{{link:demo-proc}}EXIT PARAGRAPH{{/link}}
 .
-EXIT SECTION {{link:demo-proc}}
+{{link:demo-proc}}EXIT SECTION{{/link}}
 .
 ```
 

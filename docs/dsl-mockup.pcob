@@ -137,7 +137,7 @@ CALL 'LLDAP'
 .
 
 * GOBACK TO PROCEDURE DIVISION LINKS SECTION
-EXIT PARAGRAPH {{link:links}}
+{{link:links}}EXIT PARAGRAPH{{/link}}
 .
 
 @@  ^ CALL 'LLDAP' has no {{link}} wrapper at all — it's intentionally
@@ -163,7 +163,7 @@ DISPLAY
 @SLOT impressum-legal rows=11
 END-DISPLAY
 * GOBACK TO PROCEDURE DIVISION LINKS SECTION
-EXIT SECTION {{link:impressum}}
+{{link:impressum}}EXIT SECTION{{/link}}
 .
 
 @@  ^ @SLOT reserves 11 blank rendered rows between DISPLAY and
