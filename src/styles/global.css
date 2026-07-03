@@ -239,10 +239,6 @@ p {
     pointer-events: auto;
 }
 
-/* In top-punch-wrapper, card height is intrinsic (see .pcf-card comment above); capped so
-   it can't grow past the wrapper's padded region on a short viewport. */
-.top-punch-wrapper .pcf-card { max-height: 86vh; }
-
 /* ── TITLE BAR ──────────────────────────────────────────────────────────────── */
 .pcf-title-bar {
     display: grid;
@@ -718,16 +714,3 @@ p {
 .pcc-numval  { color: var(--blue-primary); }
 .pcc-dot     { color: #8B7040; }
 .pcc-comment { color: #9B8050; font-style: italic; }
-
-/* ── TOP SECTION LAYOUT WITH PUNCH CARD ─────────────────────────────────────── */
-.top-punch-wrapper {
-    flex: 1;
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    overflow: hidden;
-    padding-left: 5%;
-    padding-top: 7vh;
-    padding-bottom: 7vh;
-}

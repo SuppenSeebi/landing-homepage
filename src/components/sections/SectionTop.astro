@@ -5,58 +5,9 @@ type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
-// Static header + initial dynamic rows (item 0: IDENTITY)
-const LINES: Line[] = [
-    ['000001', [['div',' DATA DIVISION'],['dot','.']]],
-    ['000002', [['section',' WORKING-STORAGE SECTION'],['dot','.']]],
-    ['000003', []],
-    ['000004', [['lvl',' 01'],['name',' SSCHW-RECORD'],['dot','.']]],
-    ['000005', [['lvl','     05'],['name',' IDENTITY     '],['dot','.']]],
-    ['000006', [['lvl','       10'],['name',' NAME-VAL    '],['kw',' PIC X(32)'],['kw','  VALUE'],['val'," 'SEBASTIAN SCHWINN               '"],['dot','.']]],
-    ['000007', [['lvl','       10'],['name',' NAME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val'," 'NAME     '"],['dot','.']]],
-    ['000008', []],
-    ['000009', []],
-    ['000010', []],
-    ['000011', []],
-    ['000012', []],
-    ['000013', []],
-    ['000014', []],
-    ['000015', []],
-    ['000016', []],
-    ['000017', []],
-    ['000018', []],
-    ['000019', []],
-];
----
-<section id="top">
-    <div class="section-scroll-container">
-        <div class="section-content-wrapper">
-            <div class="top-container">
-                <div class="top-punch-wrapper">
-                    <PunchCard
-                        noStage={true}
-                        programName="SSCHW-DEV"
-                        programmerName="SEBASTIAN SCHWINN"
-                        currentSystem="RETROCODE GMBH"
-                        identificationHref="#impressum"
-                        lines={LINES}
-                    />
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+interface Item { group: string; value: string; desc: string }
 
-<div class="sections-scroll-space" id="scroll-space-top-aboutme"></div>
-
-<script>
-const scrollSpace = document.getElementById('scroll-space-top-aboutme') as HTMLElement;
-
-// ── Items ─────────────────────────────────────────────────────────────────────
-// Group: 14 chars (positions 6-19 in row 3)
-// Value: 34 chars (positions 37-70 in row 4)
-// Desc:  11 chars (positions 40-50 in row 5)
-const items = [
+const ITEMS: Item[] = [
     { group: ' IDENTITY     ', value: " 'SEBASTIAN SCHWINN               '", desc: " 'NAME     '" },
     { group: ' BACKGROUND   ', value: " 'MSC ELECTRICAL ENGINEERING      '", desc: " 'EDUCATION'" },
     { group: ' CAREER       ', value: " 'COBOL DEVELOPER AT RETROCODE    '", desc: " 'CURR-ROLE'" },
@@ -66,106 +17,59 @@ const items = [
     { group: ' COMMUNITY    ', value: " 'TENNIS + TABLE TENNIS CLUBS     '", desc: " 'COMMUNITY'" },
 ];
 
-// Span position constants (character offsets within each row's .pcf-chars)
-// Row 4 (index 4): ['lvl','     05'] = 7 chars, then ['name',' IDENTITY     '] = 14 chars
-const NAME_ROW = 4;
-const NAME_START = 7;
-const NAME_LEN = 14;
-
-// Row 5 (index 5): lvl(9) + name(13) + kw(10) + kw(7) = 39, then val(34)
-const VAL_ROW = 5;
-const VAL_START = 39;
-const VAL_LEN = 35;
-
-// Row 6 (index 6): lvl(9) + name(13) + kw(10) + kw(7) = 39, then val(12)
-const DESC_ROW = 6;
-const DESC_START = 39;
-const DESC_LEN = 12;
-
-// ── Row helpers ────────────────────────────────────────────────────────────────
-
-function getRowSpans(area: HTMLElement, rowIdx: number): HTMLElement[] {
-    const rows = area.querySelectorAll('.pcf-line-row');
-    const row = rows[rowIdx];
-    if (!row) return [];
-    return Array.from(row.querySelectorAll('.pcf-chars span')) as HTMLElement[];
+// Every card shares the same DIVISION/SECTION/01-level header; only the 05 group name and
+// the two 10-level VALUE tokens vary per item.
+function buildCard(item: Item): Line[] {
+    return [
+        ['000001', [['div',' DATA DIVISION'],['dot','.']]],
+        ['000002', [['section',' WORKING-STORAGE SECTION'],['dot','.']]],
+        ['000003', []],
+        ['000004', [['lvl',' 01'],['name',' SSCHW-RECORD'],['dot','.']]],
+        ['000005', [['lvl','     05'],['name', item.group],['dot','.']]],
+        ['000006', [['lvl','       10'],['name',' NAME-VAL    '],['kw',' PIC X(32)'],['kw','  VALUE'],['val', item.value],['dot','.']]],
+        ['000007', [['lvl','       10'],['name',' NAME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val', item.desc],['dot','.']]],
+        ['000008', []],
+        ['000009', []],
+        ['000010', []],
+        ['000011', []],
+        ['000012', []],
+        ['000013', []],
+        ['000014', []],
+        ['000015', []],
+        ['000016', []],
+        ['000017', []],
+        ['000018', []],
+        ['000019', []],
+    ];
 }
 
-// A blank span still needs a real (non-collapsing) text node - not '' - to keep a line box
-// and match the row height of its siblings; see PunchCard.astro's renderLinesForArea for the
-// full explanation of why a childless/empty span collapses to 0 height.
-function directUpdate(spans: HTMLElement[], start: number, len: number, text: string, cls: string) {
-    for (let i = 0; i < len; i++) {
-        const span = spans[start + i];
-        if (!span) continue;
-        const ch = text[i] ?? ' ';
-        if (ch === ' ') { span.className = 'pcc-empty'; span.textContent = ' '; }
-        else { span.className = cls; span.textContent = ch; }
-    }
-}
+const CARDS = ITEMS.map(buildCard);
+const CARD_COUNT = CARDS.length;
+---
+<section id="top">
+    <div class="section-scroll-container" style={`height: ${CARD_COUNT * 88}vh;`}>
+        <div class="section-content-wrapper">
+            <div class="pcf-stage-multi">
+                {CARDS.map(lines => (
+                    <PunchCard
+                        noStage={true}
+                        programName="SSCHW-DEV"
+                        programmerName="SEBASTIAN SCHWINN"
+                        currentSystem="RETROCODE GMBH"
+                        identificationHref="#impressum"
+                        lines={lines}
+                    />
+                ))}
+            </div>
+        </div>
+    </div>
+</section>
 
-// ── Scroll height ─────────────────────────────────────────────────────────────
+<script>
+import { setupMultiCardSection } from '../../scripts/multiCardSection.ts';
 
-const INTERVAL_HEIGHT = 70;
+setupMultiCardSection('top');
 
-function setScrollHeight() {
-    const container = document.querySelector<HTMLElement>('#top .section-scroll-container');
-    if (container) container.style.height = `${INTERVAL_HEIGHT * items.length + window.innerHeight / 2}px`;
-    if (scrollSpace) scrollSpace.style.height = `${INTERVAL_HEIGHT}px`;
-}
-window.addEventListener('load', setScrollHeight);
-window.addEventListener('resize', setScrollHeight);
-
-// ── Dynamic row wiring (runs after PunchCard renders the area) ────────────────
-
-let nameSpans: HTMLElement[] = [];
-let valSpans: HTMLElement[] = [];
-let descSpans: HTMLElement[] = [];
-let dynamicReady = false;
-
-function waitForRender(): Promise<void> {
-    return new Promise(resolve => {
-        const area = document.querySelector<HTMLElement>('#top .pcf-punch-area');
-        if (!area) { resolve(); return; }
-        if (area.dataset.rendered) { resolve(); return; }
-        const check = () => {
-            if (area?.dataset.rendered) { resolve(); return; }
-            requestAnimationFrame(check);
-        };
-        requestAnimationFrame(check);
-    });
-}
-
-(async () => {
-    await waitForRender();
-    const area = document.querySelector<HTMLElement>('#top .pcf-punch-area');
-    if (!area) return;
-    nameSpans = getRowSpans(area, NAME_ROW);
-    valSpans  = getRowSpans(area, VAL_ROW);
-    descSpans = getRowSpans(area, DESC_ROW);
-    // Initialise to item 0 (already encoded in LINES, but set explicitly for safety)
-    directUpdate(nameSpans, NAME_START, NAME_LEN, items[0].group, 'pcc-name');
-    directUpdate(valSpans,  VAL_START,  VAL_LEN,  items[0].value, 'pcc-val');
-    directUpdate(descSpans, DESC_START, DESC_LEN, items[0].desc,  'pcc-val');
-    dynamicReady = true;
-})();
-
-// ── State machine (called by app.ts on each scroll tick in #top) ──────────────
-
-let current = 0;
-
-export function statemachineTopRun() {
-    const next = Math.min(Math.floor(window.scrollY / INTERVAL_HEIGHT), items.length - 1);
-    if (next === current) return;
-
-    if (dynamicReady) {
-        directUpdate(nameSpans, NAME_START, NAME_LEN, items[next].group, 'pcc-name');
-        directUpdate(valSpans,  VAL_START,  VAL_LEN,  items[next].value, 'pcc-val');
-        directUpdate(descSpans, DESC_START, DESC_LEN, items[next].desc, 'pcc-val');
-    }
-
-    current = next;
-}
-
+export function statemachineTopRun() {}
 (window as any).__topRun = statemachineTopRun;
 </script>
