@@ -364,17 +364,21 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
   `docs/pcob-reference.md`'s Complete example, not by any real page. `impressum.pcob` is written
   to match current reality (no `@SLOT`); `CLAUDE.md` updated to describe the actual JS-measured
   overlay instead of the abandoned slot design.
-- **Preserved as-is, not fixed: Impressum's `EXIT SECTION` links to itself, but the comment next
-  to it says "GOBACK TO PROCEDURE DIVISION LINKS SECTION."** The existing hand-written
-  `callLinks={{ 'EXIT SECTION': '#impressum' }}` really does point at `#impressum` (itself), while
-  the adjacent hand-typed comment reads like it should point at `#links` instead. Since comments
-  are inert rendered text (per the Core rule, they don't drive behavior) and the resolved
-  decisions log already treats self-links as unremarkable — "if the resolved anchor happens to
-  match the page you're already on, that's not a distinct case" — this isn't a compiler bug to
-  silently normalize one way or the other. Migrated verbatim (`{{link:impressum}}EXIT
-  SECTION{{/link}}`, matching the existing behavior exactly) rather than guessing which of the two
-  (the link target or the comment wording) was the actual mistake — that's a content call for
-  Sebastian, not a migration one.
+- **Resolved: the "EXIT SECTION → #impressum vs. comment says LINKS SECTION" mismatch flagged
+  above.** Migrated verbatim first, then Sebastian decided on the actual intent directly:
+  `impressum.pcob`'s closing statement is now `{{link:'#top'}}GOBACK{{/link}}` (was
+  `{{link:impressum}}EXIT SECTION{{/link}}`) with the comment updated to match ("GOBACK TO DATA
+  DIVISION WORKING-STORAGE SECTION," mirroring the existing `GOBACK TO PROCEDURE DIVISION LINKS
+  SECTION` phrasing style used elsewhere). `GOBACK` wasn't yet a recognized statement verb —
+  added to `STATEMENT_VERBS` in `tokenizeCardLine.ts`, with `docs/pcob-reference.md`'s statement
+  row table and Complete example updated in the same commit (a new `GOBACK` line linking across
+  sections, `{{link:demo-data}}GOBACK{{/link}}`) per `CLAUDE.md`'s DSL-doc-sync rule. Also
+  surfaced: anchors don't span `.pcob` files — each file compiles as its own independent
+  `compileProgram()` call with its own anchor registry, so `{{link:top}}` from within
+  `impressum.pcob` fails (`top` is only declared in `top.pcob`). Worked around with the existing
+  external-link form, `{{link:'#top'}}` (a quoted param is used as a literal href with no anchor
+  lookup, regardless of whether it's actually off-site) — cross-file internal navigation has no
+  dedicated syntax yet, this is the pragmatic option today's compiler already supports.
 - **Fixed: hyphen-joined header line misclassified as a paragraph name.** Found while migrating
   Impressum: `IMPRESSUM-SECTION.` (the card's own heading, styled `section` in the original
   hand-written array) was coming out of the compiler as `para` instead. Root cause:

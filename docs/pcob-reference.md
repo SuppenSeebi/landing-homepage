@@ -61,7 +61,7 @@ recognized shape is passed through literally, same as everything else:
 | `.` (anywhere on the line, alone) | Standalone closing dot, exactly as indented — a bare `.` renders unindented; `     .` renders with 5 leading spaces. Nothing is added. |
 | `* some text` | Comment row, rendered exactly as typed. |
 | `01 / 05 / 10 / 88 NAME ...` | Level row — leading whitespace before the level number, and the whitespace between the number and the name, are both kept exactly as typed. Everything after the name (PIC clause, VALUE, spacing between them) is likewise literal, author-controlled text. |
-| `CALL '...'`, `EXIT PARAGRAPH`, `EXIT SECTION`, `DISPLAY`, `END-DISPLAY` | Statement row — leading whitespace before the verb is kept exactly as typed (want the usual 5-space Area B indent? type 5 spaces). |
+| `CALL '...'`, `EXIT PARAGRAPH`, `EXIT SECTION`, `GOBACK`, `DISPLAY`, `END-DISPLAY` | Statement row — leading whitespace before the verb is kept exactly as typed (want the usual 5-space Area B indent? type 5 spaces). |
 | `... DIVISION` / `... SECTION` (optionally followed by `.`), incl. hyphen-joined (`...-SECTION`) | Header row — colored as a DIVISION/SECTION heading. Purely recognition of text you wrote, indentation included; `@DIVISION`/`@SECTION` do not generate this line for you. The trailing word is matched on a word boundary, not a required preceding space, so `IMPRESSUM-SECTION.` is recognized the same as `LINKS SECTION.`. |
 | A single bare word, e.g. `SERVICES-PRGRPH.` | Paragraph-name row — colored as a paragraph heading. Same rule: `@CARD` names the nav entry, it does not stamp this line into the card. |
 
@@ -142,6 +142,9 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
      .
      {{link:demo-proc}}EXIT SECTION{{/link}}
      .
+
+     {{link:demo-data}}GOBACK{{/link}}
+     .
 ```
 
 What's exercised, in order: `@@` comment, program-level `@ROWS`, `@DIVISION DATA`, `@SECTION`
@@ -160,5 +163,7 @@ row (column 1, exactly as typed); `DISPLAY`/`@SLOT`/`END-DISPLAY` (each statemen
 indent typed by hand); a `CALL` with an external (quoted) `{{link}}` and one with an internal
 (bare-name) `{{link}}` to the `{{anchor}}` declared earlier; a standalone `.` indented to match
 the statements above it (also typed, not automatic); a content blank line (kept, since it
-precedes card text, not a directive); and both `EXIT PARAGRAPH` and `EXIT SECTION`, each linking
-back to their own section by explicit name (no implicit `self`).
+precedes card text, not a directive); `EXIT PARAGRAPH` and `EXIT SECTION`, each linking back to
+their own section by explicit name (no implicit `self`); and a final `GOBACK`, linking back across
+divisions to the other section's anchor (`demo-data`) — same statement-row treatment as any other
+recognized verb, just a different word.

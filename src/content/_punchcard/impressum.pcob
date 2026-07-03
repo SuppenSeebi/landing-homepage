@@ -27,6 +27,6 @@
 
 
      END-DISPLAY
-* GOBACK TO PROCEDURE DIVISION LINKS SECTION
-     {{link:impressum}}EXIT SECTION{{/link}}
+* GOBACK TO DATA DIVISION WORKING-STORAGE SECTION
+     {{link:'#top'}}GOBACK{{/link}}
      .

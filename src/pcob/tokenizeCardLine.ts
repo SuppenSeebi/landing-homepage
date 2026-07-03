@@ -22,7 +22,7 @@ export interface LineResult {
     callLinks: Record<string, string>;
 }
 
-const STATEMENT_VERBS = ['END-DISPLAY', 'DISPLAY', 'EXIT PARAGRAPH', 'EXIT SECTION', 'CALL'] as const;
+const STATEMENT_VERBS = ['END-DISPLAY', 'DISPLAY', 'EXIT PARAGRAPH', 'EXIT SECTION', 'GOBACK', 'CALL'] as const;
 
 function findWord(haystack: string, word: string, from = 0): number {
     const re = new RegExp(`\\b${word}\\b`);
