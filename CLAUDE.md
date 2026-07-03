@@ -17,7 +17,7 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 | `src/pages/index.astro` | Root — imports Logo + 5 sections |
 | `src/components/Logo.astro` | Fixed SVG logo, noise + arc marquee |
 | `src/components/PunchCard.astro` | Reusable IBM punch card shell (title bar, form header, coding area) |
-| `src/components/sections/SectionTop.astro` | Hero — WORKING-STORAGE, scroll-cycled fields (instant update, no scramble) |
+| `src/components/sections/SectionTop.astro` | Hero — WORKING-STORAGE, 7-card stack, switching via `multiCardSection.ts` |
 | `src/components/sections/SectionAboutMe.astro` | LOCAL-STORAGE — 5-card stack, switching via `multiCardSection.ts` |
 | `src/components/sections/SectionWork.astro` | LINKAGE SECTION — 2-card stack, switching via `multiCardSection.ts` |
 | `src/components/sections/SectionLinks.astro` | PROCEDURE DIVISION LINKS — 2-card stack, switching via `multiCardSection.ts` |
@@ -110,25 +110,13 @@ Statements (`CALL`, `EXIT PARAGRAPH`, `DISPLAY`, `.`) indent: **`     `** (5 spa
 
 ---
 
-## SectionTop dynamic rows
+## SectionTop card data
 
-Scroll interval: `INTERVAL_HEIGHT = 70px`, 7 items cycling.
+Not a special case anymore — SectionTop is a `.pcf-stage-multi` section like AboutMe/Work/Links
+(see below), just with `CARD_COUNT = 7`. Each card is built by a local `buildCard(item)` helper
+from a shared 19-row template (same DIVISION/SECTION/01-level header on every card); only the
+05-level group name and the two 10-level VALUE tokens vary per item:
 
-```
-NAME_ROW = 4   // row index (0-based) for the 05 group line
-NAME_START = 7 // char offset into pcf-chars for the name token
-NAME_LEN = 14
-
-VAL_ROW = 5    // 10 NAME-VAL line
-VAL_START = 39 // lvl(9) + name(13) + kw(10) + kw(7) = 39
-VAL_LEN = 34   // length of the val token including quotes
-
-DESC_ROW = 6   // 10 NAME-DSCRPTN line
-DESC_START = 39
-DESC_LEN = 11
-```
-
-Items (group / value / desc):
 ```
 IDENTITY    / 'SEBASTIAN SCHWINN               ' / 'NAME     '
 BACKGROUND  / 'MSC ELECTRICAL ENGINEERING      ' / 'EDUCATION'
@@ -139,12 +127,12 @@ INTERESTS   / '3D PRINTING - TECHNICAL TINKERIN' / 'HOBBIES  '
 COMMUNITY   / 'TENNIS + TABLE TENNIS CLUBS     ' / 'COMMUNITY'
 ```
 
-No animation — all three fields (group/value/desc) update instantly via `directUpdate` on
-every scroll-tick item change. No photo panel (removed).
+No animation, no photo panel (both removed) — cards switch the same instant way as every other
+multi-card section.
 
 ---
 
-## Multi-card sections (SectionAboutMe, SectionWork, SectionLinks)
+## Multi-card sections (SectionTop, SectionAboutMe, SectionWork, SectionLinks)
 
 Pattern:
 ```astro
@@ -209,15 +197,27 @@ marquee animation is separate and always-running, unrelated to scroll.
 DIVISION_MAP = { data: ['top','aboutme','work'], proc: ['links','impressum'] }
 
 PARAS_BY_SECTION = {
-  top:       [{ label: '01 SSCHW-RECORD.', href: '#top' }],
-  aboutme:   [WORK-NOW, WORK-BFRE, STUDIES, PRG-LANGUAGES, VOC-LANGUAGES]
-  work:      [WORK-CURRENT, WORK-PREV]
-  links:     [SERVICES-PRGRPH, SOCIALS-PRGRPH]
-  impressum: [IMPRESSUM-PRGRPH]
+  // each entry: { label, href, cardIdx } — cardIdx addresses a specific card within the section
+  top:       [IDENTITY(0), BACKGROUND(1), CAREER-CURR(2), CAREER-PREV(3), SKILLS(4), INTERESTS(5), COMMUNITY(6)]
+  aboutme:   [WORK-NOW(0), WORK-BFRE(1), STUDIES(2), PRG-LANGUAGES(3), VOC-LANGUAGES(4)]
+  work:      [WORK-CURRENT(0), WORK-PREV(1)]
+  links:     [SERVICES-PRGRPH(0), SOCIALS-PRGRPH(1)]
+  impressum: [IMPRESSUM-SECTION(0)]
 }
 ```
 
 Nav highlight: `pcf-nav-active` class + `▶ ` pseudo-content before active items.
+
+Paragraph-level nav is card-aware, not just section-aware: `multiCardSection.ts` writes the
+active card index onto its `<section>` as `data-active-card` on every switch (and at setup).
+`PunchCard.astro`'s `updatePcfNav` reads that attribute and only highlights the `.pcf-para-item`
+whose `data-sec`/`data-card-idx` match the active section + active card — not every paragraph
+in the section at once. Clicking a paragraph link doesn't rely on native anchor scrolling
+(which would always land on the section's start = card 0); a delegated click handler on
+`.pcf-para-item` computes the target card's scroll position (`section.offsetTop + cardIdx *
+cardH + cardH/2`, same math `multiCardSection.ts` uses internally) and calls `window.scrollTo()`
+directly. Single-card sections (Impressum) need no wiring — `data-active-card` is simply never
+set, and the lookup falls back to `'0'`, matching `cardIdx: 0`.
 
 ---
 
