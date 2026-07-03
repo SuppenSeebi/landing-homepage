@@ -1,53 +1,12 @@
 ---
 import PunchCard from '../PunchCard.astro';
+import { compileProgram } from '../../pcob/compile';
+import workSource from '../../content/_punchcard/work.pcob?raw';
 
-type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
-type Token = [TT, string];
-type Line  = [string, Token[]];
-
-const CARD_CURRENT: Line[] = [
-    ['000001', [['div',' DATA DIVISION'],['dot','.']]],
-    ['000002', [['section',' LINKAGE SECTION'],['dot','.']]],
-    ['000003', [['lvl',' 01'],['name',' WORKLOAD'],['dot','.']]],
-    ['000004', []],
-    ['000005', [['lvl','     05'],['name',' WORK-CURRENT'],['dot','.']]],
-    ['000006', [['lvl','       10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'RETROCODE'"],['dot','.']]],
-    ['000007', [['lvl','       10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'COBOL DEVELOPER'"],['dot','.']]],
-    ['000008', [['lvl','       10'],['name',' SECTOR '],['kw',' PIC X(25)'],['kw',' VALUE'],['val'," 'FINANCIAL SECTOR'"],['dot','.']]],
-    ['000009', [['lvl','       10'],['name',' SINCE  '],['kw',' PIC 9(4) '],['kw',' VALUE'],['numval',' 2025'],['dot','.']]],
-    ['000010', [['lvl','       10'],['name',' PROFILE'],['kw',' PIC X(50)'],['kw',' VALUE'],['val'," 'linkedin.com/in/sschwinn/'"],['dot','.']]],
-    ['000011', []],
-    ['000012', []],
-    ['000013', []],
-    ['000014', []],
-    ['000015', []],
-    ['000016', []],
-    ['000017', [['comment','* LINKAGE: data passed from calling program context']]],
-    ['000018', []],
-    ['000019', []],
-];
-
-const CARD_PREV: Line[] = [
-    ['000001', [['div',' DATA DIVISION'],['dot','.']]],
-    ['000002', [['section',' LINKAGE SECTION'],['dot','.']]],
-    ['000003', [['lvl',' 01'],['name',' WORKLOAD'],['dot','.']]],
-    ['000004', []],
-    ['000005', [['lvl','     05'],['name',' WORK-PREV'],['dot','.']]],
-    ['000006', [['lvl','       10'],['name',' COMPANY'],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'HILSCHER'"],['dot','.']]],
-    ['000007', [['lvl','       10'],['name',' ROLE   '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'C DEVELOPER'"],['dot','.']]],
-    ['000008', [['lvl','       10'],['name',' DOMAIN '],['kw',' PIC X(30)'],['kw',' VALUE'],['val'," 'INDUSTRIAL AUTOMATION'"],['dot','.']]],
-    ['000009', [['lvl','       10'],['name',' TECH   '],['kw',' PIC X(40)'],['kw',' VALUE'],['val'," 'OPC UA / EMBEDDED C'"],['dot','.']]],
-    ['000010', []],
-    ['000011', []],
-    ['000012', []],
-    ['000013', []],
-    ['000014', []],
-    ['000015', []],
-    ['000016', []],
-    ['000017', [['comment','* LINKAGE: data passed from calling program context']]],
-    ['000018', []],
-    ['000019', []],
-];
+const compiled = compileProgram(workSource);
+const workSection = compiled.sections.find(s => s.id === 'work')!;
+const currentCard = workSection.cards.find(c => c.name === 'WORK-CURRENT')!;
+const prevCard    = workSection.cards.find(c => c.name === 'WORK-PREV')!;
 
 const CARD_COUNT = 2;
 ---
@@ -61,8 +20,8 @@ const CARD_COUNT = 2;
                     programmerName="SEBASTIAN SCHWINN"
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
-                    lines={CARD_CURRENT}
-                    callLinks={{ " 'linkedin.com/in/sschwinn/'": 'https://www.linkedin.com/in/sschwinn/' }}
+                    lines={currentCard.lines}
+                    callLinks={currentCard.callLinks}
                 />
                 <PunchCard
                     noStage={true}
@@ -70,7 +29,8 @@ const CARD_COUNT = 2;
                     programmerName="SEBASTIAN SCHWINN"
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
-                    lines={CARD_PREV}
+                    lines={prevCard.lines}
+                    callLinks={prevCard.callLinks}
                 />
             </div>
         </div>

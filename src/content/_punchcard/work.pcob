@@ -1,0 +1,44 @@
+@@ WORK section — Phase 4 migration of SectionWork.astro
+@@ Indentation is not implicit: every leading space below is typed on purpose.
+@ROWS 19
+
+@DIVISION DATA
+@SECTION LINKAGE id=work
+
+@CARD WORK-CURRENT
+ DATA DIVISION.
+ LINKAGE SECTION.
+ 01 WORKLOAD.
+
+     05 WORK-CURRENT.
+       10 COMPANY PIC X(30) VALUE 'RETROCODE'.
+       10 ROLE    PIC X(30) VALUE 'COBOL DEVELOPER'.
+       10 SECTOR  PIC X(25) VALUE 'FINANCIAL SECTOR'.
+       10 SINCE   PIC 9(4)  VALUE 2025.
+       10 PROFILE PIC X(50) VALUE {{link:'https://www.linkedin.com/in/sschwinn/'}}'linkedin.com/in/sschwinn/'{{/link}}.
+
+
+
+
+
+
+* LINKAGE: data passed from calling program context
+
+@CARD WORK-PREV
+ DATA DIVISION.
+ LINKAGE SECTION.
+ 01 WORKLOAD.
+
+     05 WORK-PREV.
+       10 COMPANY PIC X(30) VALUE 'HILSCHER'.
+       10 ROLE    PIC X(30) VALUE 'C DEVELOPER'.
+       10 DOMAIN  PIC X(30) VALUE 'INDUSTRIAL AUTOMATION'.
+       10 TECH    PIC X(40) VALUE 'OPC UA / EMBEDDED C'.
+
+
+
+
+
+
+
+* LINKAGE: data passed from calling program context
