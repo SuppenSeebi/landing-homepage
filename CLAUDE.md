@@ -113,22 +113,17 @@ Statements (`CALL`, `EXIT PARAGRAPH`, `DISPLAY`, `.`) indent: **`     `** (5 spa
 ## SectionTop card data
 
 Not a special case anymore — SectionTop is a `.pcf-stage-multi` section like AboutMe/Work/Links
-(see below), just with `CARD_COUNT = 7`. Each card is built by a local `buildCard(item)` helper
-from a shared 19-row template (same DIVISION/SECTION/01-level header on every card); only the
-05-level group name and the two 10-level VALUE tokens vary per item:
+(see below), just with `CARD_COUNT = 7`. Compiled from `src/content/_punchcard/top.pcob`
+(7 `@CARD`s sharing one DIVISION/SECTION/01-level header; only the 05-level group name and the
+two 10-level VALUE strings vary per card — see that file for the exact padded text):
 
 ```
-IDENTITY    / 'SEBASTIAN SCHWINN               ' / 'NAME     '
-BACKGROUND  / 'MSC ELECTRICAL ENGINEERING      ' / 'EDUCATION'
-CAREER      / 'COBOL DEVELOPER AT RETROCODE    ' / 'CURR-ROLE'
-CAREER      / 'EMBEDDED C / OPC-UA             ' / 'PREV-ROLE'
-SKILLS      / 'PYTHON  SQL-DB2  JCL  JS        ' / 'LANGUAGES'
-INTERESTS   / '3D PRINTING - TECHNICAL TINKERIN' / 'HOBBIES  '
-COMMUNITY   / 'TENNIS + TABLE TENNIS CLUBS     ' / 'COMMUNITY'
+IDENTITY     BACKGROUND   CAREER-CURR  CAREER-PREV  SKILLS  INTERESTS  COMMUNITY
 ```
 
 No animation, no photo panel (both removed) — cards switch the same instant way as every other
-multi-card section.
+multi-card section. `punch-nav.ts`'s `PARAS_BY_SECTION.top` labels stay hand-written for now
+(nav consolidation is a deferred follow-up, see `docs/punch-card-content-system.md`).
 
 ---
 

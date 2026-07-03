@@ -1,0 +1,74 @@
+@@ TOP section — Phase 4 migration of SectionTop.astro
+@@ Indentation is not implicit: every leading space below is typed on purpose.
+@@ All 7 cards share the same DATA DIVISION/WORKING-STORAGE SECTION/01 header;
+@@ only the 05 group name and the two 10-level VALUE strings vary per card.
+@@ No {{cycle}} tag is used - the field-cycling animation this data once fed
+@@ was removed (see CLAUDE.md's SectionTop history); every card here is just
+@@ static text, same as every other migrated section.
+@ROWS 19
+
+@DIVISION DATA
+@SECTION WORKING-STORAGE id=top
+
+@CARD IDENTITY
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+
+ 01 SSCHW-RECORD.
+     05 IDENTITY     .
+       10 NAME-VAL     PIC X(32)  VALUE 'SEBASTIAN SCHWINN               '.
+       10 NAME-DSCRPTN PIC X(9)   VALUE 'NAME     '.
+
+@CARD BACKGROUND
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+
+ 01 SSCHW-RECORD.
+     05 BACKGROUND   .
+       10 NAME-VAL     PIC X(32)  VALUE 'MSC ELECTRICAL ENGINEERING      '.
+       10 NAME-DSCRPTN PIC X(9)   VALUE 'EDUCATION'.
+
+@CARD CAREER-CURR
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+
+ 01 SSCHW-RECORD.
+     05 CAREER       .
+       10 NAME-VAL     PIC X(32)  VALUE 'COBOL DEVELOPER AT RETROCODE    '.
+       10 NAME-DSCRPTN PIC X(9)   VALUE 'CURR-ROLE'.
+
+@CARD CAREER-PREV
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+
+ 01 SSCHW-RECORD.
+     05 CAREER       .
+       10 NAME-VAL     PIC X(32)  VALUE 'EMBEDDED C / OPC-UA             '.
+       10 NAME-DSCRPTN PIC X(9)   VALUE 'PREV-ROLE'.
+
+@CARD SKILLS
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+
+ 01 SSCHW-RECORD.
+     05 SKILLS       .
+       10 NAME-VAL     PIC X(32)  VALUE 'PYTHON  SQL-DB2  JCL  JS        '.
+       10 NAME-DSCRPTN PIC X(9)   VALUE 'LANGUAGES'.
+
+@CARD INTERESTS
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+
+ 01 SSCHW-RECORD.
+     05 INTERESTS    .
+       10 NAME-VAL     PIC X(32)  VALUE '3D PRINTING - TECHNICAL TINKERIN'.
+       10 NAME-DSCRPTN PIC X(9)   VALUE 'HOBBIES  '.
+
+@CARD COMMUNITY
+ DATA DIVISION.
+ WORKING-STORAGE SECTION.
+
+ 01 SSCHW-RECORD.
+     05 COMMUNITY    .
+       10 NAME-VAL     PIC X(32)  VALUE 'TENNIS + TABLE TENNIS CLUBS     '.
+       10 NAME-DSCRPTN PIC X(9)   VALUE 'COMMUNITY'.

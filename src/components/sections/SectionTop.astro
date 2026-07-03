@@ -1,63 +1,27 @@
 ---
 import PunchCard from '../PunchCard.astro';
+import { compileProgram } from '../../pcob/compile';
+import topSource from '../../content/_punchcard/top.pcob?raw';
 
-type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
-type Token = [TT, string];
-type Line  = [string, Token[]];
-
-interface Item { group: string; value: string; desc: string }
-
-const ITEMS: Item[] = [
-    { group: ' IDENTITY     ', value: " 'SEBASTIAN SCHWINN               '", desc: " 'NAME     '" },
-    { group: ' BACKGROUND   ', value: " 'MSC ELECTRICAL ENGINEERING      '", desc: " 'EDUCATION'" },
-    { group: ' CAREER       ', value: " 'COBOL DEVELOPER AT RETROCODE    '", desc: " 'CURR-ROLE'" },
-    { group: ' CAREER       ', value: " 'EMBEDDED C / OPC-UA             '", desc: " 'PREV-ROLE'" },
-    { group: ' SKILLS       ', value: " 'PYTHON  SQL-DB2  JCL  JS        '", desc: " 'LANGUAGES'" },
-    { group: ' INTERESTS    ', value: " '3D PRINTING - TECHNICAL TINKERIN'", desc: " 'HOBBIES  '" },
-    { group: ' COMMUNITY    ', value: " 'TENNIS + TABLE TENNIS CLUBS     '", desc: " 'COMMUNITY'" },
-];
-
-// Every card shares the same DIVISION/SECTION/01-level header; only the 05 group name and
-// the two 10-level VALUE tokens vary per item.
-function buildCard(item: Item): Line[] {
-    return [
-        ['000001', [['div',' DATA DIVISION'],['dot','.']]],
-        ['000002', [['section',' WORKING-STORAGE SECTION'],['dot','.']]],
-        ['000003', []],
-        ['000004', [['lvl',' 01'],['name',' SSCHW-RECORD'],['dot','.']]],
-        ['000005', [['lvl','     05'],['name', item.group],['dot','.']]],
-        ['000006', [['lvl','       10'],['name',' NAME-VAL    '],['kw',' PIC X(32)'],['kw','  VALUE'],['val', item.value],['dot','.']]],
-        ['000007', [['lvl','       10'],['name',' NAME-DSCRPTN'],['kw',' PIC X(9) '],['kw','  VALUE'],['val', item.desc],['dot','.']]],
-        ['000008', []],
-        ['000009', []],
-        ['000010', []],
-        ['000011', []],
-        ['000012', []],
-        ['000013', []],
-        ['000014', []],
-        ['000015', []],
-        ['000016', []],
-        ['000017', []],
-        ['000018', []],
-        ['000019', []],
-    ];
-}
-
-const CARDS = ITEMS.map(buildCard);
+const compiled = compileProgram(topSource);
+const topSection = compiled.sections.find(s => s.id === 'top')!;
+const CARD_NAMES = ['IDENTITY', 'BACKGROUND', 'CAREER-CURR', 'CAREER-PREV', 'SKILLS', 'INTERESTS', 'COMMUNITY'];
+const CARDS = CARD_NAMES.map(name => topSection.cards.find(c => c.name === name)!);
 const CARD_COUNT = CARDS.length;
 ---
 <section id="top">
     <div class="section-scroll-container" style={`height: ${CARD_COUNT * 88}vh;`}>
         <div class="section-content-wrapper">
             <div class="pcf-stage-multi">
-                {CARDS.map(lines => (
+                {CARDS.map(card => (
                     <PunchCard
                         noStage={true}
                         programName="SSCHW-DEV"
                         programmerName="SEBASTIAN SCHWINN"
                         currentSystem="RETROCODE GMBH"
                         identificationHref="#impressum"
-                        lines={lines}
+                        lines={card.lines}
+                        callLinks={card.callLinks}
                     />
                 ))}
             </div>

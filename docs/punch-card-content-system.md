@@ -203,6 +203,17 @@ silently worked around.
 | 4.9 | Impressum: write `src/content/_punchcard/impressum.pcob`, mechanically derived from `SectionImpressum.astro`'s single hand-written array — **not** using `@SLOT` (see Migration findings' "Impressum's SLOT was already dead" below). | **Done** — one `@CARD IMPRESSUM-SECTION`, 19 rows, no links/slots except a self-link (`{{link:impressum}}EXIT SECTION{{/link}}`) reproducing the existing card's own `callLinks={{ 'EXIT SECTION': '#impressum' }}` exactly, including its pre-existing mismatch with the "GOBACK TO ... LINKS SECTION" comment text next to it (see Migration findings — preserved as-is, not silently "corrected," since deciding the intended target is a content call, not a compiler one). |
 | 4.10 | Wire `SectionImpressum.astro` to compile 4.9's file; leave the JS-measured `.impressum-overlay` positioning script untouched (it measures rendered rows by index, not by any compiler-provided slot data). | **Done**. |
 | 4.11 | Verify structural equivalence. | **Done** — surfaced and fixed a real tokenizer gap along the way (see Migration findings' "Hyphen-joined header line misclassified"). After the fix, scratch comparison script: all rows match old array character-for-character with matching color class (including the corrected `IMPRESSUM-SECTION.` header coloring); link href matches; `astro build` succeeds. |
+| 4.12 | Top: write `src/content/_punchcard/top.pcob`, mechanically derived from `SectionTop.astro`'s `ITEMS`/`buildCard()` template (7 cards sharing one header, only the `05` group name and two `10`-level `VALUE` strings varying per card). | **Done** — `IDENTITY`, `BACKGROUND`, `CAREER-CURR`, `CAREER-PREV`, `SKILLS`, `INTERESTS`, `COMMUNITY`, program-level `@ROWS 19`, no links. The padded `VALUE` strings (e.g. `'SEBASTIAN SCHWINN               '`) were derived programmatically from the old `buildCard()` logic in a scratch script rather than hand-transcribed, since manually counting exact padding widths across 7 cards × 2 fields is error-prone. No `{{cycle}}` tag used — the field-cycling animation this data once fed was already removed (per `CLAUDE.md`'s SectionTop history: "No animation... Cards switch the same instant way as every other multi-card section"); every card is now just static text like everywhere else. |
+| 4.13 | Wire `SectionTop.astro` to compile 4.12's file, looking up all 7 cards by name in nav order. | **Done** — `ITEMS`/`buildCard()` deleted; `CARDS` is now `CARD_NAMES.map(name => topSection.cards.find(...))`. |
+| 4.14 | Verify structural equivalence. | **Done** — scratch comparison script (replicating the old `buildCard()` inline for comparison): all 7 cards match old arrays character-for-character with matching color class. `astro build` succeeds; compiled HTML contains all 7 cards' text. |
+
+**All five sections (Links, AboutMe, Work, Impressum, Top) are now compiled from `.pcob` source.**
+No hand-written `Line[]` arrays remain in any section component. Still outstanding before Phase 4
+can be called fully closed: Sebastian's one comprehensive visual pass across the whole site
+(waived per-section from 4.8 onward, see that row) and the `punch-nav.ts` consolidation, which
+was deliberately deferred out of every section's migration (see the `cardIdx` note above this
+table) and has no step number yet — it becomes its own scoped follow-up once nav-derivation is
+extended to carry `cardIdx`.
 
 ### Phase 5 — Re-introduce animation/transition tags (deferred, not blocking)
 - Today there are two distinct behaviors: SectionTop's per-field scramble-cycle and the
@@ -387,5 +398,5 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
 | 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
-| 4 — Full migration | In progress. AboutMe confirmed (4.1–4.4). Work migrated (4.5–4.7); per-section confirmation gate waived from 4.8 onward (Sebastian: "go for it") in favor of one comprehensive check at the end of Phase 4. Impressum migrated (4.9–4.11). Top not started. |
+| 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site, still outstanding. `punch-nav.ts` consolidation deliberately deferred, not yet scheduled. |
 | 5 — Animation tags | Deferred |
