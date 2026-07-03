@@ -17,12 +17,13 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 | `src/pages/index.astro` | Root — imports Logo + 5 sections |
 | `src/components/Logo.astro` | Fixed SVG logo, noise + arc marquee |
 | `src/components/PunchCard.astro` | Reusable IBM punch card shell (title bar, form header, coding area) |
-| `src/components/sections/SectionTop.astro` | Hero — WORKING-STORAGE with scroll-driven scramble + photo panel |
-| `src/components/sections/SectionAboutMe.astro` | LOCAL-STORAGE — 5-card noise-transition stack |
-| `src/components/sections/SectionWork.astro` | LINKAGE SECTION — 2-card noise-transition stack |
-| `src/components/sections/SectionLinks.astro` | PROCEDURE DIVISION LINKS — 2-card noise-transition stack |
+| `src/components/sections/SectionTop.astro` | Hero — WORKING-STORAGE, scroll-cycled fields (instant update, no scramble) |
+| `src/components/sections/SectionAboutMe.astro` | LOCAL-STORAGE — 5-card stack, switching via `multiCardSection.ts` |
+| `src/components/sections/SectionWork.astro` | LINKAGE SECTION — 2-card stack, switching via `multiCardSection.ts` |
+| `src/components/sections/SectionLinks.astro` | PROCEDURE DIVISION LINKS — 2-card stack, switching via `multiCardSection.ts` |
 | `src/components/sections/SectionImpressum.astro` | IMPRESSUM-SECTION — single card with `slotAtLine` slot injection |
-| `src/scripts/app.ts` | Main scroll handler: section activation, directional transitions, nav updates |
+| `src/scripts/app.ts` | Main scroll handler: section activation, instant panel snap, logo visibility |
+| `src/scripts/multiCardSection.ts` | Shared card-switching logic for multi-card sections (count read from DOM) |
 | `src/config/punch-nav.ts` | Nav config: DIVISION_MAP, SECTIONS_BY_DIV, PARAS_BY_SECTION |
 | `src/styles/global.css` | All styles (pcf-* punch card, section scroll system, token colors) |
 | `src/utils/punchText.ts` | Renders strings as wear/jitter span markup for form header values |
@@ -127,18 +128,19 @@ DESC_START = 39
 DESC_LEN = 11
 ```
 
-Items (group / value / desc / imageId):
+Items (group / value / desc):
 ```
-IDENTITY    / 'SEBASTIAN SCHWINN               ' / 'NAME     ' / top-me
-BACKGROUND  / 'MSC ELECTRICAL ENGINEERING      ' / 'EDUCATION' / top-degree
-CAREER      / 'COBOL DEVELOPER AT RETROCODE    ' / 'CURR-ROLE' / top-cobol
-CAREER      / 'EMBEDDED C / OPC-UA             ' / 'PREV-ROLE' / top-opcua
-SKILLS      / 'PYTHON  SQL-DB2  JCL  JS        ' / 'LANGUAGES' / top-coding
-INTERESTS   / '3D PRINTING - TECHNICAL TINKERIN' / 'HOBBIES  ' / top-3d
-COMMUNITY   / 'TENNIS + TABLE TENNIS CLUBS     ' / 'COMMUNITY' / top-sports
+IDENTITY    / 'SEBASTIAN SCHWINN               ' / 'NAME     '
+BACKGROUND  / 'MSC ELECTRICAL ENGINEERING      ' / 'EDUCATION'
+CAREER      / 'COBOL DEVELOPER AT RETROCODE    ' / 'CURR-ROLE'
+CAREER      / 'EMBEDDED C / OPC-UA             ' / 'PREV-ROLE'
+SKILLS      / 'PYTHON  SQL-DB2  JCL  JS        ' / 'LANGUAGES'
+INTERESTS   / '3D PRINTING - TECHNICAL TINKERIN' / 'HOBBIES  '
+COMMUNITY   / 'TENNIS + TABLE TENNIS CLUBS     ' / 'COMMUNITY'
 ```
 
-Animation: `scrambleRange` for name+val, `directUpdate` for desc.
+No animation — all three fields (group/value/desc) update instantly via `directUpdate` on
+every scroll-tick item change. No photo panel (removed).
 
 ---
 
@@ -158,18 +160,27 @@ Pattern:
 </section>
 ```
 
-Cards are `position: absolute; top: 7vh; bottom: 7vh; left: 7%; right: 7%; opacity: 0`.
+Cards are absolutely centered (`top: 50%; left: 50%; transform: translate(-50%,-50%)`), height
+intrinsic to row count (not stretched to a fixed region), `opacity: 0` by default.
 Active card: `pcf-card-active` → `opacity: 1`.
-Ghost silhouettes: `pcf-stage-multi::before/::after` (CSS pseudo-elements, 8px / 16px offset).
+Ghost silhouettes: `pcf-stage-multi::before/::after` (CSS pseudo-elements, 8px / 16px offset) —
+cosmetic only, known mismatch with intrinsically-sized cards of unusual `@ROWS`.
 
-Card switch: `scrambleCardRows` scrambles rows 2+ (skips DATA DIVISION + SECTION header rows), then swaps active class.
+Card switching is a shared module, `src/scripts/multiCardSection.ts` (`setupMultiCardSection(sectionId)`),
+called once from each section's own `<script>` block — no more per-section copy-pasted logic.
+Card count is read from the DOM (`cards.length`), not a separately-maintained constant, so the
+math is correct for any number of cards. Switching is a direct, synchronous class toggle — no
+scramble animation, no transition lock.
 
-Scroll calc:
+Scroll calc (inside `multiCardSection.ts`):
 ```js
 relScroll = window.scrollY - section.offsetTop;
-cardH     = section.scrollHeight / CARD_COUNT;  // = 88vh
-newIdx    = Math.floor(relScroll / cardH);
+cardH     = section.scrollHeight / cards.length;
+newIdx    = clamp(Math.floor(relScroll / cardH), 0, cards.length - 1);
 ```
+
+Each section's frontmatter still defines its own `CARD_COUNT` const — that one is unrelated to
+switching, it's only used for `style={height: CARD_COUNT * 88vh}` sizing of `.section-scroll-container`.
 
 ---
 
@@ -177,15 +188,18 @@ newIdx    = Math.floor(relScroll / cardH);
 
 - Each section: `.section-scroll-container` (tall, gives scrollable space) + `.section-content-wrapper` (position: fixed)
 - `getActiveSection()`: uses `window.scrollY + innerHeight/2` vs section `offsetTop + offsetHeight`
-- On section change: `transitionTo(id)` applies enter/exit CSS classes
-- Same DIVISION → horizontal slide (translateX); cross-DIVISION → vertical (translateY)
+- On section change: `transitionTo(id)` toggles `.active` on the wrapper — instant snap, no
+  animation (no `transition` CSS property, no enter/exit classes, no direction-from-scroll logic)
 - `sectionRunners` map calls `window.__topRun` etc. on each scroll tick while active
-
-DIVISION_OF: `top/aboutme/work → 'data'`, `links/impressum → 'proc'`
 
 Section runners:
 - `__topRun` (SectionTop): called every scroll tick while in #top — drives item cycling
-- `__aboutMeRun`, `__workRun`, `__linksRun`, `__impressumRun`: currently no-ops; card switching uses own `addEventListener('scroll', ...)` in each section's script
+- `__aboutMeRun`, `__workRun`, `__linksRun`, `__impressumRun`: no-ops; card switching uses
+  `multiCardSection.ts`'s own `addEventListener('scroll', ...)` in each section's script
+
+`updateLogo(id)` toggles `.visible` on `#logo-wrapper` (visible only on `#top`) — the only other
+thing `app.ts`'s scroll handler does besides section switching. `Logo.astro`'s own arc/noise
+marquee animation is separate and always-running, unrelated to scroll.
 
 ---
 
@@ -225,8 +239,8 @@ Nav highlight: `pcf-nav-active` class + `▶ ` pseudo-content before active item
 | `.section-scroll-container` | Tall spacer giving scrollable height |
 | `.section-content-wrapper` | `position: fixed; width: 100%; height: 100vh` — the visible content |
 
-Transition classes on `.section-content-wrapper`:
-`active | exit-up | exit-down | exit-left | exit-right | enter-up | enter-down | enter-left | enter-right`
+`.section-content-wrapper` has exactly two states: default (hidden) and `.active` (visible) —
+instant toggle, no transition/animation classes.
 
 ---
 
