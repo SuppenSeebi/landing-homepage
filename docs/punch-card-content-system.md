@@ -175,7 +175,7 @@ the durable record, not the conversation.
 | 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard>` props. | **Done** — `SERVICES-PRGRPH`/`SOCIALS-PRGRPH` cards looked up by name from the compiled section; hand-written `LINES`/`CALL_LINKS` arrays deleted. |
 | 3.4 | Verify structural equivalence against the current hand-written arrays. | **Done** — compiled `lines` are byte-identical to both hand-written arrays (verified via a scratch diff script, not committed — no test runner configured yet). `callLinks` differ from the old shared object by design/improvement: the compiler emits precise per-card link maps instead of one object with irrelevant keys reused across both cards; functionally equivalent since `PunchCard.astro` only looks up keys that exist in that card's own rendered text. `astro build` (via `node_modules/.bin/astro build`, since neither `pnpm` nor `npx astro` were on PATH in this shell) completed with no errors; output HTML contains the expected compiled text. |
 | 3.5 | Decide `punch-nav.ts` fate for this pilot. | **Done** — applied the stated default: left untouched. Links' nav entries in `src/config/punch-nav.ts` are still the hand-written ones; nav consolidation is deferred to Phase 4. |
-| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started — row-height regression that was blocking this is now fixed (see Migration findings' "Fixed: uneven row height regression"). Ready for confirmation. |
+| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | **Done** — confirmed 2026-07-03 across several sessions of scroll/nav/layout fixes exercising the whole site including the live Links section, ending with an explicit "I am happy with the design." |
 
 Anything that doesn't port cleanly gets written into the Migration findings below, not
 silently worked around.
@@ -184,6 +184,17 @@ silently worked around.
 - AboutMe (5 paragraphs), Work (2), Impressum (1, with its `SLOT` special case), Top (1).
 - Each migration gets its own visual check before moving to the next.
 - Delete the old hand-written arrays and `punch-nav.ts` content once each section is confirmed.
+- `punch-nav.ts` stays hand-written for now (per the 3.5 precedent) — its `PARAS_BY_SECTION`
+  entries carry a `cardIdx` (added after the compiler's nav-derivation code was written) that
+  `compileProgram()`'s own `parasBySection` output doesn't produce yet. Nav consolidation
+  remains its own deferred step, not bundled into any section's content migration.
+
+| # | Step | State |
+|---|---|---|
+| 4.1 | AboutMe: write `src/content/_punchcard/aboutme.pcob`, mechanically derived from today's `SectionAboutMe.astro` hand-written arrays (no new content invented). | **Done** — 5 cards (`WORK-NOW`, `WORK-BFRE`, `STUDIES`, `PRG-LANGUAGES`, `VOC-LANGUAGES`), program-level `@ROWS 19`, no links/slots needed (this section has none). |
+| 4.2 | Wire `SectionAboutMe.astro` to compile 4.1's file and feed the result into the existing `<PunchCard>` props. | **Done** — hand-written `Line[]` arrays deleted; cards looked up by name from the compiled section, same pattern as `SectionLinks.astro`. |
+| 4.3 | Verify structural equivalence against the current hand-written arrays. | **Done** — verified via a scratch comparison script (not committed, no test runner configured yet): every row's rendered visible text and per-character color class matches the old hand-written arrays exactly. Token *boundaries* differ in places (e.g. the compiler puts inter-word gap spaces in a different token than the original hand array did) but this is invisible — `PunchCard.astro`'s renderer forces every space character to the blank `pcc-empty` style regardless of which token it came from, so only non-space character classification matters, and that always matches (fixed PIC/VALUE/quote/digit keyword rules, independent of whitespace width). `astro build` completed with no errors; compiled HTML contains the expected text. |
+| 4.4 | Sebastian's visual confirmation of the migrated AboutMe section. Do not start the next section's migration before this is checked off. | Not started. |
 
 ### Phase 5 — Re-introduce animation/transition tags (deferred, not blocking)
 - Today there are two distinct behaviors: SectionTop's per-field scramble-cycle and the
@@ -332,6 +343,6 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper`; row-height uniformity now comes from giving `.pcc-empty` spans a text node (see "Fixed: uneven row height regression") |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
-| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section renders from `src/content/_punchcard/links.pcob` via the compiler. Row-height regression fixed (see Migration findings) — 3.6 unblocked, ready for Sebastian's visual confirmation |
-| 4 — Full migration | Not started |
+| 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
+| 4 — Full migration | In progress. AboutMe done (4.1–4.3), pending Sebastian's visual confirmation (4.4). Work/Impressum/Top not started. |
 | 5 — Animation tags | Deferred |
