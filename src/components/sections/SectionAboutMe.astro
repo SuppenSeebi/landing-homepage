@@ -208,7 +208,6 @@ function switchCard(newIdx: number) {
 
     const doSwap = () => {
         oldCard.classList.remove('pcf-card-active');
-        newCard.style.opacity = '1';
         newCard.classList.add('pcf-card-active');
         activeIdx = newIdx;
         requestAnimationFrame(() => { isTransitioning = false; });
