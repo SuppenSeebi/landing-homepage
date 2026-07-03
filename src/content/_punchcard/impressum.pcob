@@ -1,0 +1,32 @@
+@@ IMPRESSUM section — Phase 4 migration of SectionImpressum.astro
+@@ Indentation is not implicit: every leading space below is typed on purpose.
+@@ The German legal-text overlay is NOT modeled with @SLOT here. Unlike the
+@@ old pre-rework design docs/CLAUDE.md still describe, the current
+@@ SectionImpressum.astro positions that overlay as a plain sibling div,
+@@ measured at runtime against specific rendered row indices via JS - not
+@@ through PunchCard's slot-injection mechanism. This card is therefore
+@@ just a plain 19-row DISPLAY/END-DISPLAY frame, nothing more.
+@ROWS 19
+
+@DIVISION PROCEDURE
+@SECTION IMPRESSUM id=impressum
+
+@CARD IMPRESSUM-SECTION
+ PROCEDURE DIVISION.
+ IMPRESSUM-SECTION.
+     DISPLAY
+
+
+
+
+
+
+
+
+
+
+
+     END-DISPLAY
+* GOBACK TO PROCEDURE DIVISION LINKS SECTION
+     {{link:impressum}}EXIT SECTION{{/link}}
+     .

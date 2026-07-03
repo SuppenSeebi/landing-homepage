@@ -62,7 +62,7 @@ recognized shape is passed through literally, same as everything else:
 | `* some text` | Comment row, rendered exactly as typed. |
 | `01 / 05 / 10 / 88 NAME ...` | Level row — leading whitespace before the level number, and the whitespace between the number and the name, are both kept exactly as typed. Everything after the name (PIC clause, VALUE, spacing between them) is likewise literal, author-controlled text. |
 | `CALL '...'`, `EXIT PARAGRAPH`, `EXIT SECTION`, `DISPLAY`, `END-DISPLAY` | Statement row — leading whitespace before the verb is kept exactly as typed (want the usual 5-space Area B indent? type 5 spaces). |
-| `... DIVISION` / `... SECTION` (optionally followed by `.`) | Header row — colored as a DIVISION/SECTION heading. Purely recognition of text you wrote, indentation included; `@DIVISION`/`@SECTION` do not generate this line for you. |
+| `... DIVISION` / `... SECTION` (optionally followed by `.`), incl. hyphen-joined (`...-SECTION`) | Header row — colored as a DIVISION/SECTION heading. Purely recognition of text you wrote, indentation included; `@DIVISION`/`@SECTION` do not generate this line for you. The trailing word is matched on a word boundary, not a required preceding space, so `IMPRESSUM-SECTION.` is recognized the same as `LINKS SECTION.`. |
 | A single bare word, e.g. `SERVICES-PRGRPH.` | Paragraph-name row — colored as a paragraph heading. Same rule: `@CARD` names the nav entry, it does not stamp this line into the card. |
 
 **There is no canonical or auto-applied indent for any line shape.** Leading whitespace is just
@@ -128,7 +128,7 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
 @CARD DEMO-CARD
 @ROWS 20
  PROCEDURE DIVISION.
- DEMO-PROC SECTION.
+ DEMO-PROC-SECTION.
  DEMO-CARD.
 * a comment row
      DISPLAY
@@ -152,8 +152,9 @@ level indentation — 1/5/7 spaces — is typed, not computed, though it happens
 convention this project follows), a `10 PIC 9` field with a bare numeric value (`numval`), an
 `88` condition; the decorative blank line before `@DIVISION PROCEDURE` (discarded, since it
 precedes a directive); `@SECTION` with a section-level `@ROWS` override; a card-level `@ROWS`
-override; a literal `PROCEDURE DIVISION.` / `DEMO-PROC SECTION.` (header row shape again) and a
-literal `DEMO-CARD.` (paragraph-name row shape — also hand-typed, matching the `@CARD` name
+override; a literal `PROCEDURE DIVISION.` / `DEMO-PROC-SECTION.` (header row shape again, this
+time hyphen-joined — recognized on the trailing word's boundary, not a required preceding space)
+and a literal `DEMO-CARD.` (paragraph-name row shape — also hand-typed, matching the `@CARD` name
 because Sebastian chose to type it that way, not because the compiler enforces it); a comment
 row (column 1, exactly as typed); `DISPLAY`/`@SLOT`/`END-DISPLAY` (each statement's 5-space
 indent typed by hand); a `CALL` with an external (quoted) `{{link}}` and one with an internal

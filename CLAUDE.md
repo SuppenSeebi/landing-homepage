@@ -21,7 +21,7 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 | `src/components/sections/SectionAboutMe.astro` | LOCAL-STORAGE — 5-card stack, switching via `multiCardSection.ts` |
 | `src/components/sections/SectionWork.astro` | LINKAGE SECTION — 2-card stack, switching via `multiCardSection.ts` |
 | `src/components/sections/SectionLinks.astro` | PROCEDURE DIVISION LINKS — 2-card stack, switching via `multiCardSection.ts` |
-| `src/components/sections/SectionImpressum.astro` | IMPRESSUM-SECTION — single card with `slotAtLine` slot injection |
+| `src/components/sections/SectionImpressum.astro` | IMPRESSUM-SECTION — single card, legal text is a JS-positioned overlay (not a PunchCard slot) |
 | `src/scripts/app.ts` | Main scroll handler: section activation, instant panel snap, logo visibility |
 | `src/scripts/multiCardSection.ts` | Shared card-switching logic for multi-card sections (count read from DOM) |
 | `src/config/punch-nav.ts` | Nav config: DIVISION_MAP, SECTIONS_BY_DIV, PARAS_BY_SECTION |
@@ -262,13 +262,26 @@ Card background: `#F5EDD4` (aged paper). Card border/accents: `#C2A840` (gold). 
 
 ---
 
-## SectionImpressum (slotAtLine)
+## SectionImpressum (JS-measured overlay, not a PunchCard slot)
 
-10 lines defined, `slotAtLine={5}` → slot injected between line 4 (DISPLAY) and line 5 (END-DISPLAY).
-`slotFlex = 18 - 10 = 8` → slot div gets `flex: 8`.
-Slot content: `.impressum-grid` 2-column CSS grid with German legal text.
+Compiled from `src/content/_punchcard/impressum.pcob` (one `@CARD`, 19 rows, no `@SLOT`) —
+`PunchCard`'s `slotAtLine`/`displaySlot` props are unused here and currently unused by every
+other section too; that machinery only self-validates via `docs/dsl-mockup.pcob` and
+`docs/pcob-reference.md`'s Complete example, not any real page.
 
-`.pcf-display-block` padding should respect linenum (32px) + seq (72px) left offset so content doesn't cover those zones.
+The German legal text (`.impressum-grid`) is a plain sibling `<div class="impressum-overlay">`
+next to the `<PunchCard>`, absolutely positioned at runtime by the section's own script
+(`positionImpressumOverlay`), which measures `.pcf-line-row` elements at fixed indices — `rows[3]`
+(line 4, first blank row after `DISPLAY`) and `rows[13]` (line 14, last blank row before
+`END-DISPLAY`) — via `getBoundingClientRect()` and sizes the overlay to span exactly that range.
+Changing the card's row layout (e.g. how many blank rows sit between `DISPLAY`/`END-DISPLAY` in
+`impressum.pcob`) must keep those two indices pointing at the right rows, or update them to match.
+
+The card's own `IMPRESSUM-SECTION.` line is intentionally styled as a section-header token
+(`pcc-section`), not a paragraph-name token — it doubles as both this card's only heading and a
+literal echo of the `@SECTION`'s name. This relies on the tokenizer's header-row check matching
+the trailing `SECTION`/`DIVISION` word on a `\b` boundary rather than a required preceding space,
+so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LINKS SECTION.`.
 
 ---
 

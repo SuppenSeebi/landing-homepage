@@ -1,31 +1,11 @@
 ---
 import PunchCard from '../PunchCard.astro';
+import { compileProgram } from '../../pcob/compile';
+import impressumSource from '../../content/_punchcard/impressum.pcob?raw';
 
-type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
-type Token = [TT, string];
-type Line  = [string, Token[]];
-
-const LINES: Line[] = [
-    ['000001', [['div',' PROCEDURE DIVISION'],['dot','.']]],
-    ['000002', [['section',' IMPRESSUM-SECTION'],['dot','.']]],
-    ['000003', [['kw','     DISPLAY']]],
-    ['000004', []],
-    ['000005', []],
-    ['000006', []],
-    ['000007', []],
-    ['000008', []],
-    ['000009', []],
-    ['000010', []],
-    ['000011', []],
-    ['000012', []],
-    ['000013', []],
-    ['000014', []],
-    ['000015', [['kw','     END-DISPLAY']]],
-    ['000016', [['comment','* GOBACK TO PROCEDURE DIVISION LINKS SECTION']]],
-    ['000017', [['kw','     '],['val','EXIT SECTION']]],
-    ['000018', [['dot','     .']]],
-    ['000019', []],
-];
+const compiled = compileProgram(impressumSource);
+const impressumSection = compiled.sections.find(s => s.id === 'impressum')!;
+const impressumCard = impressumSection.cards.find(c => c.name === 'IMPRESSUM-SECTION')!;
 ---
 <section id="impressum">
     <div class="section-scroll-container pcf-section-height">
@@ -37,8 +17,8 @@ const LINES: Line[] = [
                     programmerName="SEBASTIAN SCHWINN"
                     currentSystem="RETROCODE GMBH"
                     identificationHref="#impressum"
-                    lines={LINES}
-                    callLinks={{ 'EXIT SECTION': '#impressum' }}
+                    lines={impressumCard.lines}
+                    callLinks={impressumCard.callLinks}
                 />
                 <div class="impressum-overlay">
                     <div class="impressum-grid">

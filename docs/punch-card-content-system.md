@@ -181,7 +181,8 @@ Anything that doesn't port cleanly gets written into the Migration findings belo
 silently worked around.
 
 ### Phase 4 — Migrate remaining sections
-- AboutMe (5 paragraphs), Work (2), Impressum (1, with its `SLOT` special case), Top (1).
+- AboutMe (5 paragraphs), Work (2), Impressum (1 — turned out not to need `@SLOT` after all, see
+  Migration findings), Top (1).
 - Each migration gets its own visual check before moving to the next.
 - Delete the old hand-written arrays and `punch-nav.ts` content once each section is confirmed.
 - `punch-nav.ts` stays hand-written for now (per the 3.5 precedent) — its `PARAS_BY_SECTION`
@@ -198,7 +199,10 @@ silently worked around.
 | 4.5 | Work: write `src/content/_punchcard/work.pcob`, mechanically derived from `SectionWork.astro`'s 2 hand-written arrays. | **Done** — `WORK-CURRENT`/`WORK-PREV`, program-level `@ROWS 19`. `WORK-CURRENT`'s `PROFILE` field carries an external `{{link:'https://www.linkedin.com/in/sschwinn/'}}` — previously bolted on as a hand-written `callLinks` prop keyed on the *untrimmed* val token (`" 'linkedin.com/in/sschwinn/'"`, leading space included); now derived from an inline tag like every other link in the migrated sections, with the same leading-whitespace-excluded fix already applied to Links' `CALL 'LINKEDIN'`. |
 | 4.6 | Wire `SectionWork.astro` to compile 4.5's file. | **Done** — hand-written arrays and the hand-written `callLinks` prop both deleted; `currentCard.callLinks`/`prevCard.callLinks` used instead, same pattern as Links/AboutMe. |
 | 4.7 | Verify structural equivalence. | **Done** — scratch comparison script: all rows match old arrays character-for-character with matching color class; the link's resolved `href` matches (`https://www.linkedin.com/in/sschwinn/`) though its callLinks *key* differs on purpose (trimmed, no leading space, per 4.5's note). `astro build` succeeds; compiled HTML contains the expected text and link. |
-| 4.8 | Sebastian's visual confirmation of the migrated Work section. Do not start Impressum before this is checked off. | Not started. |
+| 4.8 | Sebastian's visual confirmation of the migrated Work section. | **Waived** — 2026-07-03, Sebastian said "go for it," directing continuous progress rather than a per-section confirmation gate from here on. Per-section stops are relaxed for the rest of Phase 4; a comprehensive visual pass across all migrated sections happens once, at the end of Phase 4, instead. |
+| 4.9 | Impressum: write `src/content/_punchcard/impressum.pcob`, mechanically derived from `SectionImpressum.astro`'s single hand-written array — **not** using `@SLOT` (see Migration findings' "Impressum's SLOT was already dead" below). | **Done** — one `@CARD IMPRESSUM-SECTION`, 19 rows, no links/slots except a self-link (`{{link:impressum}}EXIT SECTION{{/link}}`) reproducing the existing card's own `callLinks={{ 'EXIT SECTION': '#impressum' }}` exactly, including its pre-existing mismatch with the "GOBACK TO ... LINKS SECTION" comment text next to it (see Migration findings — preserved as-is, not silently "corrected," since deciding the intended target is a content call, not a compiler one). |
+| 4.10 | Wire `SectionImpressum.astro` to compile 4.9's file; leave the JS-measured `.impressum-overlay` positioning script untouched (it measures rendered rows by index, not by any compiler-provided slot data). | **Done**. |
+| 4.11 | Verify structural equivalence. | **Done** — surfaced and fixed a real tokenizer gap along the way (see Migration findings' "Hyphen-joined header line misclassified"). After the fix, scratch comparison script: all rows match old array character-for-character with matching color class (including the corrected `IMPRESSUM-SECTION.` header coloring); link href matches; `astro build` succeeds. |
 
 ### Phase 5 — Re-introduce animation/transition tags (deferred, not blocking)
 - Today there are two distinct behaviors: SectionTop's per-field scramble-cycle and the
@@ -337,6 +341,41 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
   that. Same characters, same visible text — only the token boundary moved. All four call sites
   (`tokenizeLevelLine`, `tokenizeStatementLine` ×2, `tokenizeFallbackLine`) updated to spread the
   array.
+- **Impressum's `@SLOT` was already dead before this migration.** The doc's Phase 4 line and
+  `CLAUDE.md`'s old "SectionImpressum (slotAtLine)" section both described `PunchCard`'s
+  slot-injection mechanism (`slotAtLine`/`displaySlot` props, the `useSlot` branch) as Impressum's
+  actual design — stale since commit `17d323e` (2026-06-30, "Rework impressum: normal 18-line
+  card + JS-anchored overlay"), which replaced it with a plain 19-row card plus a sibling
+  `.impressum-overlay` div positioned at runtime by measuring specific `.pcf-line-row` elements
+  (`rows[3]`/`rows[13]`) via `getBoundingClientRect()`. No section actually passes `slotAtLine` or
+  `displaySlot` to `PunchCard` today (confirmed by grep) — that whole code path, and the `@SLOT`
+  directive's compiler support, is validated only by `docs/dsl-mockup.pcob` and
+  `docs/pcob-reference.md`'s Complete example, not by any real page. `impressum.pcob` is written
+  to match current reality (no `@SLOT`); `CLAUDE.md` updated to describe the actual JS-measured
+  overlay instead of the abandoned slot design.
+- **Preserved as-is, not fixed: Impressum's `EXIT SECTION` links to itself, but the comment next
+  to it says "GOBACK TO PROCEDURE DIVISION LINKS SECTION."** The existing hand-written
+  `callLinks={{ 'EXIT SECTION': '#impressum' }}` really does point at `#impressum` (itself), while
+  the adjacent hand-typed comment reads like it should point at `#links` instead. Since comments
+  are inert rendered text (per the Core rule, they don't drive behavior) and the resolved
+  decisions log already treats self-links as unremarkable — "if the resolved anchor happens to
+  match the page you're already on, that's not a distinct case" — this isn't a compiler bug to
+  silently normalize one way or the other. Migrated verbatim (`{{link:impressum}}EXIT
+  SECTION{{/link}}`, matching the existing behavior exactly) rather than guessing which of the two
+  (the link target or the comment wording) was the actual mistake — that's a content call for
+  Sebastian, not a migration one.
+- **Fixed: hyphen-joined header line misclassified as a paragraph name.** Found while migrating
+  Impressum: `IMPRESSUM-SECTION.` (the card's own heading, styled `section` in the original
+  hand-written array) was coming out of the compiler as `para` instead. Root cause:
+  `tokenizeHeaderLine`'s DIVISION/SECTION recognition required a literal space immediately before
+  the trailing word (`/ SECTION$/`), which "IMPRESSUM-SECTION" fails — the character before
+  "SECTION" there is a hyphen, not a space — so it fell through to the bare-paragraph-name shape
+  instead. Fixed by matching on a `\b` word boundary (`/\bSECTION$/`, `/\bDIVISION$/`) rather than
+  a required preceding space; a hyphen is still a non-word character, so the boundary holds for
+  both `LINKS SECTION.` and `IMPRESSUM-SECTION.` alike, with no change to any line already
+  classified correctly. `docs/pcob-reference.md`'s header-row table row and Complete example
+  updated in the same commit per `CLAUDE.md`'s DSL-doc-sync rule (`DEMO-PROC SECTION.` →
+  `DEMO-PROC-SECTION.`, now exercising the hyphen-joined form).
 
 ---
 
@@ -348,5 +387,5 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
 | 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
-| 4 — Full migration | In progress. AboutMe confirmed (4.1–4.4). Work migrated (4.5–4.7), pending Sebastian's visual confirmation (4.8). Impressum/Top not started. |
+| 4 — Full migration | In progress. AboutMe confirmed (4.1–4.4). Work migrated (4.5–4.7); per-section confirmation gate waived from 4.8 onward (Sebastian: "go for it") in favor of one comprehensive check at the end of Phase 4. Impressum migrated (4.9–4.11). Top not started. |
 | 5 — Animation tags | Deferred |

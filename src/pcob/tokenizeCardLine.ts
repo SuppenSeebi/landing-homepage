@@ -162,6 +162,11 @@ function tokenizeStatementLine(
  * types them, never auto-generated, never re-indented. Checked after statement-row so e.g.
  * "EXIT SECTION" (a statement) isn't mistaken for a section header just because it also ends
  * in the word "SECTION".
+ *
+ * The trailing DIVISION/SECTION word is matched on a \b word boundary, not a literal preceding
+ * space, so a hyphen-joined header like "IMPRESSUM-SECTION." (this project's convention for a
+ * card whose own name doubles as its section label) is still recognized as a header rather than
+ * falling through to the bare paragraph-name shape below.
  */
 function tokenizeHeaderLine(clean: string): Token[] | null {
     let text = clean;
@@ -174,8 +179,8 @@ function tokenizeHeaderLine(clean: string): Token[] | null {
     if (forShapeCheck === '') return null;
 
     let tt: 'div' | 'section' | 'para' | null = null;
-    if (/ DIVISION$/.test(forShapeCheck)) tt = 'div';
-    else if (/ SECTION$/.test(forShapeCheck)) tt = 'section';
+    if (/\bDIVISION$/.test(forShapeCheck)) tt = 'div';
+    else if (/\bSECTION$/.test(forShapeCheck)) tt = 'section';
     else if (/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(forShapeCheck)) tt = 'para';
     if (!tt) return null;
 
