@@ -541,7 +541,8 @@ function renderLinesForArea(area: HTMLElement) {
                 let j = i;
                 while (j < COLS && chars[j].href === item.href) j++;
                 const a = document.createElement('a');
-                a.href = item.href; a.target = '_blank'; a.rel = 'noopener';
+                a.href = item.href;
+                if (!item.href.startsWith('#')) { a.target = '_blank'; a.rel = 'noopener'; }
                 a.className = 'pcf-call-link';
                 for (let k = i; k < j; k++) {
                     const span = document.createElement('span');
