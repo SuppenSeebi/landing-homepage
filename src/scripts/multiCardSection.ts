@@ -8,16 +8,21 @@ export function setupMultiCardSection(sectionId: string): void {
     const cards = section
         ? (Array.from(section.querySelectorAll<HTMLElement>('.pcf-card')) as HTMLElement[])
         : [];
-    if (!cards.length) return;
+    if (!section || !cards.length) return;
 
     let activeIdx = 0;
     cards[0].classList.add('pcf-card-active');
+    // Read by PunchCard.astro's nav highlighting - the source of truth for "which card in
+    // this section is active" lives here, on the section element, so any other script can
+    // read it via a plain DOM query without needing a cross-module API.
+    section.dataset.activeCard = '0';
 
     function switchCard(newIdx: number) {
         if (newIdx < 0 || newIdx >= cards.length || newIdx === activeIdx) return;
         cards[activeIdx].classList.remove('pcf-card-active');
         cards[newIdx].classList.add('pcf-card-active');
         activeIdx = newIdx;
+        section!.dataset.activeCard = String(newIdx);
     }
 
     function onScroll() {

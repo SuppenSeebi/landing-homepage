@@ -344,6 +344,8 @@ function buildNavGroups() {
                     }
                     const a = document.createElement('a');
                     a.className = 'pcf-para-item'; a.href = item.href; a.textContent = item.label;
+                    a.dataset.sec = sectionId;
+                    a.dataset.cardIdx = String(item.cardIdx);
                     grp.appendChild(a);
                 });
                 container.appendChild(grp);
@@ -351,6 +353,26 @@ function buildNavGroups() {
         }
     });
 }
+
+// Jump directly to a specific card within a section, rather than just the section's start -
+// same scroll-position math multiCardSection.ts uses internally, computed independently here
+// so a click can land exactly within the target card's scroll range (midpoint, to avoid
+// landing right on a boundary).
+function jumpToCard(sectionId: string, cardIdx: number) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    const cardCount = section.querySelectorAll('.pcf-card').length;
+    if (!cardCount) return;
+    const cardH = section.scrollHeight / cardCount;
+    window.scrollTo({ top: section.offsetTop + cardIdx * cardH + cardH / 2 });
+}
+
+document.addEventListener('click', e => {
+    const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('.pcf-para-item');
+    if (!link?.dataset.sec) return;
+    e.preventDefault();
+    jumpToCard(link.dataset.sec, Number(link.dataset.cardIdx ?? 0));
+});
 
 function getActiveId(): string {
     const mid = window.scrollY + window.innerHeight / 2;
@@ -383,8 +405,9 @@ function updatePcfNav(activeId: string) {
     document.querySelectorAll<HTMLElement>('.pcf-sec-item').forEach(el =>
         el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
 
+    const activeCard = document.getElementById(activeId)?.dataset.activeCard ?? '0';
     document.querySelectorAll<HTMLElement>('.pcf-para-item').forEach(el =>
-        el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
+        el.classList.toggle('pcf-nav-active', el.dataset.sec === activeId && el.dataset.cardIdx === activeCard));
 }
 
 // ── Rulers ───────────────────────────────────────────────────────────────────
