@@ -78,68 +78,9 @@ const CARD_COUNT = 2;
 </section>
 
 <script>
-const CARD_COUNT = 2;
-const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\-._*@#';
+import { setupMultiCardSection } from '../../scripts/multiCardSection.ts';
 
-const section = document.getElementById('work');
-const cards = section
-    ? (Array.from(section.querySelectorAll<HTMLElement>('.pcf-card')) as HTMLElement[])
-    : [];
-
-let activeIdx = 0;
-let isTransitioning = false;
-
-if (cards[0]) cards[0].classList.add('pcf-card-active');
-
-function scrambleCardRows(area: HTMLElement, onComplete: () => void) {
-    const rows = Array.from(area.querySelectorAll<HTMLElement>('.pcf-line-row')).slice(2);
-    const spans = rows.flatMap(row =>
-        Array.from(row.querySelectorAll<HTMLElement>('.pcf-chars span')).filter(s => !!s.textContent)
-    );
-    if (!spans.length) { onComplete(); return; }
-    const saved = spans.map(s => ({ text: s.textContent!, cls: s.className }));
-    let frames = 4;
-    const handle = setInterval(() => {
-        spans.forEach(s => { s.textContent = NOISE[Math.floor(Math.random() * NOISE.length)]; });
-        if (--frames <= 0) {
-            clearInterval(handle);
-            spans.forEach((s, i) => { s.textContent = saved[i].text; s.className = saved[i].cls; });
-            onComplete();
-        }
-    }, 65);
-}
-
-function switchCard(newIdx: number) {
-    if (newIdx < 0 || newIdx >= cards.length || newIdx === activeIdx || isTransitioning || cards.length < 2) return;
-    isTransitioning = true;
-
-    const oldCard = cards[activeIdx];
-    const newCard = cards[newIdx];
-    const area = oldCard.querySelector<HTMLElement>('.pcf-punch-area');
-
-    const doSwap = () => {
-        oldCard.classList.remove('pcf-card-active');
-        newCard.classList.add('pcf-card-active');
-        activeIdx = newIdx;
-        requestAnimationFrame(() => { isTransitioning = false; });
-    };
-
-    if (area?.dataset.rendered) {
-        scrambleCardRows(area, doSwap);
-    } else {
-        doSwap();
-    }
-}
-
-function onWorkScroll() {
-    if (!section) return;
-    const relScroll = window.scrollY - section.offsetTop;
-    const cardH = section.scrollHeight / CARD_COUNT;
-    const newIdx = Math.max(0, Math.min(Math.floor(relScroll / cardH), CARD_COUNT - 1));
-    switchCard(newIdx);
-}
-
-window.addEventListener('scroll', onWorkScroll, { passive: true });
+setupMultiCardSection('work');
 
 export function statemachineWorkRun() {}
 (window as any).__workRun = statemachineWorkRun;
