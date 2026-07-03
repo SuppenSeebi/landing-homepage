@@ -1418,9 +1418,12 @@ a.call-comment {
     width: 22%;
 }
 
-/* Clickable CALL value in punch card coding area */
+/* Clickable CALL value in punch card coding area. No explicit display: as a direct
+   child of .pcf-chars (flex), it's auto-blockified into a normal flex item, so it gets
+   its own hit-testable box for free - unlike display: contents, which strips the box
+   entirely and breaks click/focus/hit-testing for interactive elements in several
+   browser engines (this is what made these links unclickable). */
 .pcf-call-link {
-    display: contents;
     text-decoration: none;
 }
 .pcf-call-link span { cursor: pointer; }

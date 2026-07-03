@@ -299,6 +299,18 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
   renders a paragraph-name line (`SERVICES-PRGRPH.`, styled `para`) that neither the grammar docs
   nor the Phase 2 compiler accounted for. Resolved by adding paragraph-name as a recognized (not
   generated) card-text line shape — a bare `NAME.` line with nothing else on it.
+- **Fixed: `{{link}}` CALL values were unclickable, and DevTools showed a bogus highlight rect
+  for them.** Found during Sebastian's 3.6 visual confirmation on the live Socials card
+  (LinkedIn/Instagram links present in the DOM at the right text but not clickable; EXIT
+  PARAGRAPH's link highlighted in the wrong position). Root cause: `.pcf-call-link` (`global.css`)
+  had `display: contents`, pre-dating this migration (present since commit `e501354`, 2026-06-29)
+  — not something Phase 3 introduced, just never previously exercised/clicked. `display: contents`
+  removes an element's own render box, which is a documented source of broken click/focus/
+  hit-testing for interactive elements (`<a>`, `<button>`) in several browser engines, and also
+  explains why DevTools couldn't compute a real bounding rect for it. Fix: drop the `display:
+  contents` override entirely. `.pcf-call-link` is a direct child of `.pcf-chars` (`display:
+  flex`), so per the CSS Display spec a plain `<a>` there is auto-blockified into a normal flex
+  item anyway — same visual layout, but now with a real, clickable box.
 
 ---
 
