@@ -168,7 +168,11 @@ p {
    ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── SECTION HEIGHT ─────────────────────────────────────────────────────────── */
-.pcf-section-height { height: 88vh; }
+/* Impressum is the last section - unlike every other section, there's no further content
+   below it to keep the document scrollable, so its own height must be >= one full viewport
+   (100vh) or the browser's max scroll position falls short of its offsetTop entirely and it
+   can never become reachable/active. 110vh leaves a safety margin over the exact boundary. */
+.pcf-section-height { height: 110vh; }
 
 /* ── STAGE ──────────────────────────────────────────────────────────────────── */
 .pcf-stage {

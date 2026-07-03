@@ -374,11 +374,14 @@ document.addEventListener('click', e => {
     jumpToCard(link.dataset.sec, Number(link.dataset.cardIdx ?? 0));
 });
 
+// Uses scrollY directly (not a viewport-midpoint offset), matching app.ts's getActiveSection()
+// and multiCardSection.ts's card math - otherwise nav highlighting flips to the next
+// section/card before the visible card actually switches.
 function getActiveId(): string {
-    const mid = window.scrollY + window.innerHeight / 2;
+    const y = window.scrollY;
     let active = 'top';
     document.querySelectorAll<HTMLElement>('section').forEach(s => {
-        if (mid >= s.offsetTop && mid < s.offsetTop + s.offsetHeight) active = s.id;
+        if (y >= s.offsetTop && y < s.offsetTop + s.offsetHeight) active = s.id;
     });
     return active;
 }
