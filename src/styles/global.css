@@ -411,8 +411,7 @@ p {
     flex-shrink: 0;
     align-items: center;
 }
-.pcf-zone-btm { border-bottom: none; border-top: 1.5px solid #C2A840; }
-.pcf-zone-linenum, .pcf-zone-seq, .pcf-zone-stmt {
+.pcf-zone-linenum, .pcf-zone-seq {
     font-size: 0.48rem;
     color: #9B8050;
     letter-spacing: 0.08em;
@@ -422,7 +421,6 @@ p {
 }
 .pcf-zone-linenum { width: 32px; flex-shrink: 0; border-right: 1px solid #D4C478; }
 .pcf-zone-seq     { width: 72px; flex-shrink: 0; border-right: 1.5px solid #C2A840; }
-.pcf-zone-stmt    { flex: 1; }
 /* Area A / B subdivision in zone-row header */
 .pcf-zone-area-a {
     width: 5ch; flex-shrink: 0;
@@ -597,49 +595,6 @@ p {
 .pcc-empty:nth-child(3n+1)::before { width: 2px;   height: 2px;   opacity: 0.85; }
 .pcc-empty:nth-child(3n+2)::before { width: 3px;   height: 3px;   opacity: 0.65; }
 .pcc-empty:nth-child(5n+4)::before { width: 2.5px; height: 2px;   opacity: 0.75; }
-
-/* ── PARAGRAPH HEADER + DOT TERMINATOR rows (displayHeader prop) ────────────── */
-.pcf-para-hdr-row,
-.pcf-dot-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    height: 22px;
-    flex-shrink: 0;
-    background: #F5EDD4;
-}
-.pcf-para-hdr-stmt {
-    flex: 1;
-    padding-left: 8px;
-    font-size: 0.80rem;
-    color: #3A5A8A;
-    letter-spacing: 0.02em;
-}
-.pcf-dot-row .pcf-zone-seq {
-    color: #8B7040;
-    font-weight: 700;
-    font-size: 0.92rem;
-}
-
-/* ── DISPLAY SLOT (impressum special case) ──────────────────────────────────── */
-.pcf-display-body {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    background: #F5EDD4;
-    border-left: 32px solid #EDE0A8;  /* mimic line-num column width */
-    padding: 8px 16px 8px 12px;
-    font-family: inherit;
-    font-size: 0.82rem;
-}
-
-/* ── INLINE SLOT BLOCK (slotAtLine — injects slot between two line ranges) ───── */
-.pcf-display-block {
-    min-height: 0;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-}
 
 /* ── IMPRESSUM OVERLAY ──────────────────────────────────────────────────────── */
 .impressum-overlay {

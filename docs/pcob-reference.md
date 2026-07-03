@@ -39,7 +39,6 @@ for any line shape.
 | `@DIVISION DATA \| PROCEDURE` | top level | Starts a division. |
 | `@SECTION NAME attr=val ...` | inside a division | Starts a section. See attributes below. |
 | `@CARD NAME` | inside a section | Starts one card = one COBOL paragraph. `NAME` is also its nav label. |
-| `@SLOT name rows=N` | inside a card | Reserves N blank rows for a section-owned HTML overlay (e.g. Impressum's legal text). Doesn't define the content — the section component still owns that. |
 
 ### `@SECTION` attributes
 
@@ -93,6 +92,11 @@ phrase itself: `{{link:name}}EXIT PARAGRAPH{{/link}}`, not a trailing unwrapped 
 
 - DATA DIVISION boilerplate beyond what's shown (deeper field/condition patterns) gets added to
   the table above as real migrations surface them — this reference grows with the grammar.
+- Embedding non-text content (images, video) has no tag yet. `@SLOT name rows=N` used to model
+  this (reserve N rows for a section-owned Astro `<slot/>`) but was removed entirely — nothing
+  ever consumed it; see `docs/punch-card-content-system.md`'s decisions log. A future mechanism
+  would need the embed reference itself to travel through `compileProgram()`'s output as data
+  (not Astro-side JSX), so the card names the asset directly with no code changes required.
 
 ## Deferred to the compiler (Phase 2, design already settled)
 
@@ -132,7 +136,6 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
  DEMO-CARD.
 * a comment row
      DISPLAY
-@SLOT demo-slot rows=2
      END-DISPLAY
      CALL {{link:'https://example.com'}}'EXAMPLE'{{/link}}
      CALL {{link:demo-label}}'JUMP TO LABEL'{{/link}}
@@ -159,8 +162,8 @@ override; a literal `PROCEDURE DIVISION.` / `DEMO-PROC-SECTION.` (header row sha
 time hyphen-joined — recognized on the trailing word's boundary, not a required preceding space)
 and a literal `DEMO-CARD.` (paragraph-name row shape — also hand-typed, matching the `@CARD` name
 because Sebastian chose to type it that way, not because the compiler enforces it); a comment
-row (column 1, exactly as typed); `DISPLAY`/`@SLOT`/`END-DISPLAY` (each statement's 5-space
-indent typed by hand); a `CALL` with an external (quoted) `{{link}}` and one with an internal
+row (column 1, exactly as typed); `DISPLAY`/`END-DISPLAY` (each statement's 5-space indent typed
+by hand); a `CALL` with an external (quoted) `{{link}}` and one with an internal
 (bare-name) `{{link}}` to the `{{anchor}}` declared earlier; a standalone `.` indented to match
 the statements above it (also typed, not automatic); a content blank line (kept, since it
 precedes card text, not a directive); `EXIT PARAGRAPH` and `EXIT SECTION`, each linking back to

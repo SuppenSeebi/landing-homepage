@@ -5,8 +5,7 @@ import topSource from '../../content/_punchcard/top.pcob?raw';
 
 const compiled = compileProgram(topSource);
 const topSection = compiled.sections.find(s => s.id === 'top')!;
-const CARD_NAMES = ['IDENTITY', 'BACKGROUND', 'CAREER-CURR', 'CAREER-PREV', 'SKILLS', 'INTERESTS', 'COMMUNITY'];
-const CARDS = CARD_NAMES.map(name => topSection.cards.find(c => c.name === name)!);
+const CARDS = topSection.cards;
 const CARD_COUNT = CARDS.length;
 ---
 <section id="top">

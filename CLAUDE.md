@@ -39,14 +39,16 @@ interface Props {
   currentSystem: string;
   identificationHref?: string;   // default '#impressum'
   lines?: Line[];                // [seq6chars, Token[]][]
-  displaySlot?: boolean;         // legacy DISPLAY/END-DISPLAY zone + <slot>
-  displayLabel?: string;
-  displayHeader?: string;
   callLinks?: Record<string, string>; // val token text → href
   noStage?: boolean;             // omit pcf-stage wrapper (use in pcf-stage-multi)
-  slotAtLine?: number;           // inject <slot> between line[n-1] and line[n]
 }
 ```
+
+(`displaySlot`/`displayLabel`/`displayHeader`/`slotAtLine` — the old Astro-`<slot/>`-passthrough
+mechanism, plus the `@SLOT` directive that fed it — were removed entirely as unused dead code;
+nothing in the codebase ever consumed them. If embedded non-text content is needed again, revisit
+as a fresh design rather than reviving this — see `docs/punch-card-content-system.md`'s decisions
+log.)
 
 ### Token types (`TT`)
 `div | section | para | lvl | name | kw | val | numval | dot | comment`
@@ -225,8 +227,6 @@ set, and the lookup falls back to `'0'`, matching `cardIdx: 0`.
 | `.pcf-coding-area` | flex column wrapping ruler + punch area |
 | `.pcf-punch-area` | flex column of pcf-line-rows, `data-lines` attr holds JSON |
 | `.pcf-line-row` | One COBOL line: linenum + seq + chars |
-| `.pcf-display-block` | Slot injection zone between two punch areas (slotAtLine) |
-| `.pcf-display-body` | Legacy full-height slot zone (displaySlot prop) |
 | `.pcf-zone-row` | Header row (LINE / SEQUENCE / A / B labels), `height: 15px` |
 | `.pcf-ruler-row` | Ruler tick row, `height: 13px` |
 | `.section-scroll-container` | Tall spacer giving scrollable height |
@@ -259,10 +259,9 @@ Card background: `#F5EDD4` (aged paper). Card border/accents: `#C2A840` (gold). 
 
 ## SectionImpressum (JS-measured overlay, not a PunchCard slot)
 
-Compiled from `src/content/_punchcard/impressum.pcob` (one `@CARD`, 19 rows, no `@SLOT`) —
-`PunchCard`'s `slotAtLine`/`displaySlot` props are unused here and currently unused by every
-other section too; that machinery only self-validates via `docs/dsl-mockup.pcob` and
-`docs/pcob-reference.md`'s Complete example, not any real page.
+Compiled from `src/content/_punchcard/impressum.pcob` (one `@CARD`, 19 rows). `@SLOT` and
+`PunchCard`'s `slotAtLine`/`displaySlot` props have been removed entirely — nothing ever
+consumed them (see the PunchCard component API section above).
 
 The German legal text (`.impressum-grid`) is a plain sibling `<div class="impressum-overlay">`
 next to the `<PunchCard>`, absolutely positioned at runtime by the section's own script

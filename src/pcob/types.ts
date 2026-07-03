@@ -23,8 +23,6 @@ export interface CompiledCard {
     name: string;
     lines: Line[];
     callLinks: Record<string, string>;
-    /** Set only when the card has an @SLOT. Matches PunchCard's `slotAtLine` prop contract. */
-    slotAtLine?: number;
 }
 
 export interface CompiledSection {

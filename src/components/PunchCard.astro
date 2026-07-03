@@ -12,12 +12,8 @@ interface Props {
     currentSystem: string;
     identificationHref?: string;
     lines?: Line[];
-    displaySlot?: boolean;
-    displayLabel?: string;
-    displayHeader?: string;
     callLinks?: Record<string, string>;
     noStage?: boolean;
-    slotAtLine?: number; // inject <slot> between line[slotAtLine-1] and line[slotAtLine]
 }
 
 const compiled = new Date().toISOString().slice(0, 10);
@@ -30,25 +26,12 @@ const {
     currentSystem,
     identificationHref = '#impressum',
     lines = [],
-    displaySlot = false,
-    displayLabel = '',
-    displayHeader,
     callLinks = {},
     noStage = false,
-    slotAtLine,
 } = Astro.props;
 
 const linesJson = JSON.stringify(lines);
 const callLinksJson = JSON.stringify(callLinks);
-
-// slotAtLine: split the coding area into pre/slot/post
-const useSlot = slotAtLine !== undefined;
-const preLines  = useSlot ? lines.slice(0, slotAtLine) : lines;
-const postLines = useSlot ? lines.slice(slotAtLine)    : [];
-const preLinesJson  = JSON.stringify(preLines);
-const postLinesJson = JSON.stringify(postLines);
-// slot flex proportional to "missing" rows (card is always 18 rows tall)
-const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
 ---
 
 {noStage ? (
@@ -114,63 +97,23 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
 
     <!-- ── Coding area ── -->
     <div class="pcf-coding-area">
-        {displaySlot ? (
-            <>
-                {displayHeader && (
-                    <div class="pcf-para-hdr-row">
-                        <div class="pcf-zone-linenum"></div>
-                        <div class="pcf-zone-seq"></div>
-                        <div class="pcf-para-hdr-stmt">{displayHeader}</div>
-                    </div>
-                )}
-                <div class="pcf-zone-row">
-                    <div class="pcf-zone-linenum">LINE</div>
-                    <div class="pcf-zone-seq">DISPLAY</div>
-                    <div class="pcf-zone-stmt">{displayLabel}</div>
-                </div>
-                <div class="pcf-display-body"><slot /></div>
-                <div class="pcf-zone-row pcf-zone-btm">
-                    <div class="pcf-zone-linenum"></div>
-                    <div class="pcf-zone-seq">END-DISPLAY</div>
-                    <div class="pcf-zone-stmt"></div>
-                </div>
-                {displayHeader && (
-                    <div class="pcf-dot-row">
-                        <div class="pcf-zone-linenum"></div>
-                        <div class="pcf-zone-seq">.</div>
-                        <div class="pcf-zone-stmt"></div>
-                    </div>
-                )}
-            </>
-        ) : (
-            <>
-                <div class="pcf-zone-row">
-                    <div class="pcf-zone-linenum">LINE</div>
-                    <div class="pcf-zone-seq">SEQUENCE</div>
-                    <div class="pcf-zone-area-a"></div>
-                    <div class="pcf-zone-area-b">COBOL STATEMENT</div>
-                </div>
-                <div class="pcf-ruler-row">
-                    <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
-                    <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
-                    <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
-                </div>
-                {useSlot ? (
-                    <>
-                        <div class="pcf-punch-area" data-lines={preLinesJson} data-call-links={callLinksJson} style={`flex: ${preLines.length};`}></div>
-                        <div class="pcf-display-block" style={`flex: ${slotFlex};`}><slot /></div>
-                        <div class="pcf-punch-area" data-lines={postLinesJson} data-call-links={callLinksJson} style={`flex: ${postLines.length};`}></div>
-                    </>
-                ) : (
-                    <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
-                )}
-                <div class="pcf-ruler-row pcf-ruler-btm">
-                    <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
-                    <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
-                    <div class="pcf-ruler-chars" data-ruler="chars-btm"></div>
-                </div>
-            </>
-        )}
+        <div class="pcf-zone-row">
+            <div class="pcf-zone-linenum">LINE</div>
+            <div class="pcf-zone-seq">SEQUENCE</div>
+            <div class="pcf-zone-area-a"></div>
+            <div class="pcf-zone-area-b">COBOL STATEMENT</div>
+        </div>
+        <div class="pcf-ruler-row">
+            <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
+            <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
+            <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
+        </div>
+        <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+        <div class="pcf-ruler-row pcf-ruler-btm">
+            <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
+            <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
+            <div class="pcf-ruler-chars" data-ruler="chars-btm"></div>
+        </div>
     </div>
 </div>
 ) : (
@@ -237,64 +180,24 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
 
         <!-- ── Coding area ── -->
         <div class="pcf-coding-area">
-            {displaySlot ? (
-                <>
-                    {displayHeader && (
-                        <div class="pcf-para-hdr-row">
-                            <div class="pcf-zone-linenum"></div>
-                            <div class="pcf-zone-seq"></div>
-                            <div class="pcf-para-hdr-stmt">{displayHeader}</div>
-                        </div>
-                    )}
-                    <div class="pcf-zone-row">
-                        <div class="pcf-zone-linenum">LINE</div>
-                        <div class="pcf-zone-seq">DISPLAY</div>
-                        <div class="pcf-zone-stmt">{displayLabel}</div>
-                    </div>
-                    <div class="pcf-display-body"><slot /></div>
-                    <div class="pcf-zone-row pcf-zone-btm">
-                        <div class="pcf-zone-linenum"></div>
-                        <div class="pcf-zone-seq">END-DISPLAY</div>
-                        <div class="pcf-zone-stmt"></div>
-                    </div>
-                    {displayHeader && (
-                        <div class="pcf-dot-row">
-                            <div class="pcf-zone-linenum"></div>
-                            <div class="pcf-zone-seq">.</div>
-                            <div class="pcf-zone-stmt"></div>
-                        </div>
-                    )}
-                </>
-            ) : (
-                <>
-                    <div class="pcf-zone-row">
-                        <div class="pcf-zone-linenum">LINE</div>
-                        <div class="pcf-zone-seq">SEQUENCE</div>
-                        <div class="pcf-zone-ind"></div>
-                        <div class="pcf-zone-area-a"></div>
-                        <div class="pcf-zone-area-b">B · COBOL STATEMENT</div>
-                    </div>
-                    <div class="pcf-ruler-row">
-                        <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
-                        <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
-                        <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
-                    </div>
-                    {useSlot ? (
-                        <>
-                            <div class="pcf-punch-area" data-lines={preLinesJson} data-call-links={callLinksJson} style={`flex: ${preLines.length};`}></div>
-                            <div class="pcf-display-block" style={`flex: ${slotFlex};`}><slot /></div>
-                            <div class="pcf-punch-area" data-lines={postLinesJson} data-call-links={callLinksJson} style={`flex: ${postLines.length};`}></div>
-                        </>
-                    ) : (
-                        <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
-                    )}
-                    <div class="pcf-ruler-row pcf-ruler-btm">
-                        <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
-                        <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
-                        <div class="pcf-ruler-chars" data-ruler="chars-btm"></div>
-                    </div>
-                </>
-            )}
+            <div class="pcf-zone-row">
+                <div class="pcf-zone-linenum">LINE</div>
+                <div class="pcf-zone-seq">SEQUENCE</div>
+                <div class="pcf-zone-ind"></div>
+                <div class="pcf-zone-area-a"></div>
+                <div class="pcf-zone-area-b">B · COBOL STATEMENT</div>
+            </div>
+            <div class="pcf-ruler-row">
+                <div class="pcf-ruler-linenum" data-ruler="linenum-top"></div>
+                <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
+                <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
+            </div>
+            <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+            <div class="pcf-ruler-row pcf-ruler-btm">
+                <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
+                <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
+                <div class="pcf-ruler-chars" data-ruler="chars-btm"></div>
+            </div>
         </div>
     </div>
 </div>

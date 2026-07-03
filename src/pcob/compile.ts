@@ -20,11 +20,6 @@ import { type AnchorRegistry, makeSeq, tokenizeCardLine } from './tokenizeCardLi
 import { type RawCard, type RawDivision, type RawProgram, type RawSection, parseSource } from './parseSource';
 import { type CompiledCard, type CompiledProgram, type CompiledSection, type Line, PcobError } from './types';
 
-// PunchCard.astro's slot mechanic reserves the slot's rows itself (`slotFlex` in
-// PunchCard.astro, derived from its own fixed row target minus lines.length) — the
-// compiler doesn't pad or validate rows= against that, it just records where the split
-// falls (slotAtLine) and leaves the reservation math to the renderer, unchanged.
-
 interface AnchorEntry {
     sectionId: string;
     kind: 'section' | 'anchor';
@@ -94,38 +89,24 @@ function compileCard(
 
     const lines: Line[] = [];
     const callLinks: Record<string, string> = {};
-    let slotAtLine: number | undefined;
 
-    card.body.forEach((bodyLine, bodyIdx) => {
-        if (card.slot && card.slot.atBodyIndex === bodyIdx) {
-            slotAtLine = lines.length;
-        }
+    card.body.forEach(bodyLine => {
         const { tokens, callLinks: lineLinks } = tokenizeCardLine(bodyLine.raw, anchors, bodyLine.lineNo);
         lines.push(['', tokens]);
         Object.assign(callLinks, lineLinks);
     });
-    if (card.slot && card.slot.atBodyIndex === card.body.length) {
-        slotAtLine = lines.length;
-    }
 
-    if (!card.slot) {
-        if (lines.length > resolvedRows) {
-            throw new PcobError(
-                `Card "${card.name}" has ${lines.length} lines, exceeding its resolved @ROWS ${resolvedRows}`,
-                card.lineNo,
-            );
-        }
-        while (lines.length < resolvedRows) lines.push(['', []]);
+    if (lines.length > resolvedRows) {
+        throw new PcobError(
+            `Card "${card.name}" has ${lines.length} lines, exceeding its resolved @ROWS ${resolvedRows}`,
+            card.lineNo,
+        );
     }
+    while (lines.length < resolvedRows) lines.push(['', []]);
 
     const seqedLines: Line[] = lines.map(([, tokens], idx) => [makeSeq(idx), tokens]);
 
-    return {
-        name: card.name,
-        lines: seqedLines,
-        callLinks,
-        ...(slotAtLine !== undefined ? { slotAtLine } : {}),
-    };
+    return { name: card.name, lines: seqedLines, callLinks };
 }
 
 export function compileProgram(source: string): CompiledProgram {

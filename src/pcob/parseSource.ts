@@ -10,7 +10,6 @@ export interface RawCard {
     lineNo: number;
     rowsOverride?: number;
     body: { raw: string; lineNo: number }[];
-    slot?: { name: string; rows: number; atBodyIndex: number };
 }
 
 export interface RawSection {
@@ -90,14 +89,6 @@ export function parseSource(source: string): RawProgram {
             else if (section) section.rowsOverride = n;
             else if (division) division.rowsOverride = n;
             else program.defaultRows = n;
-            continue;
-        }
-
-        const slotMatch = trimmed.match(/^@SLOT\s+(\S+)\s+rows=(\d+)\s*$/);
-        if (slotMatch) {
-            if (!card) throw new PcobError('@SLOT outside of any @CARD', lineNo);
-            if (card.slot) throw new PcobError(`Card "${card.name}" declares more than one @SLOT`, lineNo);
-            card.slot = { name: slotMatch[1], rows: Number(slotMatch[2]), atBodyIndex: card.body.length };
             continue;
         }
 

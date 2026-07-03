@@ -50,7 +50,7 @@ shape (level rows, statements, headers); want a statement indented five spaces, 
 `.` under column 12? Type the spaces — the compiler classifies characters into colored tokens, it
 never adds or discards any.
 
-Directives (`@DIVISION`, `@SECTION`, `@CARD`, `@ROWS`, `@SLOT`) and inline tags (`{{link}}`,
+Directives (`@DIVISION`, `@SECTION`, `@CARD`, `@ROWS`) and inline tags (`{{link}}`,
 `{{anchor}}`, `{{cycle}}`, `{{noise}}`) only ever affect things *around* the text — anchors, nav
 labels, link targets, row budget, future animation — never the text itself. Naming used for
 navigation (a `@SECTION`'s name, a `@CARD`'s name) is independent of whatever text Sebastian
@@ -145,8 +145,10 @@ used to live in this section):
   with section ids.
 - **`{{cycle:groupId}}`** replaces `SectionTop`'s character-offset constants; **`{{noise}}`** is
   the (not-yet-needed) ASCII-scramble tag, included now so the syntax exists before it's required.
-- **`@SLOT name rows=N`** stays the escape hatch for Impressum's floating legal-text overlay —
-  reserves rows, doesn't model the HTML.
+- ~~`@SLOT name rows=N` stays the escape hatch for Impressum's floating legal-text overlay~~
+  **Removed entirely (2026-07-04)** — see "`@SLOT` removed as dead code" in Migration findings.
+  Embedding non-text content (images, video, rich HTML) has no mechanism yet; if it's needed,
+  design it fresh rather than reviving this.
 
 Process for extending the tag vocabulary: when Sebastian wants something the current tags can't
 express, that's a short scoped conversation ("add a `{{TAG}}` that does X"), not a request to
@@ -391,6 +393,25 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
   classified correctly. `docs/pcob-reference.md`'s header-row table row and Complete example
   updated in the same commit per `CLAUDE.md`'s DSL-doc-sync rule (`DEMO-PROC SECTION.` →
   `DEMO-PROC-SECTION.`, now exercising the hyphen-joined form).
+- **`@SLOT` removed as dead code (2026-07-04), not just left dormant.** The finding above
+  established `@SLOT`/`slotAtLine`/`displaySlot` were already unused by every real section — but
+  they were designed for a two-part contract (content file reserves rows, calling Astro file
+  supplies JSX children via a real `<slot/>`) that doesn't fit where embeds are actually headed:
+  the card should name the asset directly, with the renderer creating the element from that data,
+  no Astro-side slot-supplying code at all. Since nothing in that old contract survives the new
+  direction, keeping `@SLOT` around "just in case" would mean maintaining two mechanisms for a
+  problem with no current solution, one of them provably unused. Removed entirely: the `@SLOT`
+  directive (`parseSource.ts`), `slotAtLine` tracking (`compile.ts`, `types.ts`), and the
+  `slotAtLine`/`displaySlot`/`displayLabel`/`displayHeader` props plus their whole rendering branch
+  in `PunchCard.astro` (collapsing both the `noStage` and non-`noStage` templates to always render
+  the plain punch-area). Also dropped the now-orphaned CSS this left behind
+  (`.pcf-display-block`, `.pcf-display-body`, `.pcf-para-hdr-row`, `.pcf-dot-row`,
+  `.pcf-para-hdr-stmt`, `.pcf-zone-btm`, and `.pcf-zone-stmt` — the last three confirmed unused
+  only after the branch removal, not before). `docs/dsl-mockup.pcob` and `docs/pcob-reference.md`'s
+  Complete example updated to drop their `@SLOT` usage (both re-verified to still compile). If
+  embedding non-text content comes up again, it needs a fresh mechanism where the embed reference
+  itself travels through `compileProgram()`'s output as data — see "Open / not yet decided" in
+  `docs/pcob-reference.md`.
 
 ---
 

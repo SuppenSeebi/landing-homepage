@@ -175,8 +175,8 @@
 
 
 @@ ============================================================================
-@@  PROCEDURE DIVISION example — IMPRESSUM ("#impressum"), showing the
-@@  SLOT escape hatch and a section that IS the identification target.
+@@  PROCEDURE DIVISION example — IMPRESSUM ("#impressum"), a section
+@@  that IS the identification target.
 @@ ============================================================================
 @SECTION IMPRESSUM id=impressum
 
@@ -185,18 +185,24 @@
  IMPRESSUM SECTION.
  IMPRESSUM-SECTION.
      DISPLAY
-@SLOT impressum-legal rows=11
+
+@@ (11 literal blank rows go here in the real impressum.pcob - trimmed in this mockup for length)
+
      END-DISPLAY
 * GOBACK TO PROCEDURE DIVISION LINKS SECTION
      {{link:impressum}}EXIT SECTION{{/link}}
      .
 
-@@  ^ @SLOT reserves 11 blank rendered rows between DISPLAY and
-@@  END-DISPLAY; it does NOT define what fills them. The Impressum
-@@  section's own component still owns the actual HTML overlay
-@@  (2-column German legal text) and positions it with JS against the
-@@  reserved rows, exactly like it does today. Slots are deliberately
-@@  outside the text/token model — rich HTML isn't a punch-card row.
+@@  ^ Just 11 blank rendered rows between DISPLAY and END-DISPLAY — no
+@@  directive reserves them specially. The Impressum section's own
+@@  component fills that space with an HTML overlay (2-column German
+@@  legal text), positioned with JS against those rendered rows,
+@@  entirely outside the DSL/compiler. There used to be an @SLOT
+@@  directive for this (reserve N rows, mark a point) but it was
+@@  removed - nothing ever consumed it, since embedding non-text
+@@  content with zero code touch needs the embed reference itself to
+@@  travel through compileProgram()'s output as data, which @SLOT never
+@@  did. Revisit as a fresh design if this is needed again.
 @@
 @@  There is no identification=self attribute (or any self-link concept
 @@  at all). The form header's IDENTIFICATION field always points at
