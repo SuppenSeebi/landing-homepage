@@ -189,38 +189,6 @@ p {
     font-size: clamp(0.9rem, 1.5vw, 1.4rem); /* needed so ch resolves correctly in pseudo-elements */
 }
 
-/* Card stack ghost layers — two empty card silhouettes behind the active card */
-.pcf-stage-multi::before {
-    content: '';
-    position: absolute;
-    top: calc(7vh + 8px);
-    bottom: calc(7vh - 8px);
-    left: 50%;
-    width: calc(32px + 72px + 80ch);
-    transform: translateX(calc(-50% + 8px));
-    background: #F0E5C0;
-    border: 1.5px solid #C2A840;
-    clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
-    opacity: 0.85;
-    z-index: 0;
-    pointer-events: none;
-}
-.pcf-stage-multi::after {
-    content: '';
-    position: absolute;
-    top: calc(7vh + 16px);
-    bottom: calc(7vh - 16px);
-    left: 50%;
-    width: calc(32px + 72px + 80ch);
-    transform: translateX(calc(-50% + 16px));
-    background: #EBE0BB;
-    border: 1.5px solid #C2A840;
-    clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
-    opacity: 0.60;
-    z-index: 0;
-    pointer-events: none;
-}
-
 /* ── CARD ───────────────────────────────────────────────────────────────────── */
 .pcf-card {
     display: flex;

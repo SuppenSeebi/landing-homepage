@@ -151,8 +151,6 @@ Pattern:
 Cards are absolutely centered (`top: 50%; left: 50%; transform: translate(-50%,-50%)`), height
 intrinsic to row count (not stretched to a fixed region), `opacity: 0` by default.
 Active card: `pcf-card-active` → `opacity: 1`.
-Ghost silhouettes: `pcf-stage-multi::before/::after` (CSS pseudo-elements, 8px / 16px offset) —
-cosmetic only, known mismatch with intrinsically-sized cards of unusual `@ROWS`.
 
 Card switching is a shared module, `src/scripts/multiCardSection.ts` (`setupMultiCardSection(sectionId)`),
 called once from each section's own `<script>` block — no more per-section copy-pasted logic.

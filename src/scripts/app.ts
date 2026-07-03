@@ -10,11 +10,14 @@ const sectionRunners: Record<string, () => void> = {
 };
 
 /* ── active section ────────────────────────────── */
+// Uses scrollY directly (not a viewport-midpoint offset) so the section boundary lines up
+// exactly with multiCardSection.ts's own scrollY-based card math - otherwise the section
+// deactivates innerHeight/2 early, cutting its last card's effective scroll range short.
 function getActiveSection(): string {
-    const mid = window.scrollY + window.innerHeight / 2;
+    const y = window.scrollY;
     let active = "top";
     sections.forEach(s => {
-        if (mid >= s.offsetTop && mid < s.offsetTop + s.offsetHeight) active = s.id;
+        if (y >= s.offsetTop && y < s.offsetTop + s.offsetHeight) active = s.id;
     });
     return active;
 }
