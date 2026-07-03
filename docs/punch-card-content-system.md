@@ -175,7 +175,7 @@ the durable record, not the conversation.
 | 3.3 | Wire `SectionLinks.astro` to compile 3.2's file and feed the result into the existing `<PunchCard>` props. | **Done** — `SERVICES-PRGRPH`/`SOCIALS-PRGRPH` cards looked up by name from the compiled section; hand-written `LINES`/`CALL_LINKS` arrays deleted. |
 | 3.4 | Verify structural equivalence against the current hand-written arrays. | **Done** — compiled `lines` are byte-identical to both hand-written arrays (verified via a scratch diff script, not committed — no test runner configured yet). `callLinks` differ from the old shared object by design/improvement: the compiler emits precise per-card link maps instead of one object with irrelevant keys reused across both cards; functionally equivalent since `PunchCard.astro` only looks up keys that exist in that card's own rendered text. `astro build` (via `node_modules/.bin/astro build`, since neither `pnpm` nor `npx astro` were on PATH in this shell) completed with no errors; output HTML contains the expected compiled text. |
 | 3.5 | Decide `punch-nav.ts` fate for this pilot. | **Done** — applied the stated default: left untouched. Links' nav entries in `src/config/punch-nav.ts` are still the hand-written ones; nav consolidation is deferred to Phase 4. |
-| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started — **blocked on the row-height regression** (see Migration findings' "Open bug carried into next session"), fix that first so the confirmation is actually meaningful. |
+| 3.6 | Sebastian's visual confirmation of the migrated Links section. Do not start Phase 4 before this is checked off. | Not started — row-height regression that was blocking this is now fixed (see Migration findings' "Fixed: uneven row height regression"). Ready for confirmation. |
 
 Anything that doesn't port cleanly gets written into the Migration findings below, not
 silently worked around.
@@ -268,37 +268,33 @@ was decided and why, and what was found not to port cleanly.
   top/bottom-anchoring it. The card-stack ghost silhouettes still use fixed-region sizing
   (unchanged) since matching them to a dynamically-sized active card needs JS, not just CSS —
   a known, accepted mismatch, most visible on cards with an unusual `@ROWS`.
-  **⚠ REOPENED (2026-07-03, end of session) — see entry below, the fix above regressed the
-  uneven-row-height bug it was never actually about.**
+  **Briefly reopened (2026-07-03) — see "Fixed: uneven row height regression" below. Root cause
+  turned out unrelated to Grid vs. block flow, so this entry's reasoning still stands.**
 
-### ⚠ Open bug carried into next session: uneven row height is back
-Reported by Sebastian right as this session ended, not yet investigated or fixed. **Start here
-next time.**
+### Fixed: uneven row height regression (was open, now resolved)
+Reported 2026-07-03 right as a session ended; root-caused and fixed the next session.
 
-- **Symptom**: empty rows are visibly slimmer than rows with text again — the exact bug fixed
-  earlier this session (originally via switching `.pcf-punch-area` to CSS Grid with
-  `grid-auto-rows: minmax(0, 1fr)`, see the git log around "Fix uneven punch-card row heights").
-- **Likely cause**: the "card height is intrinsic" fix (entry above, same session, later) removed
-  that Grid/`minmax(0,1fr)` distribution entirely, switching `.pcf-punch-area` to plain block
-  flow so each `.pcf-line-row` sizes to its own intrinsic content height. The assumption was that
-  every row has identical intrinsic height regardless of content, since blank rows still render
-  80 `.pcc-empty` spans with the same `line-height: calc(1em + 8px)` as text rows. That assumption
-  now looks wrong in practice — Sebastian's report suggests rows with real glyphs still compute a
-  taller natural height than rows of only space characters, even under identical `line-height`,
-  once nothing is forcing uniform distribution.
-- **What this means**: the earlier Grid `minmax(0,1fr)` fix wasn't just working around a flex
-  distribution quirk — it was doing real work forcing uniformity against a genuine
-  content-dependent height difference (likely a font/glyph-metrics rendering quirk, browser-
-  dependent, not yet root-caused). "Card height intrinsic to row count" and "row height uniform
-  regardless of content" are in tension: forcing uniformity via `minmax(0,1fr)` requires
-  distributing a *fixed* container budget, which is exactly what intrinsic sizing removes.
-- **Plan to try next**: use CSS Grid on `.pcf-punch-area` again, but with `grid-auto-rows` set to
-  an explicit **fixed length** (not `minmax(0,1fr)`) — e.g. a value close to what
-  `calc(1em + 8px)` naturally produces for a text row. A fixed-length track forces every row to
-  that exact height regardless of content (solving the unevenness) while still summing to
-  `rows * fixedHeight` for the grid's own auto height (preserving "intrinsic to row count").
-  Needs a concrete px/em value chosen and cross-checked visually — can't be verified without
-  Sebastian looking at it.
+- **Symptom**: empty rows were visibly slimmer than rows with text.
+- **Actual root cause** (not the Grid/flex distribution theory originally logged here):
+  `renderLinesForArea` in `PunchCard.astro` built `.pcc-empty` spans (the blank/unpunched
+  columns) with **no text node at all** — `document.createElement('span')` with `className` set
+  but `textContent` left unset. A `<span>` with zero children has no line box, so it collapses to
+  0 height regardless of its own `line-height: calc(1em + 8px)`; a sibling span with a real
+  character gets a line box sized by that `line-height`. Since `.pcf-chars` is a flex row with
+  `align-items: center`, a row's height is set by its tallest child — so an all-blank row (every
+  span empty) collapsed to ~0 while any row with real text stretched to full height. This was
+  never a Grid-vs-block-flow question; both layouts were consistent with this bug, since neither
+  forces a childless inline-block to acquire a line box.
+- **Fix**: give `.pcc-empty` spans a text node, a non-breaking space (U+00A0, not a plain
+  space, since a lone regular space is collapsible whitespace and can itself get trimmed away
+  by an inline-block's own leading/trailing whitespace handling, silently reproducing the same
+  bug), so they get the same line box as any other character while staying visually blank
+  (the punched-hole dot is drawn by `.pcc-empty::before`, `position: absolute`, unaffected by
+  the text node). Two call sites in `renderLinesForArea` (`PunchCard.astro`), one for plain
+  chars, one for the `callLinks`-wrapped `<a>` run. No CSS changes needed — `.pcf-punch-area`'s
+  plain block flow from the "intrinsic height" fix above is unaffected and correct; "intrinsic
+  to row count" and "uniform row height" were never actually in tension, since the real bug was
+  upstream of any block-vs-grid layout choice.
 - **Gap found comparing the compiler against real site content**: today's `SectionLinks.astro`
   renders a paragraph-name line (`SERVICES-PRGRPH.`, styled `para`) that neither the grammar docs
   nor the Phase 2 compiler accounted for. Resolved by adding paragraph-name as a recognized (not
@@ -310,9 +306,9 @@ next time.**
 
 | Phase | Status |
 |---|---|
-| 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper` plus switching `.pcf-punch-area` from flex-column to CSS Grid (`minmax(0, 1fr)` rows) to fix uneven row heights between text and empty rows |
+| 0 — Fix `#top` height asymmetry | Confirmed. `align-self: stretch` on `.top-punch-wrapper`; row-height uniformity now comes from giving `.pcc-empty` spans a text node (see "Fixed: uneven row height regression") |
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
-| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section renders from `src/content/_punchcard/links.pcob` via the compiler. **⚠ Open bug carried into next session: uneven row height regressed** (see Migration findings) — fix that before asking for 3.6's visual confirmation, since it makes the confirmation unreliable |
+| 3 — Pilot migration (Links) | 3.1–3.5 done — Links section renders from `src/content/_punchcard/links.pcob` via the compiler. Row-height regression fixed (see Migration findings) — 3.6 unblocked, ready for Sebastian's visual confirmation |
 | 4 — Full migration | Not started |
 | 5 — Animation tags | Deferred |

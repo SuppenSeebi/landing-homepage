@@ -465,6 +465,9 @@ const CLS: Record<TT, string> = {
 
 interface CharItem { ch: string; cls: string; href?: string; }
 
+// pcc-empty spans get a nbsp text node (not left childless) so they get a real line box
+// sized like any other char span - a childless <span> collapses to 0 height regardless of
+// line-height, which is what caused blank rows to render shorter than text rows.
 function renderLinesForArea(area: HTMLElement) {
     if (area.dataset.rendered) return;
     area.dataset.rendered = '1';
@@ -516,7 +519,7 @@ function renderLinesForArea(area: HTMLElement) {
                 a.className = 'pcf-call-link';
                 for (let k = i; k < j; k++) {
                     const span = document.createElement('span');
-                    if (chars[k].ch === ' ') span.className = 'pcc-empty';
+                    if (chars[k].ch === ' ') { span.className = 'pcc-empty'; span.textContent = ' '; }
                     else { span.className = chars[k].cls; span.textContent = chars[k].ch; }
                     a.appendChild(span);
                 }
@@ -524,7 +527,7 @@ function renderLinesForArea(area: HTMLElement) {
                 i = j;
             } else {
                 const span = document.createElement('span');
-                if (item.ch === ' ') span.className = 'pcc-empty';
+                if (item.ch === ' ') { span.className = 'pcc-empty'; span.textContent = ' '; }
                 else { span.className = item.cls; span.textContent = item.ch; }
                 charsEl.appendChild(span);
                 i++;
