@@ -52,21 +52,32 @@ function classifyValueRun(
     anchors: AnchorRegistry,
     callLinks: Record<string, string>,
     lineNo?: number,
-): Token {
+): Token[] {
     const trimmed = text.trim();
     // Tag spans cover only the meaningful content (e.g. the quoted string), not the
     // separator whitespace this run's own leading/trailing edges may include — so check
     // coverage against the trimmed content's offsets, not the whole run.
     const leadingWs = text.length - text.trimStart().length;
+    const trailingWs = text.length - text.trimEnd().length;
     const contentStart = absStart + leadingWs;
     const contentEnd = contentStart + trimmed.length;
     const linkSpan = spans.find(s => s.tag === 'link' && s.start <= contentStart && s.end >= contentEnd);
-    if (linkSpan) resolveLinkSpan(linkSpan, text, anchors, callLinks, lineNo);
 
-    if (/^'.*'$/.test(trimmed)) return ['val', text];
-    if (linkSpan) return ['val', text];
-    if (/^\d+$/.test(trimmed)) return ['numval', text];
-    return ['val', text];
+    if (!linkSpan) {
+        if (/^\d+$/.test(trimmed)) return [['numval', text]];
+        return [['val', text]];
+    }
+
+    // A linked run's own separator whitespace (e.g. the space between `CALL` and a quoted
+    // value) must not ride along inside the {{link}}'s clickable <a> — split it into its own
+    // (non-linked) token so callLinks keys only the actual content, same char count/content
+    // either way, just a different token boundary.
+    resolveLinkSpan(linkSpan, trimmed, anchors, callLinks, lineNo);
+    const tokens: Token[] = [];
+    if (leadingWs > 0) tokens.push(['val', text.slice(0, leadingWs)]);
+    tokens.push(['val', trimmed]);
+    if (trailingWs > 0) tokens.push(['val', text.slice(text.length - trailingWs)]);
+    return tokens;
 }
 
 function tokenizeLevelLine(
@@ -107,7 +118,7 @@ function tokenizeLevelLine(
         const valueText = rest.slice(valueIdx + 'VALUE'.length);
         if (valueText.length > 0) {
             const absStart = restOffset + valueIdx + 'VALUE'.length;
-            tokens.push(classifyValueRun(valueText, absStart, spans, anchors, callLinks, lineNo));
+            tokens.push(...classifyValueRun(valueText, absStart, spans, anchors, callLinks, lineNo));
         }
     }
 
@@ -135,13 +146,13 @@ function tokenizeStatementLine(
     const tokens: Token[] = [];
     if (verbCoveredByLink) {
         if (leadWs.length > 0) tokens.push(['kw', leadWs]);
-        tokens.push(classifyValueRun(verb, verbAbsStart, spans, anchors, callLinks, lineNo));
+        tokens.push(...classifyValueRun(verb, verbAbsStart, spans, anchors, callLinks, lineNo));
     } else {
         tokens.push(['kw', leadWs + verb]);
     }
 
     if (remainder.length > 0) {
-        tokens.push(classifyValueRun(remainder, verbAbsStart + verb.length, spans, anchors, callLinks, lineNo));
+        tokens.push(...classifyValueRun(remainder, verbAbsStart + verb.length, spans, anchors, callLinks, lineNo));
     }
     return tokens;
 }
@@ -181,7 +192,7 @@ function tokenizeFallbackLine(
     callLinks: Record<string, string>,
     lineNo?: number,
 ): Token[] {
-    return [classifyValueRun(clean, 0, spans, anchors, callLinks, lineNo)];
+    return classifyValueRun(clean, 0, spans, anchors, callLinks, lineNo);
 }
 
 export function tokenizeCardLine(raw: string, anchors: AnchorRegistry, lineNo?: number): LineResult {

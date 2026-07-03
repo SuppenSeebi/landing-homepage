@@ -311,6 +311,17 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
   contents` override entirely. `.pcf-call-link` is a direct child of `.pcf-chars` (`display:
   flex`), so per the CSS Display spec a plain `<a>` there is auto-blockified into a normal flex
   item anyway — same visual layout, but now with a real, clickable box.
+- **Fixed: a linked value's separator whitespace rode along inside its `<a>`.** Also found during
+  3.6 confirmation: `CALL 'LINKEDIN'` compiled the space between `CALL` and the quoted value into
+  the *same* token as the linked content, so `callLinks` keyed on `" 'LINKEDIN'"` (leading space
+  included) and the space ended up inside the clickable/underline-on-hover `<a>`. `tokenizeCardLine.ts`'s
+  `classifyValueRun` now returns `Token[]` instead of one `Token`: for a run with no `{{link}}`
+  span it's still exactly one token (unchanged, byte-identical to before); for a linked run it
+  splits off any leading/trailing separator whitespace into its own plain (non-linked) token
+  first, so `callLinks` keys only the trimmed content (`"'LINKEDIN'"`) and the `<a>` wraps only
+  that. Same characters, same visible text — only the token boundary moved. All four call sites
+  (`tokenizeLevelLine`, `tokenizeStatementLine` ×2, `tokenizeFallbackLine`) updated to spread the
+  array.
 
 ---
 
