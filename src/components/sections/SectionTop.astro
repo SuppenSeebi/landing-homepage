@@ -42,15 +42,6 @@ const LINES: Line[] = [
                         lines={LINES}
                     />
                 </div>
-                <div class="top-image">
-                    <img src="/me.jpg"           id="top-me"     class="profile shown" alt="Sebastian" />
-                    <img src="/top1-degree.png"  id="top-degree" alt="Degree" />
-                    <img src="/top4-cobol.png"   id="top-cobol"  alt="COBOL" />
-                    <img src="/top2-opcua.png"   id="top-opcua"  alt="Embedded / OPC UA" />
-                    <img src="/top3-coding.png"  id="top-coding" alt="Coding" />
-                    <img src="/top3-coding.png"  id="top-3d"     alt="3D Printing" />
-                    <img src="/top5-sports.png"  id="top-sports" alt="Sports" />
-                </div>
             </div>
         </div>
     </div>
@@ -66,13 +57,13 @@ const scrollSpace = document.getElementById('scroll-space-top-aboutme') as HTMLE
 // Value: 34 chars (positions 37-70 in row 4)
 // Desc:  11 chars (positions 40-50 in row 5)
 const items = [
-    { group: ' IDENTITY     ', value: " 'SEBASTIAN SCHWINN               '", desc: " 'NAME     '", imageId: 'top-me'     },
-    { group: ' BACKGROUND   ', value: " 'MSC ELECTRICAL ENGINEERING      '", desc: " 'EDUCATION'", imageId: 'top-degree' },
-    { group: ' CAREER       ', value: " 'COBOL DEVELOPER AT RETROCODE    '", desc: " 'CURR-ROLE'", imageId: 'top-cobol'  },
-    { group: ' CAREER       ', value: " 'EMBEDDED C / OPC-UA             '", desc: " 'PREV-ROLE'", imageId: 'top-opcua'  },
-    { group: ' SKILLS       ', value: " 'PYTHON  SQL-DB2  JCL  JS        '", desc: " 'LANGUAGES'", imageId: 'top-coding' },
-    { group: ' INTERESTS    ', value: " '3D PRINTING - TECHNICAL TINKERIN'", desc: " 'HOBBIES  '", imageId: 'top-3d'     },
-    { group: ' COMMUNITY    ', value: " 'TENNIS + TABLE TENNIS CLUBS     '", desc: " 'COMMUNITY'", imageId: 'top-sports' },
+    { group: ' IDENTITY     ', value: " 'SEBASTIAN SCHWINN               '", desc: " 'NAME     '" },
+    { group: ' BACKGROUND   ', value: " 'MSC ELECTRICAL ENGINEERING      '", desc: " 'EDUCATION'" },
+    { group: ' CAREER       ', value: " 'COBOL DEVELOPER AT RETROCODE    '", desc: " 'CURR-ROLE'" },
+    { group: ' CAREER       ', value: " 'EMBEDDED C / OPC-UA             '", desc: " 'PREV-ROLE'" },
+    { group: ' SKILLS       ', value: " 'PYTHON  SQL-DB2  JCL  JS        '", desc: " 'LANGUAGES'" },
+    { group: ' INTERESTS    ', value: " '3D PRINTING - TECHNICAL TINKERIN'", desc: " 'HOBBIES  '" },
+    { group: ' COMMUNITY    ', value: " 'TENNIS + TABLE TENNIS CLUBS     '", desc: " 'COMMUNITY'" },
 ];
 
 // Span position constants (character offsets within each row's .pcf-chars)
@@ -91,9 +82,7 @@ const DESC_ROW = 6;
 const DESC_START = 39;
 const DESC_LEN = 12;
 
-const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\-._*@#';
-
-// ── Scramble helpers ──────────────────────────────────────────────────────────
+// ── Row helpers ────────────────────────────────────────────────────────────────
 
 function getRowSpans(area: HTMLElement, rowIdx: number): HTMLElement[] {
     const rows = area.querySelectorAll('.pcf-line-row');
@@ -102,78 +91,17 @@ function getRowSpans(area: HTMLElement, rowIdx: number): HTMLElement[] {
     return Array.from(row.querySelectorAll('.pcf-chars span')) as HTMLElement[];
 }
 
+// A blank span still needs a real (non-collapsing) text node - not '' - to keep a line box
+// and match the row height of its siblings; see PunchCard.astro's renderLinesForArea for the
+// full explanation of why a childless/empty span collapses to 0 height.
 function directUpdate(spans: HTMLElement[], start: number, len: number, text: string, cls: string) {
     for (let i = 0; i < len; i++) {
         const span = spans[start + i];
         if (!span) continue;
         const ch = text[i] ?? ' ';
-        if (ch === ' ') { span.className = 'pcc-empty'; span.textContent = ''; }
+        if (ch === ' ') { span.className = 'pcc-empty'; span.textContent = ' '; }
         else { span.className = cls; span.textContent = ch; }
     }
-}
-
-let nameTimer: ReturnType<typeof setInterval> | null = null;
-let valTimer: ReturnType<typeof setInterval> | null = null;
-
-function scrambleRange(
-    spans: HTMLElement[],
-    start: number,
-    len: number,
-    text: string,
-    cls: string
-): ReturnType<typeof setInterval> {
-    const target = Array.from(text);
-    const revealed = new Array(len).fill(false);
-    let noiseFrames = 3;
-
-    const handle = setInterval(() => {
-        if (noiseFrames > 0) {
-            for (let i = 0; i < len; i++) {
-                const span = spans[start + i];
-                if (span) { span.className = cls; span.textContent = NOISE[Math.floor(Math.random() * NOISE.length)]; }
-            }
-            noiseFrames--;
-            return;
-        }
-
-        const unrevealed = revealed.reduce<number[]>((a, r, i) => { if (!r) a.push(i); return a; }, []);
-        const n = Math.min(Math.floor(Math.random() * 4) + 3, unrevealed.length);
-        for (let k = 0; k < n; k++) {
-            const pick = Math.floor(Math.random() * unrevealed.length);
-            revealed[unrevealed[pick]] = true;
-            unrevealed.splice(pick, 1);
-        }
-
-        for (let i = 0; i < len; i++) {
-            const span = spans[start + i];
-            if (!span) continue;
-            if (revealed[i]) {
-                const ch = target[i] ?? ' ';
-                if (ch === ' ') { span.className = 'pcc-empty'; span.textContent = ''; }
-                else { span.className = cls; span.textContent = ch; }
-            } else {
-                span.className = cls;
-                span.textContent = NOISE[Math.floor(Math.random() * NOISE.length)];
-            }
-        }
-
-        if (revealed.every(Boolean)) clearInterval(handle);
-    }, 80);
-
-    return handle;
-}
-
-// ── Image switcher ────────────────────────────────────────────────────────────
-
-let currentImageId = 'top-me';
-
-function showImage(newId: string) {
-    if (newId === currentImageId) return;
-    const prev = document.getElementById(currentImageId);
-    const next = document.getElementById(newId);
-    if (prev) { prev.classList.remove('shown', 'slide-in'); prev.classList.add('slide-out'); }
-    if (next) { next.classList.remove('slide-out'); next.classList.add('slide-in'); }
-    currentImageId = newId;
 }
 
 // ── Scroll height ─────────────────────────────────────────────────────────────
@@ -231,14 +159,11 @@ export function statemachineTopRun() {
     if (next === current) return;
 
     if (dynamicReady) {
-        if (nameTimer) { clearInterval(nameTimer); nameTimer = null; }
-        if (valTimer)  { clearInterval(valTimer);  valTimer  = null; }
-        nameTimer = scrambleRange(nameSpans, NAME_START, NAME_LEN, items[next].group, 'pcc-name');
-        valTimer  = scrambleRange(valSpans,  VAL_START,  VAL_LEN,  items[next].value, 'pcc-val');
+        directUpdate(nameSpans, NAME_START, NAME_LEN, items[next].group, 'pcc-name');
+        directUpdate(valSpans,  VAL_START,  VAL_LEN,  items[next].value, 'pcc-val');
         directUpdate(descSpans, DESC_START, DESC_LEN, items[next].desc, 'pcc-val');
     }
 
-    showImage(items[next].imageId);
     current = next;
 }
 
