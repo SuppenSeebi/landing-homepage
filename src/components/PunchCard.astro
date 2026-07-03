@@ -75,10 +75,10 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
                     <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
                 </div>
             </div>
-            <div class="pcf-fh-cell pcf-fh-w3">
-                <span class="pcf-fh-lbl">PAGE</span>
-                <span class="pcf-fh-val" set:html={punchText('1 OF 1')}></span>
-            </div>
+            <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#links">
+                <span class="pcf-fh-lbl">XREF</span>
+                <span class="pcf-fh-val" set:html={punchText('SERVICES')}></span>
+            </a>
         </div>
 
         <div class="pcf-fh-row">
@@ -198,10 +198,10 @@ const slotFlex = useSlot ? Math.max(1, 18 - lines.length) : 1;
                         <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
                     </div>
                 </div>
-                <div class="pcf-fh-cell pcf-fh-w3">
-                    <span class="pcf-fh-lbl">PAGE</span>
-                    <span class="pcf-fh-val" set:html={punchText('1 OF 1')}></span>
-                </div>
+                <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#links">
+                    <span class="pcf-fh-lbl">XREF</span>
+                    <span class="pcf-fh-val" set:html={punchText('SERVICES')}></span>
+                </a>
             </div>
 
             <div class="pcf-fh-row">
