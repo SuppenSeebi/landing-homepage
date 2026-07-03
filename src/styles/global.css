@@ -287,8 +287,8 @@ p {
 }
 .pcf-fh-cell:last-child { border-right: none; }
 
-.pcf-fh-w1 { flex: 2.5; }
-.pcf-fh-w2 { flex: 3.5; }
+.pcf-fh-w1 { flex: 1.5; }
+.pcf-fh-w2 { flex: 4.5; }
 .pcf-fh-w3 { flex: 1.5; }
 
 .pcf-fh-nav-cell {
