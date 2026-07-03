@@ -37,6 +37,12 @@ context, can he confidently change one line of text or add one card without fear
 the page?* If the answer is no, the design needs to move further toward plain text and away
 from code.
 
+**Extended target (Phase 6, sketched 2026-07-04):** the same test, applied to adding a whole new
+*section*, not just editing an existing one — drop a new `.pcob` file in `src/content/_punchcard/`,
+add one line to a `main.pcob` naming it, and it renders correctly (nav, scroll order, working
+cross-section links) with no other file touched. Phases 1–5 solved this for card *text*; Phase 6
+is the same trust gap applied to section/card *structure*.
+
 ### Core rule: the coding-area text is WYSIWYG
 
 **The rendered COBOL STATEMENT text (the punch card's coding area) is a 1:1 rendering of what
@@ -222,6 +228,96 @@ extended to carry `cardIdx`.
   multi-card sections' whole-row scramble-on-swap. Once the base system is stable, design a
   small, deliberately narrow tag set for these rather than a general animation DSL.
 
+### Phase 6 — One shared program + generic rendering (sketched 2026-07-04, not yet built)
+
+**The target test**: drop a new `.pcob` file in `src/content/_punchcard/`, add one line to
+`main.pcob` naming it, and it renders correctly — in nav, in scroll order, with working
+cross-section links — with no other file touched. Everything below exists to close the gap
+between that and where Phase 4 left things.
+
+Prompted directly by two real incidents in Phase 4: merging Top's INTERESTS/COMMUNITY cards
+crashed the page (a hardcoded card-name list in `SectionTop.astro` didn't know the merge
+happened), and left a stale `COMMUNITY.` nav tab behind (a *second* hardcoded, hand-maintained
+copy of the same fact, in `punch-nav.ts`, that also didn't know). Both are the same root cause:
+facts about section/card structure live in more places than the `.pcob` file itself.
+
+**6.1 — `main.pcob` with `@IMPORT`, one shared compiled program.**
+Today, every section calls `compileProgram()` on its own file, independently — which is why
+`{{link:top}}` from `impressum.pcob` fails (Migration findings, "anchors don't span `.pcob`
+files"): each file gets its own anchor registry. A `main.pcob` that explicitly imports every
+section file (`@IMPORT aboutme.pcob`, one line per file, in render order) and gets compiled as
+a *single* program fixes this at the root — one shared anchor registry means any card can
+`{{link:}}` any section by name, validated by the compiler, no more quoted-URL (`{{link:'#top'}}`)
+workarounds.
+- Chosen over directory auto-discovery (e.g. Vite's `import.meta.glob`): an explicit, visible
+  import list is more consistent with this project's established "explicit, no implicit"
+  stance (see the Core rule, and the `@SLOT` removal above) than silently scanning a folder.
+  Adding a section is still a one-line edit to `main.pcob` — small and visible, not zero-touch,
+  and that's an accepted tradeoff, not a gap.
+- **Subordinate files stay fully self-contained.** Each `.pcob` file keeps declaring its own
+  `@DIVISION`/`@SECTION`/`@CARD`s, exactly as today. `main.pcob` does not re-declare structure
+  the subordinate files already own — it's purely an ordered import manifest, plus whatever
+  values are genuinely identical everywhere by policy (not a place to duplicate section content).
+- **Not settled yet**: exact `@IMPORT` syntax and error handling (missing file, double-import,
+  self-import), and whether `main.pcob` needs any directive of its own beyond the import list.
+
+**6.2 — Card-height math is not `.pcob` config.** Sebastian's explicit call: the
+`CARD_COUNT * 88vh` scroll-space formula is a rendering-layer fact, not a content decision — no
+section should ever want a different multiplier, so it must not become something authored in
+`main.pcob` or any `.pcob` file. It becomes exactly one hardcoded constant inside the generic
+rendering component (6.3), computed from the card count the compiler already reports. Wherever
+this ends up living, there must be exactly one occurrence of the multiplier in the whole
+codebase, not one per section as today.
+
+**6.3 — One generic rendering component, replacing 5 near-duplicate `Section*.astro` files.**
+`SectionTop/AboutMe/Work/Links.astro` are already structurally identical: compile, look up
+cards by a hardcoded name list, render one `<PunchCard>` per card in a `.pcf-stage-multi`,
+compute `CARD_COUNT * 88vh`, call `setupMultiCardSection(id)`. None of that actually varies
+per section. The target is one component, parameterized by a compiled section (from 6.1's
+single program), that:
+  - renders whatever cards the section actually contains, in file order — no hardcoded name
+    list to fall out of sync (this is the direct fix for the Top crash; `SectionTop.astro`
+    already does a version of this today, see Phase 4's step 4.13 note, as a preview of the
+    pattern)
+  - derives `.pcf-stage` vs. `.pcf-stage-multi` from card count instead of a per-file choice
+  - derives the section id / `setupMultiCardSection` argument from the compiled section itself,
+    not a separately hand-typed string
+- **Known exception: Impressum.** Its JS-measured `.impressum-overlay` (German legal text) is
+  genuinely bespoke — real markup and a runtime script beyond plain card rendering. The generic
+  component needs an escape hatch (a slot, or Impressum staying a thin wrapper around the
+  generic piece) rather than forcing every section through one uniform template.
+
+**6.4 — Retire `punch-nav.ts`, derive nav from the one shared compiled program.**
+`compile.ts` already derives `sectionsByDiv`/`parasBySection` from a compiled program — unused
+today, since every section still imports hand-written `DIVISION_MAP`/`SECTIONS_BY_DIV`/
+`PARAS_BY_SECTION` instead. Once 6.1 exists (one program spanning every section), wiring this
+in becomes possible — directly eliminating the class of bug that left a stale `COMMUNITY.` tab
+after Top's cards were merged, since nav would no longer be a second hand-maintained copy of a
+fact the compiler already has. **Blocked on one compiler addition**: the compiler's derived
+`parasBySection` only emits `label`/`href` today — it doesn't produce `cardIdx` (added to the
+hand-written version later, after nav highlighting needed to know which card within a section
+is active, and never backported). This needs to land before `punch-nav.ts` can actually go away.
+
+**6.5 — Future embed tag for non-text content (images, video), replacing `@SLOT`'s old job.**
+Not `@SLOT` revived — a different model. The card reserves rows and an anchor point (the same
+"give space + a point" idea `@SLOT` had), but the *content* is named directly in the `.pcob`
+file (e.g. an image path), and the reference travels through `compileProgram()`'s output as
+data so `PunchCard.astro`'s existing client-side renderer can create the actual element itself —
+no Astro-side slot-supplying code needed per use, unlike `@SLOT`. Design constraints agreed so
+far, not yet built:
+  - Scoped to assets/raw HTML only, **not arbitrary `.astro` components** — an `.astro` file is
+    code (its own compile step, can run logic, import other components); letting content
+    reference one reopens exactly the content/code boundary this whole system protects. Treat
+    "embed a whole Astro component" as a separate, much bigger conversation if it ever comes up.
+  - The reserved space is a rectangular row-count box (matching `@SLOT`'s old shape); within
+    that box, the embedded media/HTML's own layout is its own responsibility (not dictated by
+    the character grid) — same relationship Impressum's overlay already has with its reserved
+    rows today, just made into a real mechanism instead of a JS-measurement hack.
+  - Not yet decided: exact tag name/params, file-path reference vs. inline HTML, how Astro's
+    asset pipeline (`astro:assets`) fits in if at all.
+- This is deliberately its own scoped addition, sequenced after (or reviewed separately from)
+  6.1–6.4 rather than bundled in — keeps each change small enough to verify independently.
+
 ---
 
 ## D. Decisions log / concerns / things to document as we go
@@ -251,7 +347,12 @@ was decided and why, and what was found not to port cleanly.
       not an authored/anchored identifier, so it isn't part of this uniqueness check.
 
 ### Open decisions (need an answer before/while building)
-*(empty — see Resolved decisions above)*
+- [ ] `punch-nav.ts`'s stale `COMMUNITY.` tab (Top's cards were merged, that entry's `cardIdx: 6`
+      is now out of range): hand-patch it now as an isolated fix, or leave it as a visible
+      reminder until Phase 6.4 replaces `punch-nav.ts` properly? Not yet decided.
+- [ ] Phase 6.1's exact `@IMPORT` syntax/error handling; whether `main.pcob` carries any
+      directive of its own beyond an ordered import list.
+- [ ] Phase 6.5's exact embed-tag name, params, and file-path-vs-inline-content shape.
 
 ### Risks to keep in mind while building (carried over from initial design discussion)
 - **Column-budget tension**: the DSL must not auto-layout `PIC X(N)` padding or column
@@ -425,3 +526,4 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
 | 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site, still outstanding. `punch-nav.ts` consolidation deliberately deferred, not yet scheduled. |
 | 5 — Animation tags | Deferred |
+| 6 — Shared program + generic rendering | Sketched, not built. `@IMPORT`/`main.pcob` (6.1), card-height math stays code-only (6.2), one generic section component replacing 5 hand-authored files (6.3), `punch-nav.ts` retirement blocked on the compiler producing `cardIdx` (6.4), future embed tag scoped to assets/HTML not Astro components (6.5) |
