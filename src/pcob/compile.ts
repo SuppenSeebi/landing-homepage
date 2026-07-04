@@ -124,9 +124,9 @@ export function compileRawProgram(program: RawProgram): CompiledProgram {
     for (const division of program.divisions) {
         for (const section of division.sections) {
             divisionMap[division.id].push(section.id);
-            sectionsByDiv[division.id].push({ label: `${section.name} SECTION.`, href: `#${section.id}` });
+            sectionsByDiv[division.id].push({ label: `${section.name} SECTION`, href: `#${section.id}` });
             parasBySection[section.id] = section.cards.map((card, cardIdx) => ({
-                label: `${card.name}.`,
+                label: card.name,
                 href: `#${section.id}`,
                 cardIdx,
             }));

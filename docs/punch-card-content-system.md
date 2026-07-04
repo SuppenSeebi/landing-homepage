@@ -405,11 +405,14 @@ was decided and why, and what was found not to port cleanly.
   that specific DRY violation is *not* eliminated by the new model, by design. See the DRY
   violations table in section B for the full accounting of what is/isn't eliminated.
 - **Nav label wording will still change cosmetically** (this part *is* auto-derived). The
-  compiler always renders a `sectionsByDiv` nav label as `NAME SECTION.`, uniformly. Today's
-  hand-written labels aren't uniform — `WORKING-STORAGE.` / `LOCAL-STORAGE.` (no "SECTION"
-  suffix) vs `LINKS SECTION.` vs `IMPRESSUM-SECTION.` (hyphenated, no space). When a section
-  migrates, expect its nav text to shift to the uniform `NAME SECTION.` form unless the
-  `@SECTION` name is chosen to reproduce today's exact wording.
+  compiler always renders a `sectionsByDiv` nav label as `NAME SECTION`, uniformly. Today's
+  hand-written labels aren't uniform — `WORKING-STORAGE` / `LOCAL-STORAGE` (no "SECTION"
+  suffix) vs `LINKS SECTION` vs `IMPRESSUM-SECTION` (hyphenated, no space). When a section
+  migrates, expect its nav text to shift to the uniform `NAME SECTION` form unless the
+  `@SECTION` name is chosen to reproduce today's exact wording. (Updated 2026-07-04: both
+  `sectionsByDiv` and `parasBySection` labels dropped their trailing `.` — the navbar isn't card
+  text, so it doesn't need the COBOL-statement-ending punctuation; Sebastian asked for this after
+  seeing it live, e.g. `BACKGROUND.` in the paragraph nav.)
 - **Bug found in both DSL example files while building the compiler**: `EXIT PARAGRAPH`/
   `EXIT SECTION` were written with a trailing, unclosed `{{link:name}}` (no wrapping, no
   `{{/link}}`) — inconsistent with every other tag use and with the "always paired, no bare
