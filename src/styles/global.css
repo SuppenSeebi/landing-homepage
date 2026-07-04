@@ -328,17 +328,6 @@ p {
     background: #C8AE58;
     border-radius: 50%;
 }
-/* Header wear: ink pressure */
-.pcf-fh-val .pcf-fh-ch:nth-child(4n+1)  { opacity: 0.80; }
-.pcf-fh-val .pcf-fh-ch:nth-child(9n+3)  { opacity: 0.86; }
-.pcf-fh-val .pcf-fh-ch:nth-child(15n+7) { opacity: 0.82; }
-.pcf-fh-val .pcf-fh-ch:nth-child(11n+5) { opacity: 0.91; }
-/* Header wear: typewriter micro-jitter */
-.pcf-fh-val .pcf-fh-ch:nth-child(3n+2)  { transform: translateY(0.4px); }
-.pcf-fh-val .pcf-fh-ch:nth-child(7n+4)  { transform: translateY(-0.35px); }
-.pcf-fh-val .pcf-fh-ch:nth-child(12n+6) { transform: translateY(0.3px) translateX(0.15px); }
-.pcf-fh-val .pcf-fh-ch:nth-child(16n+9) { transform: translateX(-0.2px); }
-
 .pcf-fh-nav {
     display: flex;
     flex-direction: row;
