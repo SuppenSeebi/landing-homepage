@@ -5,11 +5,17 @@
 // Per the resolved DSL decision, every tag is always open/close paired — there is no
 // bare/self-closing shorthand (e.g. EXIT PARAGRAPH links must be written
 // {{link:name}}EXIT PARAGRAPH{{/link}}, never a trailing unwrapped {{link:name}}).
+//
+// {{embed:path}} / {{embed:path corner}} is the one deliberate exception: it's a zero-width
+// pin marking a row+character position, not a decorator around visible text (nothing renders
+// in its place), so it never goes on the stack waiting for a close - it records its span
+// immediately, start === end at the point it appears. A stray {{/embed}} still errors via the
+// normal close-tag mismatch check below, since nothing of that tag is ever pushed.
 
 import { PcobError } from './types';
 
-export type TagName = 'link' | 'anchor' | 'cycle' | 'noise';
-const KNOWN_TAGS: readonly TagName[] = ['link', 'anchor', 'cycle', 'noise'];
+export type TagName = 'link' | 'anchor' | 'cycle' | 'noise' | 'embed';
+const KNOWN_TAGS: readonly TagName[] = ['link', 'anchor', 'cycle', 'noise', 'embed'];
 
 export interface TagSpan {
     tag: TagName;
@@ -58,7 +64,11 @@ export function extractTags(raw: string, lineNo?: number): ExtractedText {
                 if (!KNOWN_TAGS.includes(name)) {
                     throw new PcobError(`Unknown tag {{${name}}}`, lineNo);
                 }
-                stack.push({ tag: name, param, startClean: clean.length });
+                if (name === 'embed') {
+                    spans.push({ tag: name, param, start: clean.length, end: clean.length });
+                } else {
+                    stack.push({ tag: name, param, startClean: clean.length });
+                }
             }
             continue;
         }

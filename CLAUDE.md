@@ -14,15 +14,15 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 
 | File | Role |
 |------|------|
-| `src/pages/index.astro` | Root — calls `loadMainProgram()` once, renders every compiled section (via an id→component override map), emits the `#pcf-nav-data` JSON island |
+| `src/pages/index.astro` | Root — calls `loadMainProgram()` once, renders every compiled section through `PunchSection` (flat map, no per-section override needed anymore), emits the `#pcf-nav-data` JSON island |
 | `src/components/Logo.astro` | Fixed SVG logo, noise + arc marquee |
-| `src/components/PunchCard.astro` | Reusable IBM punch card shell (title bar, form header, coding area) |
-| `src/components/sections/PunchSection.astro` | Generic section renderer (replaces the old per-section `Section*.astro` files) — branches on card count for multi- vs. single-card layout, exposes an `overlay` slot for bespoke content |
-| `src/components/sections/SectionImpressum.astro` | Thin wrapper around `PunchSection` — supplies the JS-positioned German legal-text overlay via the `overlay` slot |
+| `src/components/PunchCard.astro` | Reusable IBM punch card shell (title bar, form header, coding area, `{{embed}}` pin rendering) |
+| `src/components/sections/PunchSection.astro` | Generic section renderer (replaces the old per-section `Section*.astro` files, including `SectionImpressum.astro`) — branches on card count for multi- vs. single-card layout |
 | `src/scripts/app.ts` | Main scroll handler: section activation, instant panel snap, logo visibility |
 | `src/scripts/multiCardSection.ts` | Shared card-switching logic for multi-card sections (count read from DOM) |
-| `src/pcob/loadProgram.ts` | Loads every `.pcob` file once (Vite eager `?raw` glob), resolves `main.pcob`'s `@IMPORT`s, compiles the merged program — `loadMainProgram()`, called once from `index.astro` |
-| `src/content/_punchcard/main.pcob` | The shared program — nothing but ordered `@IMPORT` lines naming every section file |
+| `src/pcob/loadProgram.ts` | Loads every `.pcob` file once (Vite eager `?raw` glob), resolves `main.pcob`'s `@IMPORT`s and every `{{embed}}` file reference, compiles the merged program — `loadMainProgram()`, called once from `index.astro` |
+| `src/content/_punchcard/main.pcob` | The shared program — ordered `@IMPORT` lines naming every section file, plus the 5 `@HEADER-*` form-header directives |
+| `src/content/_punchcard/embedded/*.html` | `{{embed:path}}`-referenced HTML fragments, one per embed (e.g. `embedded/impressum.html`) — plain content, not compiled as `.pcob` |
 | `src/styles/global.css` | All styles (pcf-* punch card, section scroll system, token colors) |
 | `src/utils/punchText.ts` | Renders strings as per-character span markup for form header values (wear/jitter effect removed 2026-07-04 — see CSS history if reviving it) |
 
@@ -35,21 +35,22 @@ interface Props {
   header: CompiledHeader;        // form-header cells, from src/pcob/types.ts — see below
   lines?: Line[];                // [seq6chars, Token[]][]
   callLinks?: Record<string, string>; // val token text → href
+  embeds?: CompiledEmbed[];      // {{embed:path}} pins — see "Embeds" below
   noStage?: boolean;             // omit pcf-stage wrapper (use in pcf-stage-multi)
 }
 ```
 
 `header` is `{ left: [Cell,Cell,Cell]; right: [Cell,Cell] }`, `Cell = { label, value, href? }` —
 authored via `@HEADER-*` in `main.pcob` (see "Form-header cells" below), compiled once in
-`index.astro`, threaded down through `PunchSection`/`SectionImpressum` unchanged. The 3rd right
-cell (`DATE - VERSION`) isn't part of this prop — it stays computed inline in this file (build
-date + git short-hash), not authored.
+`index.astro`, threaded down through `PunchSection` unchanged. The 3rd right cell
+(`DATE - VERSION`) isn't part of this prop — it stays computed inline in this file (build date +
+git short-hash), not authored.
 
 (`displaySlot`/`displayLabel`/`displayHeader`/`slotAtLine` — the old Astro-`<slot/>`-passthrough
 mechanism, plus the `@SLOT` directive that fed it — were removed entirely as unused dead code;
-nothing in the codebase ever consumed them. If embedded non-text content is needed again, revisit
-as a fresh design rather than reviving this — see `docs/punch-card-content-system.md`'s decisions
-log.)
+nothing in the codebase ever consumed them. Embedded non-text content did come up again, and got
+a fresh design rather than reviving this — see "Embeds" below and
+`docs/punch-card-content-system.md`'s decisions log.)
 
 ### Token types (`TT`)
 `div | section | para | lvl | name | kw | val | numval | dot | comment`
@@ -115,13 +116,13 @@ Statements (`CALL`, `EXIT PARAGRAPH`, `DISPLAY`, `.`) indent: **`     `** (5 spa
 
 ## Sections are generic — one component, driven by the compiled program
 
-There is no more per-section `Section*.astro` file (SectionTop/AboutMe/Work/Links are gone).
-`index.astro` calls `loadMainProgram()` (`src/pcob/loadProgram.ts`) once, then renders every
-`CompiledSection` it returns through `PunchSection.astro`, except for one explicit override —
-`{ impressum: SectionImpressum }` — for the one section needing bespoke markup. Adding a new
-section is: write a `.pcob` file, add one `@IMPORT` line to `src/content/_punchcard/main.pcob`,
-done (or, if it needs its own overlay-slot content like Impressum, also add one entry to
-`index.astro`'s override map).
+There is no more per-section `Section*.astro` file — not even for Impressum anymore
+(SectionTop/AboutMe/Work/Links/Impressum are all gone). `index.astro` calls `loadMainProgram()`
+(`src/pcob/loadProgram.ts`) once, then renders every `CompiledSection` it returns through
+`PunchSection.astro` with a flat `.map()` — no per-section override needed, since `{{embed:path}}`
+(see "Embeds" below) replaced the one thing (Impressum's bespoke legal-text overlay) that used to
+require one. Adding a new section is: write a `.pcob` file, add one `@IMPORT` line to
+`src/content/_punchcard/main.pcob`, done.
 
 `top.pcob` currently has 6 `@CARD`s (`IDENTITY`, `BACKGROUND`, `CAREER-CURR`, `CAREER-PREV`,
 `SKILLS`, `INTERESTS`) sharing one DIVISION/SECTION/01-level header — `COMMUNITY` is a field
@@ -149,8 +150,9 @@ multi-card section.
 ```
 
 (`cards.length === 1` renders the single-card shape instead — `.pcf-stage`, fixed
-`.pcf-section-height`, plus a `<slot name="overlay" />` after the card for the one section that
-needs one; see `SectionImpressum.astro`.)
+`.pcf-section-height`. Impressum used to need a `<slot name="overlay" />` here for its bespoke
+legal-text overlay; that's gone now that `{{embed:path}}` handles it generically — see "Embeds"
+below.)
 
 Cards are absolutely centered (`top: 50%; left: 50%; transform: translate(-50%,-50%)`), height
 intrinsic to row count (not stretched to a fixed region), `opacity: 0` by default.
@@ -274,6 +276,7 @@ set, and the lookup falls back to `'0'`, matching `cardIdx: 0`.
 | `.pcf-ruler-row` | Ruler tick row, `height: 13px` |
 | `.section-scroll-container` | Tall spacer giving scrollable height |
 | `.section-content-wrapper` | `position: fixed; width: 100%; height: 100vh` — the visible content |
+| `.pcf-embed` | `{{embed:path}}` wrapper — `position: fixed`, positioned/transformed via inline styles set by `PunchCard.astro`'s client script |
 
 `.section-content-wrapper` has exactly two states: default (hidden) and `.active` (visible) —
 instant toggle, no transition/animation classes.
@@ -300,24 +303,37 @@ Card background: `#F5EDD4` (aged paper). Card border/accents: `#C2A840` (gold). 
 
 ---
 
-## SectionImpressum (JS-measured overlay, not a PunchCard slot)
+## Embeds (`{{embed:path}}` — pin-anchored file attachments)
 
-Compiled from `src/content/_punchcard/impressum.pcob` (one `@CARD`, 19 rows). `@SLOT` and
-`PunchCard`'s `slotAtLine`/`displaySlot` props have been removed entirely — nothing ever
-consumed them (see the PunchCard component API section above).
+Compiled from `src/content/_punchcard/impressum.pcob` (one `@CARD`, 19 rows) — Impressum's
+German legal text is the one real usage today, but the mechanism is generic, not
+Impressum-specific. `@SLOT` and `PunchCard`'s `slotAtLine`/`displaySlot` props (the old
+Astro-`<slot/>`-passthrough model this replaced) are gone entirely (see the PunchCard component
+API section above) — nothing ever consumed them, and their contract (calling `.astro` file
+supplies JSX children per use) didn't fit where embeds needed to go.
 
-`SectionImpressum.astro` is a thin wrapper around the generic `PunchSection.astro`: it passes
-its own compiled `section` prop through and supplies the overlay markup via `<Fragment
-slot="overlay">`, landing inside `PunchSection`'s single-card `.pcf-stage` branch right after the
-`<PunchCard>` — the same DOM position it occupied before this was a shared component.
+`{{embed:path}}` / `{{embed:path corner}}` is a **zero-width pin**, not a decorator — the one tag
+with no closing pair (`src/pcob/tags.ts`). `path` is resolved relative to the referencing `.pcob`
+file (via a second eager glob in `src/pcob/loadProgram.ts`, `**/*.html` under
+`src/content/_punchcard/`); `corner` (default `top-left`) picks which corner of the *embedded
+content* touches the pin — `top-left`/`top`/`top-right`/`left`/`center`/`right`/`bottom-left`/
+`bottom`/`bottom-right`. The tag reserves no row space of its own — whatever blank lines surround
+it in the `.pcob` source are just typed WYSIWYG spacing, same as any other card. Impressum's
+`impressum.pcob` places `{{embed:embedded/impressum.html}}` on the first blank line after
+`DISPLAY`; `src/content/_punchcard/embedded/impressum.html` is the actual German-text fragment
+(same markup Impressum's old bespoke overlay used).
 
-The German legal text (`.impressum-grid`) is a plain sibling `<div class="impressum-overlay">`
-next to the `<PunchCard>`, absolutely positioned at runtime by the section's own script
-(`positionImpressumOverlay`), which measures `.pcf-line-row` elements at fixed indices — `rows[3]`
-(line 4, first blank row after `DISPLAY`) and `rows[13]` (line 14, last blank row before
-`END-DISPLAY`) — via `getBoundingClientRect()` and sizes the overlay to span exactly that range.
-Changing the card's row layout (e.g. how many blank rows sit between `DISPLAY`/`END-DISPLAY` in
-`impressum.pcob`) must keep those two indices pointing at the right rows, or update them to match.
+`CompiledCard.embeds` (`src/pcob/types.ts`) carries each embed's resolved `html`, `row`/`col`
+(derived from the tag's position, never author-typed), `corner`, and `sectionId`/`cardIdx` baked
+in at compile time. `PunchCard.astro`'s client script creates a `.pcf-embed` wrapper per embed,
+appended to `.section-content-wrapper` — **not** inside `.pcf-stage-multi`, which is
+`overflow: hidden` and would clip anything meant to extend past the card or the screen — and
+positions it via `getBoundingClientRect()` on the exact character span at `(row, col)`, applying
+a `transform: translate(x%, y%)` looked up from `corner` (no need to measure the embedded
+content's own size). Multi-card visibility reuses the existing `data-active-card` convention
+(each wrapper carries `data-embed-section`/`data-embed-card-idx`, checked by the same scroll
+listener that already drives paragraph-nav highlighting) — no changes needed to
+`multiCardSection.ts`.
 
 The card's own `IMPRESSUM-SECTION.` line is intentionally styled as a section-header token
 (`pcc-section`), not a paragraph-name token — it doubles as both this card's only heading and a

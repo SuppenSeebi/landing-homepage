@@ -1,13 +1,23 @@
 // Loads every .pcob file in src/content/_punchcard once (Vite's eager `?raw` glob), resolves
 // main.pcob's @IMPORTs against that in-memory map, and compiles the merged result into one
 // shared CompiledProgram. Called exactly once, from src/pages/index.astro - every section's
-// content, nav data, and cross-section {{link}} targets all come from this single call.
+// content, nav data, cross-section {{link}} targets, and {{embed}} file references all come
+// from this single call.
 
 import { compileRawProgram } from './compile';
 import { parseSource } from './parseSource';
 import type { CompiledProgram } from './types';
 
 const files = import.meta.glob('../content/_punchcard/*.pcob', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+}) as Record<string, string>;
+
+// {{embed:path}} references are resolved relative to the referencing .pcob file - since every
+// .pcob file lives flatly in _punchcard/ today, that's the same as resolving relative to
+// _punchcard/ itself. Recursive glob so subdirectories (e.g. embedded/impressum.html) resolve.
+const embedFiles = import.meta.glob('../content/_punchcard/**/*.html', {
     query: '?raw',
     import: 'default',
     eager: true,
@@ -22,9 +32,14 @@ for (const [path, content] of Object.entries(files)) {
     fileMap[basename(path)] = content;
 }
 
+const embedFileMap: Record<string, string> = {};
+for (const [path, content] of Object.entries(embedFiles)) {
+    embedFileMap[path.replace('../content/_punchcard/', '')] = content;
+}
+
 export function loadMainProgram(): CompiledProgram {
     const mainSource = fileMap['main.pcob'];
     if (mainSource === undefined) throw new Error('main.pcob not found in src/content/_punchcard');
     const program = parseSource(mainSource, name => fileMap[name]);
-    return compileRawProgram(program);
+    return compileRawProgram(program, path => embedFileMap[path]);
 }

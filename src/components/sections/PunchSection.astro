@@ -4,10 +4,11 @@
 // and CARD_COUNT * 88vh math. Card order/count/id all come straight from the compiled
 // section, so adding or reordering cards in a .pcob file needs no matching edit here.
 //
-// Impressum is the one accepted exception (see docs/punch-card-content-system.md's Phase 6
-// notes): its JS-measured legal-text overlay is genuinely bespoke, so SectionImpressum.astro
-// wraps this component and supplies that overlay via the "overlay" slot instead of forcing
-// it through the uniform template.
+// Impressum no longer needs to be an exception here (it did through Phase 6.3 - see
+// docs/punch-card-content-system.md's decisions log): its legal-text overlay used to be
+// genuinely bespoke Astro-side markup + a JS-measurement script, both replaced by a plain
+// {{embed:path}} tag in impressum.pcob. Every section, including Impressum, renders through
+// this one template now.
 import type { CompiledHeader, CompiledSection } from '../../pcob/types';
 import PunchCard from '../PunchCard.astro';
 
@@ -30,6 +31,7 @@ const isMulti = section.cards.length > 1;
                         header={header}
                         lines={card.lines}
                         callLinks={card.callLinks}
+                        embeds={card.embeds}
                     />
                 ))}
             </div>
@@ -44,8 +46,8 @@ const isMulti = section.cards.length > 1;
                     header={header}
                     lines={section.cards[0].lines}
                     callLinks={section.cards[0].callLinks}
+                    embeds={section.cards[0].embeds}
                 />
-                <slot name="overlay" />
             </div>
         </div>
     </div>

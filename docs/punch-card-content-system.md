@@ -227,7 +227,7 @@ also covers Phase 6's changes, not just Phase 4's).
   multi-card sections' whole-row scramble-on-swap. Once the base system is stable, design a
   small, deliberately narrow tag set for these rather than a general animation DSL.
 
-### Phase 6 — One shared program + generic rendering (6.1–6.4 + 6.6 done 2026-07-04, 6.5 deferred)
+### Phase 6 — One shared program + generic rendering (6.1–6.6 all done 2026-07-04)
 
 **The target test**: drop a new `.pcob` file in `src/content/_punchcard/`, add one line to
 `main.pcob` naming it, and it renders correctly — in nav, in scroll order, with working
@@ -327,25 +327,62 @@ the stale-`COMMUNITY.`-tab class of bug: rebuilding and inspecting the compiled 
 not a separate card, back when Top's cards were merged; the old hand-written `punch-nav.ts` just
 never had that fact removed. There's no separate hand-maintained copy left to go stale.
 
-**6.5 — Future embed tag for non-text content (images, video), replacing `@SLOT`'s old job.**
-Not `@SLOT` revived — a different model. The card reserves rows and an anchor point (the same
-"give space + a point" idea `@SLOT` had), but the *content* is named directly in the `.pcob`
-file (e.g. an image path), and the reference travels through `compileProgram()`'s output as
-data so `PunchCard.astro`'s existing client-side renderer can create the actual element itself —
-no Astro-side slot-supplying code needed per use, unlike `@SLOT`. Design constraints agreed so
-far, not yet built:
-  - Scoped to assets/raw HTML only, **not arbitrary `.astro` components** — an `.astro` file is
-    code (its own compile step, can run logic, import other components); letting content
-    reference one reopens exactly the content/code boundary this whole system protects. Treat
-    "embed a whole Astro component" as a separate, much bigger conversation if it ever comes up.
-  - The reserved space is a rectangular row-count box (matching `@SLOT`'s old shape); within
-    that box, the embedded media/HTML's own layout is its own responsibility (not dictated by
-    the character grid) — same relationship Impressum's overlay already has with its reserved
-    rows today, just made into a real mechanism instead of a JS-measurement hack.
-  - Not yet decided: exact tag name/params, file-path reference vs. inline HTML, how Astro's
-    asset pipeline (`astro:assets`) fits in if at all.
-- This is deliberately its own scoped addition, sequenced after (or reviewed separately from)
-  6.1–6.4 rather than bundled in — keeps each change small enough to verify independently.
+**6.5 — `{{embed:path}}`, replacing `@SLOT`'s old job. Done (2026-07-04), Impressum fully
+migrated in the same change.** The design that shipped turned out meaningfully different from
+the original sketch above (kept below for history) once Sebastian pushed on what "attach a file
+to a card" should actually mean: not a rectangular row-reserving box at all, but a **zero-width
+pin** at an exact row+character position (positioned by typed whitespace, same WYSIWYG rule as
+everything else) — "a pin on a corkboard: one connection point, otherwise unconstrained." An
+optional `corner` param (`top-left` default, plus `top`/`top-right`/`left`/`center`/`right`/
+`bottom-left`/`bottom`/`bottom-right`) picks which corner of the *embedded content* touches that
+pin. Reserved space, if any is wanted, is just typed blank lines — the tag itself reserves
+nothing, and the embedded HTML/CSS is free to overflow the card or the screen entirely (this is
+what makes it fundamentally different from `@SLOT`'s "reserve N rows" model — no `rows=` param
+of any kind, since that would just be a second number that has to stay in sync with however many
+blank lines were actually typed, the same duplicated-fact problem this system exists to
+eliminate elsewhere).
+
+- **Grammar**: `{{embed:path}}` / `{{embed:path corner}}` — the one tag with no closing pair
+  (`src/pcob/tags.ts`'s `extractTags` records its span immediately, start === end, rather than
+  pushing it onto the paired-tag stack). `path` is resolved relative to the referencing `.pcob`
+  file (today, that's just `src/content/_punchcard/`, since every `.pcob` file lives there
+  flatly) and read at compile time via a second eager glob in `src/pcob/loadProgram.ts`
+  (`import.meta.glob('../content/_punchcard/**/*.html', ...)`), the same pattern already used
+  for `.pcob` files themselves.
+- **Compiler**: `CompiledCard.embeds: CompiledEmbed[]` (`src/pcob/types.ts`) carries the
+  resolved `html`, `row`/`col` (0-based, derived from the tag's position — never author-typed),
+  `corner`, plus `sectionId`/`cardIdx` baked in at compile time so the renderer needs no
+  cross-referencing. `tokenizeCardLine.ts` gained an `EmbedResolver` (mirrors the existing
+  `AnchorRegistry` pattern) and extracts `embeds` once per line, threaded through every existing
+  return path unchanged otherwise — an embed can sit on any line shape, same as `{{link}}` can.
+- **Renderer** (`PunchCard.astro`): a `.pcf-embed` wrapper is created client-side, appended to
+  `.section-content-wrapper` (**not** inside `.pcf-stage-multi`, which is `overflow: hidden` and
+  would defeat "may extend past the card or screen"), positioned via `getBoundingClientRect()`
+  on the exact character span at `(row, col)`, with the corner selecting a CSS `transform:
+  translate(x%, y%)` — no need to ever measure the embedded content's own rendered size.
+  Multi-card sections (stacking every card at one screen position, showing one via
+  `pcf-card-active`) get visibility for free by reusing the *existing* `data-active-card`
+  convention: each wrapper carries `data-embed-section`/`data-embed-card-idx`, and the same
+  scroll listener that already drives paragraph-nav highlighting also hides/shows embeds —
+  **no changes to `multiCardSection.ts` needed**, consistent with how that module already
+  doesn't push state to consumers (they independently re-derive from the DOM on scroll).
+- **Impressum migration**: the German legal text moved out of `SectionImpressum.astro`'s
+  hardcoded markup into `src/content/_punchcard/embedded/impressum.html`, referenced from
+  `impressum.pcob` as `{{embed:embedded/impressum.html}}` on the first previously-blank line
+  after `DISPLAY`. `positionImpressumOverlay()` (the `getBoundingClientRect()`-measurement
+  script) is deleted entirely — the generic renderer replaces it outright, not alongside it.
+  Since Impressum no longer needs *any* bespoke Astro-side markup, it stops being an exception
+  at all: `SectionImpressum.astro` and `PunchSection.astro`'s `overlay` named slot (added in
+  6.3 solely for this) are both deleted, and `index.astro`'s per-section override map goes back
+  to a flat `program.sections.map(section => <PunchSection ... />)`.
+- Sizing note: the embedded fragment's own CSS now controls its width/height (an explicit
+  `640px` on `.impressum-overlay`, tuned by eye) instead of the old measured-to-fit box —
+  intentionally not pixel-matched to the old look, since "the embedded content's own
+  responsibility" was the whole point of the redesign.
+- **What didn't ship, on purpose**: arbitrary `.astro` components as embeddable content — still
+  explicitly out of scope (an `.astro` file is code, not content; reopens the exact boundary
+  this system protects). `astro:assets` integration wasn't needed since embeds are plain HTML
+  fragments, not images needing Astro's image pipeline.
 
 **6.6 — Form-header cells authored via `@HEADER-*` (requested 2026-07-04, right after 6.1–6.4
 shipped; done same day).** Not part of the original Phase 6 sketch — a follow-up request, per
@@ -587,4 +624,4 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
 | 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site, still outstanding. `punch-nav.ts` consolidation deliberately deferred, not yet scheduled. |
 | 5 — Animation tags | Deferred |
-| 6 — Shared program + generic rendering | **6.1–6.4 and 6.6 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island, and (6.6, a follow-up request) the 5 configurable form-header cells now authored via `@HEADER-*` in `main.pcob` instead of hardcoded `Props`/markup. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks`/header hrefs including the cross-file `{{link:top}}GOBACK{{/link}}`). Sebastian's visual pass still outstanding (no dev server per this project's testing-scope rule). 6.5 (embed tag) stays deferred, scoped separately. |
+| 6 — Shared program + generic rendering | **All of 6.1–6.6 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island, the 5 configurable form-header cells authored via `@HEADER-*` in `main.pcob` (6.6), and `{{embed:path}}` (6.5) — a zero-width pin, not a row-reserving slot — replacing Impressum's `positionImpressumOverlay()` JS-measurement hack entirely, which also let Impressum stop being `PunchSection`'s one hardcoded exception. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks`/header hrefs including the cross-file `{{link:top}}GOBACK{{/link}}`, and the Impressum card's `data-embeds` JSON resolving to the real German legal text with correct row/col/corner/section/cardIdx). Sebastian's visual pass still outstanding (no dev server per this project's testing-scope rule) — now covers 6.5/6.6 too, not just 6.1–6.4. |

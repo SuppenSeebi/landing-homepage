@@ -1,7 +1,7 @@
 ---
 import { execSync } from 'child_process';
 import { punchText } from '../utils/punchText';
-import type { CompiledHeader } from '../pcob/types';
+import type { CompiledEmbed, CompiledHeader } from '../pcob/types';
 
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
@@ -11,6 +11,7 @@ interface Props {
     header: CompiledHeader;
     lines?: Line[];
     callLinks?: Record<string, string>;
+    embeds?: CompiledEmbed[];
     noStage?: boolean;
 }
 
@@ -25,11 +26,13 @@ const {
     header,
     lines = [],
     callLinks = {},
+    embeds = [],
     noStage = false,
 } = Astro.props;
 
 const linesJson = JSON.stringify(lines);
 const callLinksJson = JSON.stringify(callLinks);
+const embedsJson = JSON.stringify(embeds);
 ---
 
 {noStage ? (
@@ -120,7 +123,7 @@ const callLinksJson = JSON.stringify(callLinks);
             <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
             <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
         </div>
-        <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+        <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson} data-embeds={embedsJson}></div>
         <div class="pcf-ruler-row pcf-ruler-btm">
             <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
             <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
@@ -218,7 +221,7 @@ const callLinksJson = JSON.stringify(callLinks);
                 <div class="pcf-ruler-seq" data-ruler="seq-top"></div>
                 <div class="pcf-ruler-chars" data-ruler="chars-top"></div>
             </div>
-            <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson}></div>
+            <div class="pcf-punch-area" data-lines={linesJson} data-call-links={callLinksJson} data-embeds={embedsJson}></div>
             <div class="pcf-ruler-row pcf-ruler-btm">
                 <div class="pcf-ruler-linenum" data-ruler="linenum-btm"></div>
                 <div class="pcf-ruler-seq" data-ruler="seq-btm"></div>
@@ -508,6 +511,91 @@ function renderLinesForArea(area: HTMLElement) {
     });
 }
 
+// ── Embeds ───────────────────────────────────────────────────────────────────
+// {{embed:path}} / {{embed:path corner}} pins a file's raw HTML at an exact row+character
+// position in a card's text - a zero-width marker, not a decorator, so it reserves no space
+// of its own (see docs/pcob-reference.md). The wrapper lives outside .pcf-stage-multi (which
+// is overflow:hidden, clipping the ghost-card stack) so it's genuinely free to extend past the
+// card or the screen - a pin on a corkboard, one connection point, otherwise unconstrained.
+
+type EmbedCorner = 'top-left'|'top'|'top-right'|'left'|'center'|'right'|'bottom-left'|'bottom'|'bottom-right';
+interface Embed {
+    html: string; row: number; col: number; corner: EmbedCorner; sectionId: string; cardIdx: number;
+}
+
+const CORNER_TRANSFORMS: Record<EmbedCorner, string> = {
+    'top-left': 'translate(0, 0)',        'top': 'translate(-50%, 0)',        'top-right': 'translate(-100%, 0)',
+    'left': 'translate(0, -50%)',         'center': 'translate(-50%, -50%)',  'right': 'translate(-100%, -50%)',
+    'bottom-left': 'translate(0, -100%)', 'bottom': 'translate(-50%, -100%)', 'bottom-right': 'translate(-100%, -100%)',
+};
+
+// Positions (or repositions) a wrapper purely from its own dataset - one code path for both
+// initial creation and resize-triggered recalculation, no need to keep the original Embed
+// object around after the wrapper exists.
+function positionEmbedWrapper(wrapper: HTMLElement) {
+    const sectionId = wrapper.dataset.embedSection;
+    const section = sectionId ? document.getElementById(sectionId) : null;
+    const card = section?.querySelectorAll<HTMLElement>('.pcf-card')[Number(wrapper.dataset.embedCardIdx ?? '0')];
+    if (!card) return;
+
+    const rowEl = card.querySelectorAll<HTMLElement>('.pcf-line-row')[Number(wrapper.dataset.embedRow ?? '0')];
+    if (!rowEl) return;
+    const charsEl = rowEl.querySelector<HTMLElement>('.pcf-chars');
+    const col = Number(wrapper.dataset.embedCol ?? '0');
+    const targetSpan = charsEl?.children[col] as HTMLElement | undefined;
+    const pinRect = (targetSpan ?? charsEl ?? rowEl).getBoundingClientRect();
+
+    wrapper.style.left = `${pinRect.left}px`;
+    wrapper.style.top = `${pinRect.top}px`;
+    wrapper.style.transform = CORNER_TRANSFORMS[wrapper.dataset.embedCorner as EmbedCorner] ?? CORNER_TRANSFORMS['top-left'];
+}
+
+// Multi-card sections stack every card at the same screen position and show one at a time
+// (pcf-card-active) - an embed belonging to a card that isn't currently active hides, same
+// convention data-active-card already establishes for paragraph-nav highlighting (falls back
+// to '0', so single-card sections like Impressum - which never set data-active-card - work
+// unchanged, always "active").
+function updateEmbedVisibility(wrapper: HTMLElement) {
+    const sectionId = wrapper.dataset.embedSection;
+    const activeCard = sectionId ? (document.getElementById(sectionId)?.dataset.activeCard ?? '0') : '0';
+    wrapper.hidden = wrapper.dataset.embedCardIdx !== activeCard;
+}
+
+function renderEmbedsForCard(card: HTMLElement) {
+    const area = card.querySelector<HTMLElement>('.pcf-punch-area');
+    if (!area || area.dataset.embedsRendered) return;
+    area.dataset.embedsRendered = '1';
+
+    const embeds: Embed[] = JSON.parse(area.dataset.embeds || '[]');
+    if (!embeds.length) return;
+    // Appended outside .pcf-stage-multi's overflow:hidden clipping - .section-content-wrapper
+    // is the nearest ancestor that still scopes it to this section (toggled per-section via
+    // its own .active class) without clipping it.
+    const container = card.closest<HTMLElement>('.section-content-wrapper') ?? document.body;
+
+    for (const embed of embeds) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pcf-embed';
+        wrapper.dataset.embedSection = embed.sectionId;
+        wrapper.dataset.embedCardIdx = String(embed.cardIdx);
+        wrapper.dataset.embedRow = String(embed.row);
+        wrapper.dataset.embedCol = String(embed.col);
+        wrapper.dataset.embedCorner = embed.corner;
+        wrapper.innerHTML = embed.html;
+        container.appendChild(wrapper);
+        positionEmbedWrapper(wrapper);
+        updateEmbedVisibility(wrapper);
+    }
+}
+
+function updateAllEmbedVisibility() {
+    document.querySelectorAll<HTMLElement>('.pcf-embed').forEach(updateEmbedVisibility);
+}
+
+function repositionAllEmbeds() {
+    document.querySelectorAll<HTMLElement>('.pcf-embed').forEach(positionEmbedWrapper);
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 function initAllCards() {
@@ -517,15 +605,22 @@ function initAllCards() {
         card.querySelectorAll<HTMLElement>('.pcf-punch-area').forEach(renderLinesForArea);
     });
     requestAnimationFrame(() => {
-        document.querySelectorAll<HTMLElement>('.pcf-card').forEach(buildCharsRulerForCard);
+        document.querySelectorAll<HTMLElement>('.pcf-card').forEach(card => {
+            buildCharsRulerForCard(card);
+            renderEmbedsForCard(card);
+        });
     });
 }
 
 initAllCards();
 
-window.addEventListener('scroll', () => updatePcfNav(getActiveId()), { passive: true });
+window.addEventListener('scroll', () => {
+    updatePcfNav(getActiveId());
+    updateAllEmbedVisibility();
+}, { passive: true });
 window.addEventListener('resize', () => {
     document.querySelectorAll<HTMLElement>('.pcf-card').forEach(buildCharsRulerForCard);
+    repositionAllEmbeds();
 }, { passive: true });
 
 updatePcfNav(getActiveId());

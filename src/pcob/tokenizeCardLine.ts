@@ -1,5 +1,7 @@
 // Turns one card-text line (already known not to be a directive) into Token[] per the
-// documented line shapes, resolving inline {{link}}/{{anchor}} tags along the way.
+// documented line shapes, resolving inline {{link}}/{{anchor}} tags along the way. Also
+// extracts any {{embed}} pins on the line - these are zero-width and don't affect tokens/
+// rendered characters at all, see LineResult.embeds.
 //
 // Strict WYSIWYG: strip {{tags}} out of a line and every remaining character — including
 // leading/internal whitespace — must reappear in the rendered tokens unchanged. This module
@@ -9,17 +11,46 @@
 // there is no canonical/auto-applied indent for any line shape.
 
 import { extractTags, isFullyCoveredBy, type TagSpan } from './tags';
-import type { Token } from './types';
+import { EMBED_CORNERS, PcobError, type EmbedCorner, type Token } from './types';
 
 export interface AnchorRegistry {
     /** Resolve a bare internal anchor name (a @SECTION id= or {{anchor:name}}) to its href. */
     resolveAnchor(name: string, lineNo?: number): string;
 }
 
+export interface EmbedResolver {
+    /** Resolve an {{embed:path}} file reference (relative to the referencing .pcob file) to its raw HTML. */
+    resolveEmbedFile(path: string, lineNo?: number): string;
+}
+
+export interface LineEmbed {
+    html: string;
+    /** 0-based character column within this line (where the {{embed}} tag sat). */
+    col: number;
+    corner: EmbedCorner;
+}
+
 export interface LineResult {
     tokens: Token[];
     /** exact token text -> resolved href, for every {{link}} span this line produced. */
     callLinks: Record<string, string>;
+    /** every {{embed}} pin on this line - zero-width, so unrelated to `tokens`/rendered chars. */
+    embeds: LineEmbed[];
+}
+
+/** Parses an {{embed:...}} span's param ("path" or "path corner") and resolves the file. */
+function resolveEmbedSpan(span: TagSpan, embeds: EmbedResolver, lineNo?: number): LineEmbed {
+    const parts = (span.param ?? '').trim().split(/\s+/).filter(Boolean);
+    const file = parts[0];
+    const cornerRaw = parts[1] ?? 'top-left';
+    if (!file) throw new PcobError('{{embed:...}} is missing a file path', lineNo);
+    if (!EMBED_CORNERS.includes(cornerRaw as EmbedCorner)) {
+        throw new PcobError(
+            `{{embed:...}} has unknown corner "${cornerRaw}" — expected one of ${EMBED_CORNERS.join(', ')}`,
+            lineNo,
+        );
+    }
+    return { html: embeds.resolveEmbedFile(file, lineNo), col: span.start, corner: cornerRaw as EmbedCorner };
 }
 
 const STATEMENT_VERBS = ['END-DISPLAY', 'DISPLAY', 'EXIT PARAGRAPH', 'EXIT SECTION', 'GOBACK', 'CALL'] as const;
@@ -200,27 +231,30 @@ function tokenizeFallbackLine(
     return classifyValueRun(clean, 0, spans, anchors, callLinks, lineNo);
 }
 
-export function tokenizeCardLine(raw: string, anchors: AnchorRegistry, lineNo?: number): LineResult {
+export function tokenizeCardLine(raw: string, anchors: AnchorRegistry, embedResolver: EmbedResolver, lineNo?: number): LineResult {
     const { clean, spans } = extractTags(raw, lineNo);
     const trimmedBoth = clean.trim();
     const callLinks: Record<string, string> = {};
+    // Embeds are zero-width pins - extracted once here regardless of which line shape below
+    // ends up handling the rest of the line, same as any other tag can appear on any shape.
+    const embeds = spans.filter(s => s.tag === 'embed').map(s => resolveEmbedSpan(s, embedResolver, lineNo));
 
-    if (trimmedBoth === '') return { tokens: [], callLinks };
+    if (trimmedBoth === '') return { tokens: [], callLinks, embeds };
     // A standalone "." — rendered exactly as typed, including whatever indent (if any) the
     // author wrote. No canonical indent is applied; want it under column 12? Type it.
-    if (trimmedBoth === '.') return { tokens: [['dot', clean]], callLinks };
-    if (clean.trimStart().startsWith('*')) return { tokens: [['comment', clean]], callLinks };
+    if (trimmedBoth === '.') return { tokens: [['dot', clean]], callLinks, embeds };
+    if (clean.trimStart().startsWith('*')) return { tokens: [['comment', clean]], callLinks, embeds };
 
     const level = tokenizeLevelLine(clean, spans, anchors, callLinks, lineNo);
-    if (level) return { tokens: level, callLinks };
+    if (level) return { tokens: level, callLinks, embeds };
 
     const statement = tokenizeStatementLine(clean, spans, anchors, callLinks, lineNo);
-    if (statement) return { tokens: statement, callLinks };
+    if (statement) return { tokens: statement, callLinks, embeds };
 
     const header = tokenizeHeaderLine(clean);
-    if (header) return { tokens: header, callLinks };
+    if (header) return { tokens: header, callLinks, embeds };
 
-    return { tokens: tokenizeFallbackLine(clean, spans, anchors, callLinks, lineNo), callLinks };
+    return { tokens: tokenizeFallbackLine(clean, spans, anchors, callLinks, lineNo), callLinks, embeds };
 }
 
 export function makeSeq(rowIndex: number): string {

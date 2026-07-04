@@ -194,24 +194,28 @@
  IMPRESSUM SECTION.
  IMPRESSUM-SECTION.
      DISPLAY
+{{embed:embedded/impressum.html}}
 
-@@ (11 literal blank rows go here in the real impressum.pcob - trimmed in this mockup for length)
+
+
+@@ (real impressum.pcob has more blank rows here - trimmed in this mockup for length)
 
      END-DISPLAY
 * GOBACK TO PROCEDURE DIVISION LINKS SECTION
      {{link:impressum}}EXIT SECTION{{/link}}
      .
 
-@@  ^ Just 11 blank rendered rows between DISPLAY and END-DISPLAY — no
-@@  directive reserves them specially. The Impressum section's own
-@@  component fills that space with an HTML overlay (2-column German
-@@  legal text), positioned with JS against those rendered rows,
-@@  entirely outside the DSL/compiler. There used to be an @SLOT
-@@  directive for this (reserve N rows, mark a point) but it was
-@@  removed - nothing ever consumed it, since embedding non-text
-@@  content with zero code touch needs the embed reference itself to
-@@  travel through compileProgram()'s output as data, which @SLOT never
-@@  did. Revisit as a fresh design if this is needed again.
+@@  ^ {{embed:path}} - a zero-width pin, not a row-reserving directive - marks exactly the
+@@  row+character position where embedded/impressum.html's 2-column German legal text
+@@  attaches. It doesn't reserve any space of its own: the blank rows around it are still
+@@  just typed WYSIWYG spacing, same as any other card, and the embedded content is free to
+@@  overflow the card (or the screen) entirely - like a pin on a corkboard, one connection
+@@  point, otherwise unconstrained. Default corner is top-left (content extends down-right);
+@@  {{embed:path corner}} picks another (center, bottom-right, etc.) - see
+@@  docs/pcob-reference.md. This replaced an old @SLOT directive (reserve N rows, mark a
+@@  point) that nothing ever actually consumed - @SLOT's model (Astro-side slot-supplying
+@@  code per use) didn't fit where embeds needed to go; {{embed}}'s reference travels through
+@@  compileRawProgram()'s output as data instead, no code touch needed per use.
 @@
 @@  There is no identification=self attribute (or any self-link concept
 @@  at all). The form header's IDENTIFICATION field always points at

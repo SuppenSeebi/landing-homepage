@@ -585,9 +585,27 @@ p {
 .pcc-empty:nth-child(3n+2)::before { width: 3px;   height: 3px;   opacity: 0.65; }
 .pcc-empty:nth-child(5n+4)::before { width: 2.5px; height: 2px;   opacity: 0.75; }
 
+/* ── EMBEDS (pcf-embed, {{embed:path}}) ────────────────────────────────────── */
+/* Positioned/transformed entirely via inline styles set by PunchCard.astro's client script
+   (pin coordinates + corner transform) - this rule only sets what every embed needs
+   regardless of content: fixed (viewport-relative, escapes any scrolling/clipping ancestor),
+   and stacked below the always-visible Logo (z-index: 100) but above ordinary page content. */
+.pcf-embed {
+    position: fixed;
+    z-index: 10;
+}
+
 /* ── IMPRESSUM OVERLAY ──────────────────────────────────────────────────────── */
+/* Sizing is this fragment's own responsibility now (embedded/impressum.html, referenced via
+   {{embed:embedded/impressum.html}} in impressum.pcob) - position/viewport-placement comes
+   from the generic .pcf-embed wrapper above, not from this element itself. Width is an
+   explicit, author-chosen approximation of the old measured box, not pixel-matched to it;
+   height is intrinsic to content. */
 .impressum-overlay {
-    position: absolute;
+    position: relative;
+    width: 640px;
+    max-width: 90vw;
+    height: auto;
     overflow: hidden;
     background: rgba(245, 237, 212, 0.15);
     backdrop-filter: blur(2px);

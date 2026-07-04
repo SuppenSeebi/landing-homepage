@@ -2,17 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 import Logo from '../components/Logo.astro';
 import PunchSection from '../components/sections/PunchSection.astro';
-import SectionImpressum from '../components/sections/SectionImpressum.astro';
 import { loadMainProgram } from '../pcob/loadProgram';
 import '../styles/global.css';
 
 const program = loadMainProgram();
-
-// Impressum is the one section that needs bespoke markup (its JS-measured legal-text
-// overlay) beyond plain card rendering - named explicitly here, once, per
-// docs/punch-card-content-system.md's Phase 6 design. Every other section renders through
-// the generic PunchSection: a new .pcob file + one @IMPORT line in main.pcob is enough.
-const OVERRIDES: Record<string, any> = { impressum: SectionImpressum };
 
 const navData = JSON.stringify({
     divisionMap: program.divisionMap,
@@ -22,10 +15,9 @@ const navData = JSON.stringify({
 ---
 <Layout>
     <Logo />
-    {program.sections.map(section => {
-        const Cmp = OVERRIDES[section.id] ?? PunchSection;
-        return <Cmp section={section} header={program.header} />;
-    })}
+    {program.sections.map(section => (
+        <PunchSection section={section} header={program.header} />
+    ))}
     <script type="application/json" id="pcf-nav-data" set:html={navData} />
     <script>
         import '../scripts/app.ts';

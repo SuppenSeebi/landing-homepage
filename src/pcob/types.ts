@@ -24,10 +24,34 @@ export interface ParaNavEntry extends NavEntry {
     cardIdx: number;
 }
 
+export type EmbedCorner =
+    | 'top-left' | 'top' | 'top-right'
+    | 'left' | 'center' | 'right'
+    | 'bottom-left' | 'bottom' | 'bottom-right';
+
+export const EMBED_CORNERS: readonly EmbedCorner[] = [
+    'top-left', 'top', 'top-right',
+    'left', 'center', 'right',
+    'bottom-left', 'bottom', 'bottom-right',
+];
+
+export interface CompiledEmbed {
+    /** Resolved raw HTML content of the referenced file. */
+    html: string;
+    /** 0-based row within the card's Line[]. */
+    row: number;
+    /** 0-based character column within that row (where the {{embed}} tag sat). */
+    col: number;
+    corner: EmbedCorner;
+    sectionId: string;
+    cardIdx: number;
+}
+
 export interface CompiledCard {
     name: string;
     lines: Line[];
     callLinks: Record<string, string>;
+    embeds: CompiledEmbed[];
 }
 
 export interface CompiledSection {

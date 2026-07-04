@@ -83,23 +83,35 @@ Used inside card text to mark a span without leaving plain-text mode. All follow
 | `{{anchor:name}}...{{/anchor}}` | Declares a named link target finer-grained than a whole section. Shares one namespace with `@SECTION id=` — names must be unique document-wide. |
 | `{{cycle:groupId}}...{{/cycle}}` | Marks a span as a rotating/dynamic value belonging to cycle-group `groupId` (replaces today's hand-counted character-offset constants). |
 | `{{noise}}...{{/noise}}` | Marks a span to noise/ASCII-scramble in on scroll. Composable by nesting with other tags. |
+| `{{embed:path}}` / `{{embed:path corner}}` | Pins a separate HTML file's raw content to this exact row+character position — a zero-width marker, no closing tag (see below). `path` is relative to the referencing `.pcob` file. `corner` (optional, default `top-left`) picks which corner of the *embedded content* touches the pin — one of `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`; anything else is a compile error. |
 
 Tags can nest (e.g. a cycling field that also noise-transitions). A literal `{{` in text, if ever
 needed, is escaped as `\{{`.
 
 Every tag is always an open/close pair wrapping the exact text it applies to — there is no bare
-or self-closing shorthand. To make a whole phrase clickable (e.g. `EXIT PARAGRAPH`), wrap the
-phrase itself: `{{link:name}}EXIT PARAGRAPH{{/link}}`, not a trailing unwrapped `{{link:name}}`.
+or self-closing shorthand — **except `{{embed}}`**, which is a pure pin, not a decorator around
+visible text (nothing renders in its place, so there's nothing to wrap): `{{embed:path}}` on its
+own is complete, no `{{/embed}}` follows. To make a whole phrase clickable (e.g. `EXIT
+PARAGRAPH`), wrap the phrase itself: `{{link:name}}EXIT PARAGRAPH{{/link}}`, not a trailing
+unwrapped `{{link:name}}`.
+
+**`{{embed}}` reserves no space of its own.** Whatever row it's typed on renders exactly as
+that row's other characters dictate (usually blank, if it's the only thing on the line) — if you
+want visual space made for the embedded content, you type blank lines around it yourself, same
+WYSIWYG rule as everything else. The embedded HTML/CSS is free to overflow the card, or the
+screen, entirely; sizing and layout are its own responsibility, not something `@ROWS` or any
+`.pcob` construct controls.
 
 ## Open / not yet decided
 
 - DATA DIVISION boilerplate beyond what's shown (deeper field/condition patterns) gets added to
   the table above as real migrations surface them — this reference grows with the grammar.
-- Embedding non-text content (images, video) has no tag yet. `@SLOT name rows=N` used to model
-  this (reserve N rows for a section-owned Astro `<slot/>`) but was removed entirely — nothing
-  ever consumed it; see `docs/punch-card-content-system.md`'s decisions log. A future mechanism
-  would need the embed reference itself to travel through `compileProgram()`'s output as data
-  (not Astro-side JSX), so the card names the asset directly with no code changes required.
+- ~~Embedding non-text content (images, video) has no tag yet.~~ **Built (2026-07-04)**: see
+  `{{embed:path}}` above. `@SLOT name rows=N`, the old model this replaces (reserve N rows for
+  a section-owned Astro `<slot/>`), was removed entirely first — nothing ever consumed it; see
+  `docs/punch-card-content-system.md`'s decisions log. `{{embed}}` is a genuinely different
+  shape: a zero-width pin, not a row-reserving slot, with the reference travelling through
+  `compileRawProgram()`'s output as data — no Astro-side slot-supplying code needed per use.
 
 ## Deferred to the compiler (Phase 2, design already settled)
 
@@ -140,6 +152,7 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
 * a comment row
      DISPLAY
      END-DISPLAY
+{{embed:demo-photo.html bottom-right}}
      CALL {{link:'https://example.com'}}'EXAMPLE'{{/link}}
      CALL {{link:demo-label}}'JUMP TO LABEL'{{/link}}
      .
@@ -166,13 +179,22 @@ time hyphen-joined — recognized on the trailing word's boundary, not a require
 and a literal `DEMO-CARD.` (paragraph-name row shape — also hand-typed, matching the `@CARD` name
 because Sebastian chose to type it that way, not because the compiler enforces it); a comment
 row (column 1, exactly as typed); `DISPLAY`/`END-DISPLAY` (each statement's 5-space indent typed
-by hand); a `CALL` with an external (quoted) `{{link}}` and one with an internal
+by hand); `{{embed:demo-photo.html bottom-right}}` on its own line, column 0 — a zero-width pin,
+so this line still renders blank, with the explicit `corner` form used here (contrast with
+Impressum's real `{{embed:embedded/impressum.html}}`, which omits it and defaults to
+`top-left`); a `CALL` with an external (quoted) `{{link}}` and one with an internal
 (bare-name) `{{link}}` to the `{{anchor}}` declared earlier; a standalone `.` indented to match
 the statements above it (also typed, not automatic); a content blank line (kept, since it
 precedes card text, not a directive); `EXIT PARAGRAPH` and `EXIT SECTION`, each linking back to
 their own section by explicit name (no implicit `self`); and a final `GOBACK`, linking back across
 divisions to the other section's anchor (`demo-data`) — same statement-row treatment as any other
 recognized verb, just a different word.
+
+(Actually compiling this exact snippet needs a `resolveEmbedFile` callback that can find
+`demo-photo.html` — unlike everything else here, which compiles standalone via a bare
+`compileProgram(source)` call, since that function's `resolveEmbedFile` param defaults to
+"nothing found." Not a real file in this repo — illustrative only, same as `demo-data`/
+`demo-proc` aren't real anchors anywhere outside this example.)
 
 `@IMPORT` and `@HEADER-*` are both top-level-only constructs, so they don't fit inside the
 single-file example above — here's the whole `.pcob` file above treated as `demo.pcob`, with a
