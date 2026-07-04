@@ -282,17 +282,22 @@ instead of a blind literal.
   self-import), and whether `main.pcob` needs any directive of its own beyond the import list.
 
 **6.2 — Card-height math is not `.pcob` config.** **Done**, folded into 6.3 below — the
-`CARD_COUNT * 88vh` multiplier now has exactly one occurrence in the whole codebase, inside
+scroll-distance-per-card multiplier now has exactly one occurrence in the whole codebase, inside
 `PunchSection.astro`, computed from `section.cards.length`. It was never authored anywhere in
-`.pcob` source, per the original call.
+`.pcob` source, per the original call. (Updated 2026-07-04: the multiplier itself changed from
+`* 88vh` to a fixed `PX_PER_CARD = 200` — Sebastian wanted the scroll distance between cards
+tied to ~2 physical mouse-wheel ticks, which is a fixed pixel notion, not a percentage of
+viewport height; `vh` would've meant a different number of ticks per monitor. This is still the
+single occurrence the original call was about — just a different unit now.)
 
 **6.3 — One generic rendering component, replacing 5 near-duplicate `Section*.astro` files.**
 **Done.** New `src/components/sections/PunchSection.astro`, `Props { section: CompiledSection }`:
 renders whichever cards the section actually contains, in the `.pcob` file's own order — no
 hardcoded name list to fall out of sync, the direct fix for the class of bug that crashed the
 page when Top's cards were merged. Branches purely on `section.cards.length`: `> 1` renders
-today's multi-card shape (`.pcf-stage-multi`, `CARD_COUNT * 88vh`, one `<PunchCard noStage>`
-per card); `=== 1` renders today's single-card shape (`.pcf-stage`, fixed `.pcf-section-height`).
+today's multi-card shape (`.pcf-stage-multi`, `cards.length * PX_PER_CARD` px, one
+`<PunchCard noStage>` per card); `=== 1` renders today's single-card shape (`.pcf-stage`, fixed
+`.pcf-section-height`).
 `setupMultiCardSection` is no longer called with a hardcoded id per file — `PunchSection`'s one
 shared (Astro-deduped) script does `document.querySelectorAll('section[data-multi-card="true"]')`
 and sets each one up in a single sweep.

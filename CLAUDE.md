@@ -139,7 +139,7 @@ multi-card section.
 
 ```astro
 <section id={section.id} data-multi-card={String(isMulti)}>
-  <div class="section-scroll-container" style={`height: ${section.cards.length * 88}vh;`}>
+  <div class="section-scroll-container" style={`height: ${section.cards.length * PX_PER_CARD}px;`}>
     <div class="section-content-wrapper">
       <div class="pcf-stage-multi">
         <PunchCard noStage={true} ... />  <!-- one per section.cards, in file order -->
@@ -173,9 +173,12 @@ cardH     = section.scrollHeight / cards.length;
 newIdx    = clamp(Math.floor(relScroll / cardH), 0, cards.length - 1);
 ```
 
-The `* 88vh` multiplier has exactly one occurrence in the codebase, inline in `PunchSection.astro`
-(`section.cards.length * 88`) — there's no per-section `CARD_COUNT` const anymore, since there's
-no per-section file to put one in.
+The per-card scroll distance (`PX_PER_CARD`, fixed px not vh — a scroll wheel "tick" is a fixed
+pixel amount, so vh would take a different number of ticks on every monitor) has exactly one
+occurrence in the codebase, inline in `PunchSection.astro` (`section.cards.length *
+PX_PER_CARD`) — there's no per-section `CARD_COUNT` const anymore, since there's no per-section
+file to put one in. Currently `200` (≈2 standard mouse-wheel ticks per card transition, at the
+common ~100px/tick default) — adjust that one constant directly if it doesn't match.
 
 ---
 

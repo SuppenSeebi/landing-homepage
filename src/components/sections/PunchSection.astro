@@ -1,7 +1,7 @@
 ---
 // Generic renderer for a compiled section - replaces SectionTop/AboutMe/Work/Links.astro,
 // which were four near-identical files each hardcoding their own section id, card lookups,
-// and CARD_COUNT * 88vh math. Card order/count/id all come straight from the compiled
+// and per-card scroll-distance math. Card order/count/id all come straight from the compiled
 // section, so adding or reordering cards in a .pcob file needs no matching edit here.
 //
 // Impressum no longer needs to be an exception here (it did through Phase 6.3 - see
@@ -19,10 +19,16 @@ interface Props {
 
 const { section, header } = Astro.props;
 const isMulti = section.cards.length > 1;
+
+// Fixed px, not vh - a scroll "tick" (mouse wheel notch) is a fixed pixel amount, not a
+// percentage of viewport height, so a vh-based distance takes a different number of ticks
+// on every monitor. ~100px/tick is the common Windows/Chrome default (3 lines); 2 ticks per
+// card transition is the target - adjust PX_PER_CARD directly if your actual tick size differs.
+const PX_PER_CARD = 200;
 ---
 <section id={section.id} data-multi-card={String(isMulti)}>
 {isMulti ? (
-    <div class="section-scroll-container" style={`height: ${section.cards.length * 88}vh;`}>
+    <div class="section-scroll-container" style={`height: ${section.cards.length * PX_PER_CARD}px;`}>
         <div class="section-content-wrapper">
             <div class="pcf-stage-multi">
                 {section.cards.map(card => (
