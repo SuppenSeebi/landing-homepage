@@ -216,19 +216,18 @@ silently worked around.
 | 4.14 | Verify structural equivalence. | **Done** — scratch comparison script (replicating the old `buildCard()` inline for comparison): all 7 cards match old arrays character-for-character with matching color class. `astro build` succeeds; compiled HTML contains all 7 cards' text. |
 
 **All five sections (Links, AboutMe, Work, Impressum, Top) are now compiled from `.pcob` source.**
-No hand-written `Line[]` arrays remain in any section component. Still outstanding before Phase 4
-can be called fully closed: Sebastian's one comprehensive visual pass across the whole site
-(waived per-section from 4.8 onward, see that row) and the `punch-nav.ts` consolidation, which
-was deliberately deferred out of every section's migration (see the `cardIdx` note above this
-table) and has no step number yet — it becomes its own scoped follow-up once nav-derivation is
-extended to carry `cardIdx`.
+No hand-written `Line[]` arrays remain in any section component. The `punch-nav.ts` consolidation
+mentioned here as deferred is now done — see Phase 6.4 below, which extended nav-derivation to
+carry `cardIdx` and retired the file entirely. Sebastian's one comprehensive visual pass across
+the whole site is still outstanding (no dev server per this project's testing-scope rule; now
+also covers Phase 6's changes, not just Phase 4's).
 
 ### Phase 5 — Re-introduce animation/transition tags (deferred, not blocking)
 - Today there are two distinct behaviors: SectionTop's per-field scramble-cycle and the
   multi-card sections' whole-row scramble-on-swap. Once the base system is stable, design a
   small, deliberately narrow tag set for these rather than a general animation DSL.
 
-### Phase 6 — One shared program + generic rendering (sketched 2026-07-04, not yet built)
+### Phase 6 — One shared program + generic rendering (6.1–6.4 done 2026-07-04, 6.5 deferred)
 
 **The target test**: drop a new `.pcob` file in `src/content/_punchcard/`, add one line to
 `main.pcob` naming it, and it renders correctly — in nav, in scroll order, with working
@@ -241,14 +240,35 @@ happened), and left a stale `COMMUNITY.` nav tab behind (a *second* hardcoded, h
 copy of the same fact, in `punch-nav.ts`, that also didn't know). Both are the same root cause:
 facts about section/card structure live in more places than the `.pcob` file itself.
 
-**6.1 — `main.pcob` with `@IMPORT`, one shared compiled program.**
-Today, every section calls `compileProgram()` on its own file, independently — which is why
-`{{link:top}}` from `impressum.pcob` fails (Migration findings, "anchors don't span `.pcob`
-files"): each file gets its own anchor registry. A `main.pcob` that explicitly imports every
-section file (`@IMPORT aboutme.pcob`, one line per file, in render order) and gets compiled as
-a *single* program fixes this at the root — one shared anchor registry means any card can
-`{{link:}}` any section by name, validated by the compiler, no more quoted-URL (`{{link:'#top'}}`)
-workarounds.
+**6.1 — `main.pcob` with `@IMPORT`, one shared compiled program.** **Done.** `src/pcob/parseSource.ts`
+gained an `@IMPORT filename` directive, valid only before any `@DIVISION`/`@SECTION`/`@CARD`/`@ROWS`
+in the importing file. It calls a `resolveImport(name)` callback, recursively parses the returned
+source with *no* resolver of its own — so an `@IMPORT` inside an imported file throws
+`"nested @IMPORT not supported"` immediately, a real compile error rather than a silent
+convention. Duplicate imports and unresolvable names are also compile errors. Each imported
+file's own program-level `@ROWS` default (and any division-level override) is pushed down onto
+its own sections *before* merging (`pushDownRows`/`mergeImportedProgram`) — necessary because
+multiple imported files sharing a division id (e.g. `top.pcob`/`aboutme.pcob`/`work.pcob` all
+declare their own `@DIVISION DATA`) get concatenated into one division bucket, and a bare
+division-level default would otherwise leak from whichever file happened to merge first onto
+every other file sharing that bucket.
+
+`src/pcob/compile.ts` split `compileProgram(source)` into `compileRawProgram(program: RawProgram)`
+(the actual walk) plus a thin single-file wrapper that still parses-then-compiles one source —
+kept for anything that only ever deals with one file, e.g. `docs/pcob-reference.md`'s Complete
+example. New `src/pcob/loadProgram.ts` loads every `.pcob` file's raw text once via Vite's eager
+`?raw` glob (`import.meta.glob('../content/_punchcard/*.pcob', { query: '?raw', import: 'default',
+eager: true })`), and exposes `loadMainProgram()` — reads `main.pcob`, resolves its `@IMPORT`s
+against that in-memory map, calls `compileRawProgram`. Called exactly once, from `index.astro`.
+
+New `src/content/_punchcard/main.pcob` is nothing but five `@IMPORT` lines (top/aboutme/work/
+links/impressum, in page order) — subordinate files are unchanged, still fully self-contained.
+`impressum.pcob`'s closing `GOBACK` — previously `{{link:'#top'}}GOBACK{{/link}}` (an external-URL
+literal, the pragmatic workaround from Phase 4 for "anchors don't span `.pcob` files") — is now a
+real internal anchor reference, `{{link:top}}GOBACK{{/link}}`, resolving through the one shared
+registry `main.pcob` gives every card. Verified by rebuilding and inspecting the compiled
+`data-call-links` JSON: `{"GOBACK":"#top"}`, same resolved href as before, now compiler-validated
+instead of a blind literal.
 - Chosen over directory auto-discovery (e.g. Vite's `import.meta.glob`): an explicit, visible
   import list is more consistent with this project's established "explicit, no implicit"
   stance (see the Core rule, and the `@SLOT` removal above) than silently scanning a folder.
@@ -261,42 +281,51 @@ workarounds.
 - **Not settled yet**: exact `@IMPORT` syntax and error handling (missing file, double-import,
   self-import), and whether `main.pcob` needs any directive of its own beyond the import list.
 
-**6.2 — Card-height math is not `.pcob` config.** Sebastian's explicit call: the
-`CARD_COUNT * 88vh` scroll-space formula is a rendering-layer fact, not a content decision — no
-section should ever want a different multiplier, so it must not become something authored in
-`main.pcob` or any `.pcob` file. It becomes exactly one hardcoded constant inside the generic
-rendering component (6.3), computed from the card count the compiler already reports. Wherever
-this ends up living, there must be exactly one occurrence of the multiplier in the whole
-codebase, not one per section as today.
+**6.2 — Card-height math is not `.pcob` config.** **Done**, folded into 6.3 below — the
+`CARD_COUNT * 88vh` multiplier now has exactly one occurrence in the whole codebase, inside
+`PunchSection.astro`, computed from `section.cards.length`. It was never authored anywhere in
+`.pcob` source, per the original call.
 
 **6.3 — One generic rendering component, replacing 5 near-duplicate `Section*.astro` files.**
-`SectionTop/AboutMe/Work/Links.astro` are already structurally identical: compile, look up
-cards by a hardcoded name list, render one `<PunchCard>` per card in a `.pcf-stage-multi`,
-compute `CARD_COUNT * 88vh`, call `setupMultiCardSection(id)`. None of that actually varies
-per section. The target is one component, parameterized by a compiled section (from 6.1's
-single program), that:
-  - renders whatever cards the section actually contains, in file order — no hardcoded name
-    list to fall out of sync (this is the direct fix for the Top crash; `SectionTop.astro`
-    already does a version of this today, see Phase 4's step 4.13 note, as a preview of the
-    pattern)
-  - derives `.pcf-stage` vs. `.pcf-stage-multi` from card count instead of a per-file choice
-  - derives the section id / `setupMultiCardSection` argument from the compiled section itself,
-    not a separately hand-typed string
-- **Known exception: Impressum.** Its JS-measured `.impressum-overlay` (German legal text) is
-  genuinely bespoke — real markup and a runtime script beyond plain card rendering. The generic
-  component needs an escape hatch (a slot, or Impressum staying a thin wrapper around the
-  generic piece) rather than forcing every section through one uniform template.
+**Done.** New `src/components/sections/PunchSection.astro`, `Props { section: CompiledSection }`:
+renders whichever cards the section actually contains, in the `.pcob` file's own order — no
+hardcoded name list to fall out of sync, the direct fix for the class of bug that crashed the
+page when Top's cards were merged. Branches purely on `section.cards.length`: `> 1` renders
+today's multi-card shape (`.pcf-stage-multi`, `CARD_COUNT * 88vh`, one `<PunchCard noStage>`
+per card); `=== 1` renders today's single-card shape (`.pcf-stage`, fixed `.pcf-section-height`).
+`setupMultiCardSection` is no longer called with a hardcoded id per file — `PunchSection`'s one
+shared (Astro-deduped) script does `document.querySelectorAll('section[data-multi-card="true"]')`
+and sets each one up in a single sweep.
+- **Impressum, the known exception**: `SectionImpressum.astro` is now a thin wrapper —
+  `<PunchSection section={...}><Fragment slot="overlay">` containing exactly its previous
+  `.impressum-overlay` markup and `positionImpressumOverlay` script, both untouched.
+  `PunchSection`'s single-card branch always renders a `<slot name="overlay" />` after the card
+  (unfilled/inert for any future single-card section without one) — the escape hatch the design
+  called for, without leaking Impressum-specific markup into the generic component.
+- `src/pages/index.astro` calls `loadMainProgram()` once and renders every compiled section
+  through a small `id → component` override map (`{ impressum: SectionImpressum }`, default
+  `PunchSection`) — Impressum's exception is named explicitly in exactly one place; a plain new
+  section needs only a new `.pcob` file + one `@IMPORT` line.
+- Dead code removed alongside this: `src/scripts/app.ts`'s `sectionRunners` map and both call
+  sites, plus each section's `__xRun` export. All five hooks (`__topRun`/`__aboutMeRun`/
+  `__workRun`/`__linksRun`/`__impressumRun`) were already no-ops (`SectionTop`'s per-field
+  cycling animation — the thing `__topRun` originally drove — was removed back in Phase 4/5's
+  predecessor work; `CLAUDE.md`'s app.ts description just hadn't been updated to say so).
 
-**6.4 — Retire `punch-nav.ts`, derive nav from the one shared compiled program.**
-`compile.ts` already derives `sectionsByDiv`/`parasBySection` from a compiled program — unused
-today, since every section still imports hand-written `DIVISION_MAP`/`SECTIONS_BY_DIV`/
-`PARAS_BY_SECTION` instead. Once 6.1 exists (one program spanning every section), wiring this
-in becomes possible — directly eliminating the class of bug that left a stale `COMMUNITY.` tab
-after Top's cards were merged, since nav would no longer be a second hand-maintained copy of a
-fact the compiler already has. **Blocked on one compiler addition**: the compiler's derived
-`parasBySection` only emits `label`/`href` today — it doesn't produce `cardIdx` (added to the
-hand-written version later, after nav highlighting needed to know which card within a section
-is active, and never backported). This needs to land before `punch-nav.ts` can actually go away.
+**6.4 — Retire `punch-nav.ts`, derive nav from the one shared compiled program.** **Done.**
+`src/pcob/types.ts` gained `ParaNavEntry extends NavEntry { cardIdx: number }`; `compile.ts`'s
+`parasBySection` now emits `cardIdx` for every entry (`section.cards.map((card, cardIdx) => ...)`)
+— the one missing piece blocking this. `src/config/punch-nav.ts` is deleted. Nav data now has
+nowhere static to live client-side (it's a compiler output, computed once per build, not a
+module), so `index.astro` serializes `{ divisionMap, sectionsByDiv, parasBySection }` once as a
+`<script type="application/json" id="pcf-nav-data">` JSON island, and `PunchCard.astro`'s client
+script reads + `JSON.parse`s it once (at module top level, same dedup guarantee the rest of that
+script already relies on) instead of statically importing `punch-nav.ts`. This directly closes
+the stale-`COMMUNITY.`-tab class of bug: rebuilding and inspecting the compiled nav JSON shows
+`parasBySection.top` now has exactly 6 entries (`IDENTITY`…`INTERESTS`, `cardIdx` 0–5) matching
+`top.pcob`'s real 6 `@CARD`s — `COMMUNITY` was already folded into `INTERESTS` as a field value,
+not a separate card, back when Top's cards were merged; the old hand-written `punch-nav.ts` just
+never had that fact removed. There's no separate hand-maintained copy left to go stale.
 
 **6.5 — Future embed tag for non-text content (images, video), replacing `@SLOT`'s old job.**
 Not `@SLOT` revived — a different model. The card reserves rows and an anchor point (the same
@@ -347,11 +376,13 @@ was decided and why, and what was found not to port cleanly.
       not an authored/anchored identifier, so it isn't part of this uniqueness check.
 
 ### Open decisions (need an answer before/while building)
-- [ ] `punch-nav.ts`'s stale `COMMUNITY.` tab (Top's cards were merged, that entry's `cardIdx: 6`
-      is now out of range): hand-patch it now as an isolated fix, or leave it as a visible
-      reminder until Phase 6.4 replaces `punch-nav.ts` properly? Not yet decided.
-- [ ] Phase 6.1's exact `@IMPORT` syntax/error handling; whether `main.pcob` carries any
-      directive of its own beyond an ordered import list.
+- [x] `punch-nav.ts`'s stale `COMMUNITY.` tab: resolved by Phase 6.4 retiring `punch-nav.ts`
+      entirely — nav is now derived straight from the compiled program, which only ever reports
+      the 6 cards `top.pcob` actually has.
+- [x] Phase 6.1's exact `@IMPORT` syntax/error handling: `@IMPORT filename`, top-level only
+      (before any `@DIVISION`), nesting/duplicate-import/missing-file are all compile errors.
+      `main.pcob` carries no directive beyond an ordered `@IMPORT` list (a leading `@@` comment
+      is the only other thing in it).
 - [ ] Phase 6.5's exact embed-tag name, params, and file-path-vs-inline-content shape.
 
 ### Risks to keep in mind while building (carried over from initial design discussion)
@@ -526,4 +557,4 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
 | 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site, still outstanding. `punch-nav.ts` consolidation deliberately deferred, not yet scheduled. |
 | 5 — Animation tags | Deferred |
-| 6 — Shared program + generic rendering | Sketched, not built. `@IMPORT`/`main.pcob` (6.1), card-height math stays code-only (6.2), one generic section component replacing 5 hand-authored files (6.3), `punch-nav.ts` retirement blocked on the compiler producing `cardIdx` (6.4), future embed tag scoped to assets/HTML not Astro components (6.5) |
+| 6 — Shared program + generic rendering | **6.1–6.4 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks` hrefs including the new cross-file `{{link:top}}GOBACK{{/link}}`). Sebastian's visual pass still outstanding (no dev server per this project's testing-scope rule). 6.5 (embed tag) stays deferred, scoped separately. |

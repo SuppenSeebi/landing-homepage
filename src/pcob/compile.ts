@@ -20,6 +20,9 @@ import { type AnchorRegistry, makeSeq, tokenizeCardLine } from './tokenizeCardLi
 import { type RawCard, type RawDivision, type RawProgram, type RawSection, parseSource } from './parseSource';
 import { type CompiledCard, type CompiledProgram, type CompiledSection, type Line, PcobError } from './types';
 
+// This module walks a fully-resolved RawProgram tree (any @IMPORTs already merged in by
+// parseSource) - it doesn't know or care whether that tree came from one file or several.
+
 interface AnchorEntry {
     sectionId: string;
     kind: 'section' | 'anchor';
@@ -109,8 +112,7 @@ function compileCard(
     return { name: card.name, lines: seqedLines, callLinks };
 }
 
-export function compileProgram(source: string): CompiledProgram {
-    const program = parseSource(source);
+export function compileRawProgram(program: RawProgram): CompiledProgram {
     const registry = buildAnchorRegistry(program);
     const anchors = makeAnchorRegistry(registry);
 
@@ -123,9 +125,10 @@ export function compileProgram(source: string): CompiledProgram {
         for (const section of division.sections) {
             divisionMap[division.id].push(section.id);
             sectionsByDiv[division.id].push({ label: `${section.name} SECTION.`, href: `#${section.id}` });
-            parasBySection[section.id] = section.cards.map(card => ({
+            parasBySection[section.id] = section.cards.map((card, cardIdx) => ({
                 label: `${card.name}.`,
                 href: `#${section.id}`,
+                cardIdx,
             }));
 
             const cards = section.cards.map(card => compileCard(card, section, division, program, anchors));
@@ -134,4 +137,13 @@ export function compileProgram(source: string): CompiledProgram {
     }
 
     return { sections, divisionMap, sectionsByDiv, parasBySection };
+}
+
+/** Single-file entry point — parses then compiles one self-contained .pcob source (no
+ * @IMPORT resolution). Used by anything that only ever deals with one file at a time, e.g.
+ * docs/pcob-reference.md's Complete example. Multi-file programs go through
+ * src/pcob/loadProgram.ts's loadMainProgram() instead, which resolves @IMPORT before calling
+ * compileRawProgram directly. */
+export function compileProgram(source: string): CompiledProgram {
+    return compileRawProgram(parseSource(source));
 }

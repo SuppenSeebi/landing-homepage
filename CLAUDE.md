@@ -14,19 +14,17 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 
 | File | Role |
 |------|------|
-| `src/pages/index.astro` | Root — imports Logo + 5 sections |
+| `src/pages/index.astro` | Root — calls `loadMainProgram()` once, renders every compiled section (via an id→component override map), emits the `#pcf-nav-data` JSON island |
 | `src/components/Logo.astro` | Fixed SVG logo, noise + arc marquee |
 | `src/components/PunchCard.astro` | Reusable IBM punch card shell (title bar, form header, coding area) |
-| `src/components/sections/SectionTop.astro` | Hero — WORKING-STORAGE, 7-card stack, switching via `multiCardSection.ts` |
-| `src/components/sections/SectionAboutMe.astro` | LOCAL-STORAGE — 5-card stack, switching via `multiCardSection.ts` |
-| `src/components/sections/SectionWork.astro` | LINKAGE SECTION — 2-card stack, switching via `multiCardSection.ts` |
-| `src/components/sections/SectionLinks.astro` | PROCEDURE DIVISION LINKS — 2-card stack, switching via `multiCardSection.ts` |
-| `src/components/sections/SectionImpressum.astro` | IMPRESSUM-SECTION — single card, legal text is a JS-positioned overlay (not a PunchCard slot) |
+| `src/components/sections/PunchSection.astro` | Generic section renderer (replaces the old per-section `Section*.astro` files) — branches on card count for multi- vs. single-card layout, exposes an `overlay` slot for bespoke content |
+| `src/components/sections/SectionImpressum.astro` | Thin wrapper around `PunchSection` — supplies the JS-positioned German legal-text overlay via the `overlay` slot |
 | `src/scripts/app.ts` | Main scroll handler: section activation, instant panel snap, logo visibility |
 | `src/scripts/multiCardSection.ts` | Shared card-switching logic for multi-card sections (count read from DOM) |
-| `src/config/punch-nav.ts` | Nav config: DIVISION_MAP, SECTIONS_BY_DIV, PARAS_BY_SECTION |
+| `src/pcob/loadProgram.ts` | Loads every `.pcob` file once (Vite eager `?raw` glob), resolves `main.pcob`'s `@IMPORT`s, compiles the merged program — `loadMainProgram()`, called once from `index.astro` |
+| `src/content/_punchcard/main.pcob` | The shared program — nothing but ordered `@IMPORT` lines naming every section file |
 | `src/styles/global.css` | All styles (pcf-* punch card, section scroll system, token colors) |
-| `src/utils/punchText.ts` | Renders strings as wear/jitter span markup for form header values |
+| `src/utils/punchText.ts` | Renders strings as per-character span markup for form header values (wear/jitter effect removed 2026-07-04 — see CSS history if reviving it) |
 
 ---
 
@@ -112,48 +110,56 @@ Statements (`CALL`, `EXIT PARAGRAPH`, `DISPLAY`, `.`) indent: **`     `** (5 spa
 
 ---
 
-## SectionTop card data
+## Sections are generic — one component, driven by the compiled program
 
-Not a special case anymore — SectionTop is a `.pcf-stage-multi` section like AboutMe/Work/Links
-(see below), just with `CARD_COUNT = 7`. Compiled from `src/content/_punchcard/top.pcob`
-(7 `@CARD`s sharing one DIVISION/SECTION/01-level header; only the 05-level group name and the
-two 10-level VALUE strings vary per card — see that file for the exact padded text):
+There is no more per-section `Section*.astro` file (SectionTop/AboutMe/Work/Links are gone).
+`index.astro` calls `loadMainProgram()` (`src/pcob/loadProgram.ts`) once, then renders every
+`CompiledSection` it returns through `PunchSection.astro`, except for one explicit override —
+`{ impressum: SectionImpressum }` — for the one section needing bespoke markup. Adding a new
+section is: write a `.pcob` file, add one `@IMPORT` line to `src/content/_punchcard/main.pcob`,
+done (or, if it needs its own overlay-slot content like Impressum, also add one entry to
+`index.astro`'s override map).
 
-```
-IDENTITY     BACKGROUND   CAREER-CURR  CAREER-PREV  SKILLS  INTERESTS  COMMUNITY
-```
-
-No animation, no photo panel (both removed) — cards switch the same instant way as every other
-multi-card section. `punch-nav.ts`'s `PARAS_BY_SECTION.top` labels stay hand-written for now
-(nav consolidation is a deferred follow-up, see `docs/punch-card-content-system.md`).
+`top.pcob` currently has 6 `@CARD`s (`IDENTITY`, `BACKGROUND`, `CAREER-CURR`, `CAREER-PREV`,
+`SKILLS`, `INTERESTS`) sharing one DIVISION/SECTION/01-level header — `COMMUNITY` is a field
+*inside* `INTERESTS`, not its own card (merged during Phase 4; see that file's own header
+comment). No animation, no photo panel — cards switch the same instant way as every other
+multi-card section.
 
 ---
 
-## Multi-card sections (SectionTop, SectionAboutMe, SectionWork, SectionLinks)
+## Multi-card sections (`PunchSection.astro`)
 
-Pattern:
+`PunchSection.astro` takes one prop, `section: CompiledSection`, and branches purely on
+`section.cards.length`:
+
 ```astro
-<section id="aboutme">
-  <div class="section-scroll-container" style={`height: ${CARD_COUNT * 88}vh;`}>
+<section id={section.id} data-multi-card={String(isMulti)}>
+  <div class="section-scroll-container" style={`height: ${section.cards.length * 88}vh;`}>
     <div class="section-content-wrapper">
       <div class="pcf-stage-multi">
-        <PunchCard noStage={true} ... />  <!-- card 0 -->
-        <PunchCard noStage={true} ... />  <!-- card 1 -->
+        <PunchCard noStage={true} ... />  <!-- one per section.cards, in file order -->
       </div>
     </div>
   </div>
 </section>
 ```
 
+(`cards.length === 1` renders the single-card shape instead — `.pcf-stage`, fixed
+`.pcf-section-height`, plus a `<slot name="overlay" />` after the card for the one section that
+needs one; see `SectionImpressum.astro`.)
+
 Cards are absolutely centered (`top: 50%; left: 50%; transform: translate(-50%,-50%)`), height
 intrinsic to row count (not stretched to a fixed region), `opacity: 0` by default.
 Active card: `pcf-card-active` → `opacity: 1`.
 
-Card switching is a shared module, `src/scripts/multiCardSection.ts` (`setupMultiCardSection(sectionId)`),
-called once from each section's own `<script>` block — no more per-section copy-pasted logic.
-Card count is read from the DOM (`cards.length`), not a separately-maintained constant, so the
-math is correct for any number of cards. Switching is a direct, synchronous class toggle — no
-scramble animation, no transition lock.
+Card switching is a shared module, `src/scripts/multiCardSection.ts` (`setupMultiCardSection(sectionId)`).
+`PunchSection.astro`'s own script (Astro-deduped across every instance, so it runs exactly once)
+sweeps `document.querySelectorAll('section[data-multi-card="true"]')` and calls
+`setupMultiCardSection` on each — no per-section hardcoded id. Card count is read from the DOM
+(`cards.length`) inside that module, not a separately-maintained constant, so the math is correct
+for any number of cards. Switching is a direct, synchronous class toggle — no scramble animation,
+no transition lock.
 
 Scroll calc (inside `multiCardSection.ts`):
 ```js
@@ -162,8 +168,9 @@ cardH     = section.scrollHeight / cards.length;
 newIdx    = clamp(Math.floor(relScroll / cardH), 0, cards.length - 1);
 ```
 
-Each section's frontmatter still defines its own `CARD_COUNT` const — that one is unrelated to
-switching, it's only used for `style={height: CARD_COUNT * 88vh}` sizing of `.section-scroll-container`.
+The `* 88vh` multiplier has exactly one occurrence in the codebase, inline in `PunchSection.astro`
+(`section.cards.length * 88`) — there's no per-section `CARD_COUNT` const anymore, since there's
+no per-section file to put one in.
 
 ---
 
@@ -173,12 +180,11 @@ switching, it's only used for `style={height: CARD_COUNT * 88vh}` sizing of `.se
 - `getActiveSection()`: uses `window.scrollY + innerHeight/2` vs section `offsetTop + offsetHeight`
 - On section change: `transitionTo(id)` toggles `.active` on the wrapper — instant snap, no
   animation (no `transition` CSS property, no enter/exit classes, no direction-from-scroll logic)
-- `sectionRunners` map calls `window.__topRun` etc. on each scroll tick while active
 
-Section runners:
-- `__topRun` (SectionTop): called every scroll tick while in #top — drives item cycling
-- `__aboutMeRun`, `__workRun`, `__linksRun`, `__impressumRun`: no-ops; card switching uses
-  `multiCardSection.ts`'s own `addEventListener('scroll', ...)` in each section's script
+(There used to be a `sectionRunners` map calling a per-section `window.__xRun` hook every scroll
+tick; removed 2026-07-04 — every hook was already a no-op, since SectionTop's per-field cycling
+animation, the thing `__topRun` originally drove, had been removed earlier. Card switching is
+entirely `multiCardSection.ts`'s own `addEventListener('scroll', ...)`, independent of app.ts.)
 
 `updateLogo(id)` toggles `.visible` on `#logo-wrapper` (visible only on `#top`) — the only other
 thing `app.ts`'s scroll handler does besides section switching. `Logo.astro`'s own arc/noise
@@ -186,20 +192,36 @@ marquee animation is separate and always-running, unrelated to scroll.
 
 ---
 
-## Navigation config (punch-nav.ts)
+## Navigation data (compiler-derived, no more `punch-nav.ts`)
 
+`src/config/punch-nav.ts` is gone. Nav data (`divisionMap`/`sectionsByDiv`/`parasBySection`) is
+now a build-time output of `loadMainProgram()` (see `src/pcob/compile.ts`'s `compileRawProgram`),
+computed once in `index.astro` and serialized into the page as a JSON island:
+```astro
+<script type="application/json" id="pcf-nav-data" set:html={JSON.stringify({
+  divisionMap: program.divisionMap, sectionsByDiv: program.sectionsByDiv, parasBySection: program.parasBySection
+})} />
+```
+`PunchCard.astro`'s client script reads and `JSON.parse`s `#pcf-nav-data` once, at module top
+level, instead of statically importing a config module — this is a build-time compiler output,
+not a hand-maintained file, so there's nothing left to import client-side. Shape (unchanged from
+the old hand-written version, just derived now):
 ```ts
-DIVISION_MAP = { data: ['top','aboutme','work'], proc: ['links','impressum'] }
+divisionMap = { data: ['top','aboutme','work'], proc: ['links','impressum'] }
 
-PARAS_BY_SECTION = {
+parasBySection = {
   // each entry: { label, href, cardIdx } — cardIdx addresses a specific card within the section
-  top:       [IDENTITY(0), BACKGROUND(1), CAREER-CURR(2), CAREER-PREV(3), SKILLS(4), INTERESTS(5), COMMUNITY(6)]
+  top:       [IDENTITY(0), BACKGROUND(1), CAREER-CURR(2), CAREER-PREV(3), SKILLS(4), INTERESTS(5)]
   aboutme:   [WORK-NOW(0), WORK-BFRE(1), STUDIES(2), PRG-LANGUAGES(3), VOC-LANGUAGES(4)]
   work:      [WORK-CURRENT(0), WORK-PREV(1)]
   links:     [SERVICES-PRGRPH(0), SOCIALS-PRGRPH(1)]
   impressum: [IMPRESSUM-SECTION(0)]
 }
 ```
+(`top` has 6 entries, not 7 — `COMMUNITY` is a field inside `INTERESTS`'s card text, not its own
+`@CARD`; the old hand-written `punch-nav.ts` had a 7th, stale `COMMUNITY` entry left over from
+when those cards were merged, which is exactly the class of bug deriving this from the compiler
+eliminates — see `docs/punch-card-content-system.md`'s Phase 6 notes.)
 
 Nav highlight: `pcf-nav-active` class + `▶ ` pseudo-content before active items.
 
@@ -262,6 +284,11 @@ Card background: `#F5EDD4` (aged paper). Card border/accents: `#C2A840` (gold). 
 Compiled from `src/content/_punchcard/impressum.pcob` (one `@CARD`, 19 rows). `@SLOT` and
 `PunchCard`'s `slotAtLine`/`displaySlot` props have been removed entirely — nothing ever
 consumed them (see the PunchCard component API section above).
+
+`SectionImpressum.astro` is a thin wrapper around the generic `PunchSection.astro`: it passes
+its own compiled `section` prop through and supplies the overlay markup via `<Fragment
+slot="overlay">`, landing inside `PunchSection`'s single-card `.pcf-stage` branch right after the
+`<PunchCard>` — the same DOM position it occupied before this was a shared component.
 
 The German legal text (`.impressum-grid`) is a plain sibling `<div class="impressum-overlay">`
 next to the `<PunchCard>`, absolutely positioned at runtime by the section's own script

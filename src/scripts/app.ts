@@ -1,14 +1,6 @@
 const sections      = document.querySelectorAll<HTMLElement>("section");
 const logoWrapper   = document.getElementById("logo-wrapper")!;
 
-const sectionRunners: Record<string, () => void> = {
-    top:       () => (window as any).__topRun?.(),
-    aboutme:   () => (window as any).__aboutMeRun?.(),
-    work:      () => (window as any).__workRun?.(),
-    links:     () => (window as any).__linksRun?.(),
-    impressum: () => (window as any).__impressumRun?.(),
-};
-
 /* ── active section ────────────────────────────── */
 // Uses scrollY directly (not a viewport-midpoint offset) so the section boundary lines up
 // exactly with multiCardSection.ts's own scrollY-based card math - otherwise the section
@@ -47,11 +39,8 @@ function onScroll() {
 
     if (id !== activeSectionId) {
         transitionTo(id);
-        sectionRunners[id]?.();
         activeSectionId = id;
     }
-
-    if (id === "top") sectionRunners["top"]?.();
 }
 
 window.addEventListener("scroll", onScroll);

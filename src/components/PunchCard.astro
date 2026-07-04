@@ -204,7 +204,21 @@ const callLinksJson = JSON.stringify(callLinks);
 )}
 
 <script>
-import { DIVISION_MAP, SECTIONS_BY_DIV, PARAS_BY_SECTION } from '../config/punch-nav';
+// Nav data (divisionMap/sectionsByDiv/parasBySection) is derived by the compiler from the
+// shared main.pcob program (src/pcob/loadProgram.ts) and embedded once, page-side, as a JSON
+// island by index.astro - there's no static punch-nav.ts to import client-side anymore, since
+// this data is now a build-time compiler output, not a hand-maintained module.
+interface NavEntry { label: string; href: string; }
+interface ParaNavEntry extends NavEntry { cardIdx: number; }
+interface NavData {
+    divisionMap: Record<string, string[]>;
+    sectionsByDiv: Record<string, NavEntry[]>;
+    parasBySection: Record<string, ParaNavEntry[]>;
+}
+
+const navDataEl = document.getElementById('pcf-nav-data');
+const { divisionMap: DIVISION_MAP, sectionsByDiv: SECTIONS_BY_DIV, parasBySection: PARAS_BY_SECTION }: NavData =
+    navDataEl ? JSON.parse(navDataEl.textContent || '{}') : { divisionMap: {}, sectionsByDiv: {}, parasBySection: {} };
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 

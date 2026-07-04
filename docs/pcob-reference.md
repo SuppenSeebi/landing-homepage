@@ -35,6 +35,7 @@ for any line shape.
 | Directive | Where | Purpose |
 |---|---|---|
 | `@@ ...` | anywhere | Comment. Entire line is discarded, never rendered. |
+| `@IMPORT filename.pcob` | before any `DIVISION` | Merges another `.pcob` file's divisions/sections/cards into this program, in the order the `@IMPORT` lines appear. Only meaningful in a top-level "main program" (this site's is `src/content/_punchcard/main.pcob`) — an imported file may not itself contain `@IMPORT` (subordinate files must stay fully self-contained; nesting throws a compile error, not a silent no-op). Importing the same file twice, or a file that can't be found, is also a compile error. This is what lets any card `{{link:}}` any section by name, anywhere in the program — every imported file's anchors land in the one shared registry. |
 | `@ROWS N` | before any `DIVISION`; right after a `SECTION`; inside a `CARD` | Sets the row count for everything from here down until a more specific `@ROWS` overrides it. Precedence: Card > Section > program default. |
 | `@DIVISION DATA \| PROCEDURE` | top level | Starts a division. |
 | `@SECTION NAME attr=val ...` | inside a division | Starts a section. See attributes below. |
@@ -170,3 +171,17 @@ precedes card text, not a directive); `EXIT PARAGRAPH` and `EXIT SECTION`, each 
 their own section by explicit name (no implicit `self`); and a final `GOBACK`, linking back across
 divisions to the other section's anchor (`demo-data`) — same statement-row treatment as any other
 recognized verb, just a different word.
+
+`@IMPORT` is a cross-file construct, so it doesn't fit inside the single-file example above —
+here's the whole `.pcob` file above treated as `demo.pcob`, with a second, top-level file
+importing it:
+
+```pcob
+@@ main.pcob — a top-level "main program": nothing but an ordered import list. Subordinate
+@@ files (like demo.pcob above) stay fully self-contained — no @IMPORT of their own.
+@IMPORT demo.pcob
+```
+
+Compiling `main.pcob` (not `demo.pcob` directly) merges `demo.pcob`'s two divisions/sections/cards
+in, so anything in the real program could now write e.g. `{{link:demo-data}}...{{/link}}` from a
+third imported file too — one shared anchor registry across every imported file, not one per file.

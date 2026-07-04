@@ -1,0 +1,9 @@
+@@ Shared main program — every section compiles through this file, in page order, so anchors
+@@ and {{link}} targets share one registry across the whole site (no more per-section
+@@ compileProgram() calls with their own isolated namespace). Subordinate files stay fully
+@@ self-contained: this file is purely an ordered import manifest, nothing else.
+@IMPORT top.pcob
+@IMPORT aboutme.pcob
+@IMPORT work.pcob
+@IMPORT links.pcob
+@IMPORT impressum.pcob

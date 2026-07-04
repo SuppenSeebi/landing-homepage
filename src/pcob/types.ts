@@ -19,6 +19,11 @@ export interface NavEntry {
     href: string;
 }
 
+export interface ParaNavEntry extends NavEntry {
+    /** Which card within the section this paragraph jumps to/highlights for. */
+    cardIdx: number;
+}
+
 export interface CompiledCard {
     name: string;
     lines: Line[];
@@ -36,5 +41,5 @@ export interface CompiledProgram {
     sections: CompiledSection[];
     divisionMap: Record<DivisionId, string[]>;
     sectionsByDiv: Record<DivisionId, NavEntry[]>;
-    parasBySection: Record<string, NavEntry[]>;
+    parasBySection: Record<string, ParaNavEntry[]>;
 }

@@ -2,6 +2,10 @@
 // non-space char is "@") drive structure; everything else is buffered as card-text body
 // lines for the tokenizer to handle later. This module does not resolve links/anchors or
 // classify tokens — see tokenizeCardLine.ts and compile.ts for that.
+//
+// @IMPORT (only meaningful at the top level, before any @DIVISION) merges another file's
+// divisions into this one's tree — see src/pcob/loadProgram.ts for the Astro-side file lookup
+// that supplies parseSource's resolveImport callback.
 
 import { PcobError, type DivisionId } from './types';
 
@@ -44,9 +48,44 @@ function parseAttrs(text: string, lineNo: number): Record<string, string> {
     return attrs;
 }
 
-export function parseSource(source: string): RawProgram {
+/**
+ * An imported file's own program-level default (and any division-level override) only makes
+ * sense scoped to that file's own sections — once its divisions get merged into a shared
+ * main-program bucket by division id (see mergeImportedProgram), a division-level fact from one
+ * file could otherwise silently leak onto another file's sections sharing the same division id.
+ * Pushing every file's resolved default down to section level, before merging, keeps each
+ * file's own rows fully self-contained through the merge.
+ */
+function pushDownRows(program: RawProgram): void {
+    for (const division of program.divisions) {
+        const divDefault = division.rowsOverride ?? program.defaultRows;
+        if (divDefault === undefined) continue;
+        for (const section of division.sections) {
+            if (section.rowsOverride === undefined) section.rowsOverride = divDefault;
+        }
+    }
+}
+
+function mergeImportedProgram(target: RawProgram, imported: RawProgram): void {
+    pushDownRows(imported);
+    for (const division of imported.divisions) {
+        const existing = target.divisions.find(d => d.id === division.id);
+        if (existing) existing.sections.push(...division.sections);
+        else target.divisions.push(division);
+    }
+}
+
+/**
+ * @param resolveImport Looks up an imported file's raw source by the name given after
+ * @IMPORT. Only the top-level parse (a "main program") should pass this — the imported file
+ * is itself parsed with no resolver, so an @IMPORT inside it throws immediately rather than
+ * silently nesting. This is what keeps subordinate files "fully self-contained" a real
+ * invariant instead of just a convention.
+ */
+export function parseSource(source: string, resolveImport?: (name: string) => string | undefined): RawProgram {
     const lines = source.split(/\r\n|\n/);
     const program: RawProgram = { divisions: [] };
+    const importedNames = new Set<string>();
 
     let division: RawDivision | null = null;
     let section: RawSection | null = null;
@@ -81,6 +120,27 @@ export function parseSource(source: string): RawProgram {
         pendingBlanks = 0;
 
         if (trimmed.startsWith('@@')) continue;
+
+        const importMatch = trimmed.match(/^@IMPORT\s+(\S+)\s*$/);
+        if (importMatch) {
+            const name = importMatch[1];
+            if (!resolveImport) {
+                throw new PcobError('nested @IMPORT not supported — subordinate files must be self-contained', lineNo);
+            }
+            if (division) {
+                throw new PcobError('@IMPORT must appear before any @DIVISION', lineNo);
+            }
+            if (importedNames.has(name)) {
+                throw new PcobError(`duplicate @IMPORT "${name}"`, lineNo);
+            }
+            importedNames.add(name);
+            const importedSource = resolveImport(name);
+            if (importedSource === undefined) {
+                throw new PcobError(`@IMPORT "${name}" not found`, lineNo);
+            }
+            mergeImportedProgram(program, parseSource(importedSource));
+            continue;
+        }
 
         const rowsMatch = trimmed.match(/^@ROWS\s+(\d+)\s*$/);
         if (rowsMatch) {

@@ -1,0 +1,74 @@
+---
+// Generic renderer for a compiled section - replaces SectionTop/AboutMe/Work/Links.astro,
+// which were four near-identical files each hardcoding their own section id, card lookups,
+// and CARD_COUNT * 88vh math. Card order/count/id all come straight from the compiled
+// section, so adding or reordering cards in a .pcob file needs no matching edit here.
+//
+// Impressum is the one accepted exception (see docs/punch-card-content-system.md's Phase 6
+// notes): its JS-measured legal-text overlay is genuinely bespoke, so SectionImpressum.astro
+// wraps this component and supplies that overlay via the "overlay" slot instead of forcing
+// it through the uniform template.
+import type { CompiledSection } from '../../pcob/types';
+import PunchCard from '../PunchCard.astro';
+
+interface Props {
+    section: CompiledSection;
+}
+
+const { section } = Astro.props;
+const isMulti = section.cards.length > 1;
+
+const PROGRAM_NAME = 'SSCHW-DEV';
+const PROGRAMMER_NAME = 'SEBASTIAN SCHWINN';
+const CURRENT_SYSTEM = 'RETROCODE GMBH';
+const IDENTIFICATION_HREF = '#impressum';
+---
+<section id={section.id} data-multi-card={String(isMulti)}>
+{isMulti ? (
+    <div class="section-scroll-container" style={`height: ${section.cards.length * 88}vh;`}>
+        <div class="section-content-wrapper">
+            <div class="pcf-stage-multi">
+                {section.cards.map(card => (
+                    <PunchCard
+                        noStage={true}
+                        programName={PROGRAM_NAME}
+                        programmerName={PROGRAMMER_NAME}
+                        currentSystem={CURRENT_SYSTEM}
+                        identificationHref={IDENTIFICATION_HREF}
+                        lines={card.lines}
+                        callLinks={card.callLinks}
+                    />
+                ))}
+            </div>
+        </div>
+    </div>
+) : (
+    <div class="section-scroll-container pcf-section-height">
+        <div class="section-content-wrapper">
+            <div class="pcf-stage">
+                <PunchCard
+                    noStage={true}
+                    programName={PROGRAM_NAME}
+                    programmerName={PROGRAMMER_NAME}
+                    currentSystem={CURRENT_SYSTEM}
+                    identificationHref={IDENTIFICATION_HREF}
+                    lines={section.cards[0].lines}
+                    callLinks={section.cards[0].callLinks}
+                />
+                <slot name="overlay" />
+            </div>
+        </div>
+    </div>
+)}
+</section>
+
+<script>
+import { setupMultiCardSection } from '../../scripts/multiCardSection.ts';
+
+// One sweep for every multi-card section on the page - this script tag is byte-identical
+// across all PunchSection instances, so Astro/the browser only ever runs it once, same
+// dedup guarantee PunchCard.astro's own script already relies on.
+document.querySelectorAll<HTMLElement>('section[data-multi-card="true"]').forEach(s => {
+    setupMultiCardSection(s.id);
+});
+</script>

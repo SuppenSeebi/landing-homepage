@@ -19,6 +19,12 @@
 @@  enough in COBOL-flavoured text that real collisions shouldn't happen;
 @@  if they ever do, \{{ escapes a literal brace.
 @@
+@@  This whole file is one big illustrative program, so it doesn't demonstrate
+@@  @IMPORT (a cross-file directive - splits a program across files, each self-
+@@  contained, one shared anchor registry across all of them). See the real
+@@  src/content/_punchcard/main.pcob, or docs/pcob-reference.md's directive
+@@  table + its own small two-file example, for that.
+@@
 @@  CARD TEXT IS WYSIWYG — THE COMPILER NEVER GENERATES OR RE-INDENTS A LINE:
 @@
 @@    Strip out {{tags}} and every character left in a rendered card —
