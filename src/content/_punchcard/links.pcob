@@ -23,10 +23,9 @@
      .
 
 @CARD SOCIALS-PRGRPH
-@ROWS 13
+@ROWS 12
  PROCEDURE DIVISION.
  LINKS SECTION.
-SOME TEST TEXT
  SOCIALS-PRGRPH.
 * LinkedIn: linkedin.com/in/sschwinn
      CALL {{link:'https://www.linkedin.com/in/sschwinn/'}}'LINKEDIN'{{/link}}
