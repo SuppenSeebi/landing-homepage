@@ -32,15 +32,18 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 
 ```ts
 interface Props {
-  programName: string;
-  programmerName: string;
-  currentSystem: string;
-  identificationHref?: string;   // default '#impressum'
+  header: CompiledHeader;        // form-header cells, from src/pcob/types.ts — see below
   lines?: Line[];                // [seq6chars, Token[]][]
   callLinks?: Record<string, string>; // val token text → href
   noStage?: boolean;             // omit pcf-stage wrapper (use in pcf-stage-multi)
 }
 ```
+
+`header` is `{ left: [Cell,Cell,Cell]; right: [Cell,Cell] }`, `Cell = { label, value, href? }` —
+authored via `@HEADER-*` in `main.pcob` (see "Form-header cells" below), compiled once in
+`index.astro`, threaded down through `PunchSection`/`SectionImpressum` unchanged. The 3rd right
+cell (`DATE - VERSION`) isn't part of this prop — it stays computed inline in this file (build
+date + git short-hash), not authored.
 
 (`displaySlot`/`displayLabel`/`displayHeader`/`slotAtLine` — the old Astro-`<slot/>`-passthrough
 mechanism, plus the `@SLOT` directive that fed it — were removed entirely as unused dead code;
@@ -192,6 +195,24 @@ marquee animation is separate and always-running, unrelated to scroll.
 
 ---
 
+## Form-header cells (authored via `@HEADER-*` in `main.pcob`)
+
+The 5 configurable form-header cells — left column `PROGRAMMER`/`PROGRAM`/`CURRENT SYSTEM`,
+right column `XREF`/`IDENTIFICATION` — are `@HEADER-LEFT-FIRST|SECOND|THIRD "label" "value"` /
+`@HEADER-RIGHT-FIRST|SECOND "label" "value"` directives in `main.pcob`, resolved once by
+`compile.ts`'s `resolveHeader`/`resolveHeaderCell` into `CompiledProgram.header`. All 5 are
+required (missing one is a compile error, same rigor as `@ROWS`). A `value` may contain one
+`{{link:name}}...{{/link}}` — reuses `extractTags`/the same anchor registry card text resolves
+through, no separate tag-parsing path — and if present, `PunchCard.astro` renders the whole cell
+as an `<a>`; if absent, a plain `<div>`.
+
+The 3rd right cell, `DATE - VERSION`, is deliberately **not** part of this — it's computed build
+metadata (today's date + `git rev-parse --short HEAD`), not authored content, and stays inline in
+`PunchCard.astro` exactly as before. `@HEADER-RIGHT-THIRD` is a dedicated compile error naming
+this, not a silently-accepted or generically-rejected directive.
+
+---
+
 ## Navigation data (compiler-derived, no more `punch-nav.ts`)
 
 `src/config/punch-nav.ts` is gone. Nav data (`divisionMap`/`sectionsByDiv`/`parasBySection`) is
@@ -308,7 +329,7 @@ so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LIN
 
 ## Established patterns
 
-- All sections share the same PunchCard header values: `programName="SSCHW-DEV"`, `programmerName="SEBASTIAN SCHWINN"`, `currentSystem="RETROCODE GMBH"`, `identificationHref="#impressum"`
+- All sections share the same PunchCard form-header values — authored once via `@HEADER-*` in `main.pcob`, not per-section props (see "Form-header cells" above)
 - Empty COBOL lines: `['000003', []]`
 - Standalone dot line (closes a statement block): `['000015', [['dot','     .']]]` — 5-space statement indent, not bare
 - Comment lines: `['000013', [['comment','* GOBACK TO ...']]]`

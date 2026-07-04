@@ -1,7 +1,14 @@
 @@ Shared main program — every section compiles through this file, in page order, so anchors
 @@ and {{link}} targets share one registry across the whole site (no more per-section
 @@ compileProgram() calls with their own isolated namespace). Subordinate files stay fully
-@@ self-contained: this file is purely an ordered import manifest, nothing else.
+@@ self-contained - the two things this file carries are an ordered import manifest and the
+@@ 5 configurable form-header cells (shared across every card, everywhere).
+@HEADER-LEFT-FIRST   "PROGRAMMER"     "SEBASTIAN SCHWINN"
+@HEADER-LEFT-SECOND  "PROGRAM"        "SSCHW-DEV"
+@HEADER-LEFT-THIRD   "CURRENT SYSTEM" "RETROCODE GMBH"
+@HEADER-RIGHT-FIRST  "XREF"           "{{link:links}}SERVICES{{/link}}"
+@HEADER-RIGHT-SECOND "IDENTIFICATION" "{{link:impressum}}IMPRESSUM{{/link}}"
+
 @IMPORT top.pcob
 @IMPORT aboutme.pcob
 @IMPORT work.pcob

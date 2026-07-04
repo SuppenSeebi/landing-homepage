@@ -24,7 +24,7 @@ const navData = JSON.stringify({
     <Logo />
     {program.sections.map(section => {
         const Cmp = OVERRIDES[section.id] ?? PunchSection;
-        return <Cmp section={section} />;
+        return <Cmp section={section} header={program.header} />;
     })}
     <script type="application/json" id="pcf-nav-data" set:html={navData} />
     <script>

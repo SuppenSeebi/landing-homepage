@@ -6,6 +6,11 @@
 // @IMPORT (only meaningful at the top level, before any @DIVISION) merges another file's
 // divisions into this one's tree — see src/pcob/loadProgram.ts for the Astro-side file lookup
 // that supplies parseSource's resolveImport callback.
+//
+// @HEADER-* (also top-level-only, like @IMPORT) authors the 5 configurable form-header cells
+// (left column x3, right column x2 - the 3rd right cell, DATE-VERSION, is computed at build
+// time and deliberately not part of this) - see compile.ts for how a value's {{link}} tag (if
+// any) gets resolved into an href.
 
 import { PcobError, type DivisionId } from './types';
 
@@ -31,9 +36,18 @@ export interface RawDivision {
     sections: RawSection[];
 }
 
+export interface RawHeaderCell {
+    label: string;
+    valueRaw: string;
+    lineNo: number;
+}
+
+export type HeaderSlot = 'leftFirst' | 'leftSecond' | 'leftThird' | 'rightFirst' | 'rightSecond';
+
 export interface RawProgram {
     defaultRows?: number;
     divisions: RawDivision[];
+    header: Partial<Record<HeaderSlot, RawHeaderCell>>;
 }
 
 const DIVISION_IDS: Record<string, DivisionId> = { DATA: 'data', PROCEDURE: 'proc' };
@@ -84,7 +98,7 @@ function mergeImportedProgram(target: RawProgram, imported: RawProgram): void {
  */
 export function parseSource(source: string, resolveImport?: (name: string) => string | undefined): RawProgram {
     const lines = source.split(/\r\n|\n/);
-    const program: RawProgram = { divisions: [] };
+    const program: RawProgram = { divisions: [], header: {} };
     const importedNames = new Set<string>();
 
     let division: RawDivision | null = null;
@@ -139,6 +153,26 @@ export function parseSource(source: string, resolveImport?: (name: string) => st
                 throw new PcobError(`@IMPORT "${name}" not found`, lineNo);
             }
             mergeImportedProgram(program, parseSource(importedSource));
+            continue;
+        }
+
+        const headerMatch = trimmed.match(/^@HEADER-(LEFT|RIGHT)-(FIRST|SECOND|THIRD)\s+"([^"]*)"\s+"([^"]*)"\s*$/);
+        if (headerMatch) {
+            const [, side, ordinal, label, valueRaw] = headerMatch;
+            if (!resolveImport) {
+                throw new PcobError('@HEADER-* only allowed in the top-level program, not an imported file', lineNo);
+            }
+            if (side === 'RIGHT' && ordinal === 'THIRD') {
+                throw new PcobError(
+                    '@HEADER-RIGHT-THIRD is not configurable — DATE-VERSION is computed at build time (date + git hash), not authored content',
+                    lineNo,
+                );
+            }
+            const slot = (side.toLowerCase() + ordinal[0] + ordinal.slice(1).toLowerCase()) as HeaderSlot;
+            if (program.header[slot]) {
+                throw new PcobError(`duplicate @HEADER-${side}-${ordinal}`, lineNo);
+            }
+            program.header[slot] = { label, valueRaw, lineNo };
             continue;
         }
 

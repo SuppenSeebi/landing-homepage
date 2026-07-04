@@ -4,15 +4,16 @@
 // bespoke, so it goes through PunchSection's "overlay" slot rather than being forced into the
 // uniform template. See docs/punch-card-content-system.md's Phase 6 notes.
 import PunchSection from './PunchSection.astro';
-import type { CompiledSection } from '../../pcob/types';
+import type { CompiledHeader, CompiledSection } from '../../pcob/types';
 
 interface Props {
     section: CompiledSection;
+    header: CompiledHeader;
 }
 
-const { section } = Astro.props;
+const { section, header } = Astro.props;
 ---
-<PunchSection section={section}>
+<PunchSection section={section} header={header}>
     <Fragment slot="overlay">
         <div class="impressum-overlay">
             <div class="impressum-grid">

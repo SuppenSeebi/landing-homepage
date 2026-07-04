@@ -8,20 +8,16 @@
 // notes): its JS-measured legal-text overlay is genuinely bespoke, so SectionImpressum.astro
 // wraps this component and supplies that overlay via the "overlay" slot instead of forcing
 // it through the uniform template.
-import type { CompiledSection } from '../../pcob/types';
+import type { CompiledHeader, CompiledSection } from '../../pcob/types';
 import PunchCard from '../PunchCard.astro';
 
 interface Props {
     section: CompiledSection;
+    header: CompiledHeader;
 }
 
-const { section } = Astro.props;
+const { section, header } = Astro.props;
 const isMulti = section.cards.length > 1;
-
-const PROGRAM_NAME = 'SSCHW-DEV';
-const PROGRAMMER_NAME = 'SEBASTIAN SCHWINN';
-const CURRENT_SYSTEM = 'RETROCODE GMBH';
-const IDENTIFICATION_HREF = '#impressum';
 ---
 <section id={section.id} data-multi-card={String(isMulti)}>
 {isMulti ? (
@@ -31,10 +27,7 @@ const IDENTIFICATION_HREF = '#impressum';
                 {section.cards.map(card => (
                     <PunchCard
                         noStage={true}
-                        programName={PROGRAM_NAME}
-                        programmerName={PROGRAMMER_NAME}
-                        currentSystem={CURRENT_SYSTEM}
-                        identificationHref={IDENTIFICATION_HREF}
+                        header={header}
                         lines={card.lines}
                         callLinks={card.callLinks}
                     />
@@ -48,10 +41,7 @@ const IDENTIFICATION_HREF = '#impressum';
             <div class="pcf-stage">
                 <PunchCard
                     noStage={true}
-                    programName={PROGRAM_NAME}
-                    programmerName={PROGRAMMER_NAME}
-                    currentSystem={CURRENT_SYSTEM}
-                    identificationHref={IDENTIFICATION_HREF}
+                    header={header}
                     lines={section.cards[0].lines}
                     callLinks={section.cards[0].callLinks}
                 />

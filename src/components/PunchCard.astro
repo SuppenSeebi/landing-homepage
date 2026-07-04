@@ -1,30 +1,28 @@
 ---
 import { execSync } from 'child_process';
 import { punchText } from '../utils/punchText';
+import type { CompiledHeader } from '../pcob/types';
 
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
 interface Props {
-    programName: string;
-    programmerName: string;
-    currentSystem: string;
-    identificationHref?: string;
+    header: CompiledHeader;
     lines?: Line[];
     callLinks?: Record<string, string>;
     noStage?: boolean;
 }
 
+// DATE - VERSION is the one form-header cell that's never authored in .pcob - it's computed
+// build metadata (today's date + short git hash), not content, so it stays code-owned here
+// rather than becoming a 6th @HEADER-* directive.
 const compiled = new Date().toISOString().slice(0, 10);
 let gitHash = '??????';
 try { gitHash = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim().slice(0, 6); } catch {}
 
 const {
-    programName,
-    programmerName,
-    currentSystem,
-    identificationHref = '#impressum',
+    header,
     lines = [],
     callLinks = {},
     noStage = false,
@@ -47,8 +45,8 @@ const callLinksJson = JSON.stringify(callLinks);
     <div class="pcf-form-header">
         <div class="pcf-fh-row">
             <div class="pcf-fh-cell pcf-fh-w1">
-                <span class="pcf-fh-lbl">PROGRAMMER</span>
-                <span class="pcf-fh-val" set:html={punchText(programmerName)}></span>
+                <span class="pcf-fh-lbl">{header.left[0].label}</span>
+                <span class="pcf-fh-val" set:html={punchText(header.left[0].value)}></span>
             </div>
             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                 <span class="pcf-fh-lbl">DIVISION</span>
@@ -58,31 +56,45 @@ const callLinksJson = JSON.stringify(callLinks);
                     <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
                 </div>
             </div>
-            <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#links">
-                <span class="pcf-fh-lbl">XREF</span>
-                <span class="pcf-fh-val" set:html={punchText('SERVICES')}></span>
+            {header.right[0].href ? (
+            <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[0].href}>
+                <span class="pcf-fh-lbl">{header.right[0].label}</span>
+                <span class="pcf-fh-val" set:html={punchText(header.right[0].value)}></span>
             </a>
+            ) : (
+            <div class="pcf-fh-cell pcf-fh-w3">
+                <span class="pcf-fh-lbl">{header.right[0].label}</span>
+                <span class="pcf-fh-val" set:html={punchText(header.right[0].value)}></span>
+            </div>
+            )}
         </div>
 
         <div class="pcf-fh-row">
             <div class="pcf-fh-cell pcf-fh-w1">
-                <span class="pcf-fh-lbl">PROGRAM</span>
-                <span class="pcf-fh-val" set:html={punchText(programName)}></span>
+                <span class="pcf-fh-lbl">{header.left[1].label}</span>
+                <span class="pcf-fh-val" set:html={punchText(header.left[1].value)}></span>
             </div>
             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                 <span class="pcf-fh-lbl">SECTION</span>
                 <div class="pcf-fh-nav" data-nav="sec"></div>
             </div>
-            <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={identificationHref}>
-                <span class="pcf-fh-lbl">IDENTIFICATION</span>
-                <span class="pcf-fh-val" set:html={punchText('IMPRESSUM')}></span>
+            {header.right[1].href ? (
+            <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[1].href}>
+                <span class="pcf-fh-lbl">{header.right[1].label}</span>
+                <span class="pcf-fh-val" set:html={punchText(header.right[1].value)}></span>
             </a>
+            ) : (
+            <div class="pcf-fh-cell pcf-fh-w3">
+                <span class="pcf-fh-lbl">{header.right[1].label}</span>
+                <span class="pcf-fh-val" set:html={punchText(header.right[1].value)}></span>
+            </div>
+            )}
         </div>
 
         <div class="pcf-fh-row">
             <div class="pcf-fh-cell pcf-fh-w1">
-                <span class="pcf-fh-lbl">CURRENT SYSTEM</span>
-                <span class="pcf-fh-val" set:html={punchText(currentSystem)}></span>
+                <span class="pcf-fh-lbl">{header.left[2].label}</span>
+                <span class="pcf-fh-val" set:html={punchText(header.left[2].value)}></span>
             </div>
             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                 <span class="pcf-fh-lbl">PARAGRAPH</span>
@@ -130,8 +142,8 @@ const callLinksJson = JSON.stringify(callLinks);
         <div class="pcf-form-header">
             <div class="pcf-fh-row">
                 <div class="pcf-fh-cell pcf-fh-w1">
-                    <span class="pcf-fh-lbl">PROGRAMMER</span>
-                    <span class="pcf-fh-val" set:html={punchText(programmerName)}></span>
+                    <span class="pcf-fh-lbl">{header.left[0].label}</span>
+                    <span class="pcf-fh-val" set:html={punchText(header.left[0].value)}></span>
                 </div>
                 <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                     <span class="pcf-fh-lbl">DIVISION</span>
@@ -141,31 +153,45 @@ const callLinksJson = JSON.stringify(callLinks);
                         <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
                     </div>
                 </div>
-                <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href="#links">
-                    <span class="pcf-fh-lbl">XREF</span>
-                    <span class="pcf-fh-val" set:html={punchText('SERVICES')}></span>
+                {header.right[0].href ? (
+                <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[0].href}>
+                    <span class="pcf-fh-lbl">{header.right[0].label}</span>
+                    <span class="pcf-fh-val" set:html={punchText(header.right[0].value)}></span>
                 </a>
+                ) : (
+                <div class="pcf-fh-cell pcf-fh-w3">
+                    <span class="pcf-fh-lbl">{header.right[0].label}</span>
+                    <span class="pcf-fh-val" set:html={punchText(header.right[0].value)}></span>
+                </div>
+                )}
             </div>
 
             <div class="pcf-fh-row">
                 <div class="pcf-fh-cell pcf-fh-w1">
-                    <span class="pcf-fh-lbl">PROGRAM</span>
-                    <span class="pcf-fh-val" set:html={punchText(programName)}></span>
+                    <span class="pcf-fh-lbl">{header.left[1].label}</span>
+                    <span class="pcf-fh-val" set:html={punchText(header.left[1].value)}></span>
                 </div>
                 <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                     <span class="pcf-fh-lbl">SECTION</span>
                     <div class="pcf-fh-nav" data-nav="sec"></div>
                 </div>
-                <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={identificationHref}>
-                    <span class="pcf-fh-lbl">IDENTIFICATION</span>
-                    <span class="pcf-fh-val" set:html={punchText('IMPRESSUM')}></span>
+                {header.right[1].href ? (
+                <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[1].href}>
+                    <span class="pcf-fh-lbl">{header.right[1].label}</span>
+                    <span class="pcf-fh-val" set:html={punchText(header.right[1].value)}></span>
                 </a>
+                ) : (
+                <div class="pcf-fh-cell pcf-fh-w3">
+                    <span class="pcf-fh-lbl">{header.right[1].label}</span>
+                    <span class="pcf-fh-val" set:html={punchText(header.right[1].value)}></span>
+                </div>
+                )}
             </div>
 
             <div class="pcf-fh-row">
                 <div class="pcf-fh-cell pcf-fh-w1">
-                    <span class="pcf-fh-lbl">CURRENT SYSTEM</span>
-                    <span class="pcf-fh-val" set:html={punchText(currentSystem)}></span>
+                    <span class="pcf-fh-lbl">{header.left[2].label}</span>
+                    <span class="pcf-fh-val" set:html={punchText(header.left[2].value)}></span>
                 </div>
                 <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                     <span class="pcf-fh-lbl">PARAGRAPH</span>

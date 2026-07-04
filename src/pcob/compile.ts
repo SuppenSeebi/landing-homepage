@@ -17,8 +17,14 @@
 
 import { extractTags } from './tags';
 import { type AnchorRegistry, makeSeq, tokenizeCardLine } from './tokenizeCardLine';
-import { type RawCard, type RawDivision, type RawProgram, type RawSection, parseSource } from './parseSource';
-import { type CompiledCard, type CompiledProgram, type CompiledSection, type Line, PcobError } from './types';
+import {
+    type HeaderSlot, type RawCard, type RawDivision, type RawHeaderCell, type RawProgram, type RawSection,
+    parseSource,
+} from './parseSource';
+import {
+    type CompiledCard, type CompiledHeader, type CompiledProgram, type CompiledSection, type HeaderCell,
+    type Line, PcobError,
+} from './types';
 
 // This module walks a fully-resolved RawProgram tree (any @IMPORTs already merged in by
 // parseSource) - it doesn't know or care whether that tree came from one file or several.
@@ -73,6 +79,36 @@ function makeAnchorRegistry(registry: Map<string, AnchorEntry>): AnchorRegistry 
     };
 }
 
+/** Resolves a header cell's value text the same way a {{link}}-bearing card value would -
+ * reusing extractTags rather than inventing new tag-parsing logic. At most one {{link}} is
+ * expected per cell; if present, it makes the whole rendered cell clickable (see
+ * PunchCard.astro), same as today's hardcoded XREF/IDENTIFICATION cells. */
+function resolveHeaderCell(raw: RawHeaderCell, anchors: AnchorRegistry): HeaderCell {
+    const { clean, spans } = extractTags(raw.valueRaw, raw.lineNo);
+    const linkSpan = spans.find(s => s.tag === 'link');
+    let href: string | undefined;
+    if (linkSpan) {
+        const param = linkSpan.param ?? '';
+        href = param.startsWith("'") && param.endsWith("'") ? param.slice(1, -1) : anchors.resolveAnchor(param, raw.lineNo);
+    }
+    return { label: raw.label, value: clean, href };
+}
+
+function requireHeaderCell(program: RawProgram, slot: HeaderSlot, directiveName: string): RawHeaderCell {
+    const raw = program.header[slot];
+    if (!raw) throw new PcobError(`No ${directiveName} defined (all 5 header cells are required)`);
+    return raw;
+}
+
+function resolveHeader(program: RawProgram, anchors: AnchorRegistry): CompiledHeader {
+    const leftFirst   = resolveHeaderCell(requireHeaderCell(program, 'leftFirst', '@HEADER-LEFT-FIRST'), anchors);
+    const leftSecond  = resolveHeaderCell(requireHeaderCell(program, 'leftSecond', '@HEADER-LEFT-SECOND'), anchors);
+    const leftThird   = resolveHeaderCell(requireHeaderCell(program, 'leftThird', '@HEADER-LEFT-THIRD'), anchors);
+    const rightFirst  = resolveHeaderCell(requireHeaderCell(program, 'rightFirst', '@HEADER-RIGHT-FIRST'), anchors);
+    const rightSecond = resolveHeaderCell(requireHeaderCell(program, 'rightSecond', '@HEADER-RIGHT-SECOND'), anchors);
+    return { left: [leftFirst, leftSecond, leftThird], right: [rightFirst, rightSecond] };
+}
+
 function resolveRows(card: RawCard, section: RawSection, division: RawDivision, program: RawProgram): number {
     const resolved = card.rowsOverride ?? section.rowsOverride ?? division.rowsOverride ?? program.defaultRows;
     if (resolved === undefined) {
@@ -115,6 +151,7 @@ function compileCard(
 export function compileRawProgram(program: RawProgram): CompiledProgram {
     const registry = buildAnchorRegistry(program);
     const anchors = makeAnchorRegistry(registry);
+    const header = resolveHeader(program, anchors);
 
     const sections: CompiledSection[] = [];
     const divisionMap: CompiledProgram['divisionMap'] = { data: [], proc: [] };
@@ -136,7 +173,7 @@ export function compileRawProgram(program: RawProgram): CompiledProgram {
         }
     }
 
-    return { sections, divisionMap, sectionsByDiv, parasBySection };
+    return { sections, divisionMap, sectionsByDiv, parasBySection, header };
 }
 
 /** Single-file entry point — parses then compiles one self-contained .pcob source (no

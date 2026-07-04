@@ -21,9 +21,12 @@
 @@
 @@  This whole file is one big illustrative program, so it doesn't demonstrate
 @@  @IMPORT (a cross-file directive - splits a program across files, each self-
-@@  contained, one shared anchor registry across all of them). See the real
-@@  src/content/_punchcard/main.pcob, or docs/pcob-reference.md's directive
-@@  table + its own small two-file example, for that.
+@@  contained, one shared anchor registry across all of them) or @HEADER-* (also
+@@  top-level-only - authors the 5 configurable form-header cells: PROGRAMMER/
+@@  PROGRAM/CURRENT SYSTEM on the left, XREF/IDENTIFICATION on the right; the
+@@  3rd right cell, DATE - VERSION, stays computed at build time, not authored).
+@@  See the real src/content/_punchcard/main.pcob, or docs/pcob-reference.md's
+@@  directive table + its own small two-file example, for both.
 @@
 @@  CARD TEXT IS WYSIWYG — THE COMPILER NEVER GENERATES OR RE-INDENTS A LINE:
 @@

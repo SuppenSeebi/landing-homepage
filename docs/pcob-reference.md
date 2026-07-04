@@ -36,6 +36,8 @@ for any line shape.
 |---|---|---|
 | `@@ ...` | anywhere | Comment. Entire line is discarded, never rendered. |
 | `@IMPORT filename.pcob` | before any `DIVISION` | Merges another `.pcob` file's divisions/sections/cards into this program, in the order the `@IMPORT` lines appear. Only meaningful in a top-level "main program" (this site's is `src/content/_punchcard/main.pcob`) — an imported file may not itself contain `@IMPORT` (subordinate files must stay fully self-contained; nesting throws a compile error, not a silent no-op). Importing the same file twice, or a file that can't be found, is also a compile error. This is what lets any card `{{link:}}` any section by name, anywhere in the program — every imported file's anchors land in the one shared registry. |
+| `@HEADER-LEFT-FIRST\|SECOND\|THIRD "label" "value"` | top-level "main program" only, same rule as `@IMPORT` | Authors one of the 3 left form-header cells (`PROGRAMMER`/`PROGRAM`/`CURRENT SYSTEM` today). All 3 are required — a missing one is a compile error. |
+| `@HEADER-RIGHT-FIRST\|SECOND "label" "value"` | top-level "main program" only, same rule as `@IMPORT` | Authors one of the first 2 right form-header cells (`XREF`/`IDENTIFICATION` today). Both required. `value` may contain one `{{link:...}}...{{/link}}` — if present, the whole rendered cell becomes clickable to that target; if absent, the cell renders as plain (non-linked) text. There is no `@HEADER-RIGHT-THIRD` — the 3rd right cell (`DATE - VERSION`) is computed at build time (today's date + git short-hash), not authored content, and using that combination is a compile error with a message saying so. |
 | `@ROWS N` | before any `DIVISION`; right after a `SECTION`; inside a `CARD` | Sets the row count for everything from here down until a more specific `@ROWS` overrides it. Precedence: Card > Section > program default. |
 | `@DIVISION DATA \| PROCEDURE` | top level | Starts a division. |
 | `@SECTION NAME attr=val ...` | inside a division | Starts a section. See attributes below. |
@@ -172,16 +174,26 @@ their own section by explicit name (no implicit `self`); and a final `GOBACK`, l
 divisions to the other section's anchor (`demo-data`) — same statement-row treatment as any other
 recognized verb, just a different word.
 
-`@IMPORT` is a cross-file construct, so it doesn't fit inside the single-file example above —
-here's the whole `.pcob` file above treated as `demo.pcob`, with a second, top-level file
-importing it:
+`@IMPORT` and `@HEADER-*` are both top-level-only constructs, so they don't fit inside the
+single-file example above — here's the whole `.pcob` file above treated as `demo.pcob`, with a
+second, top-level file importing it and authoring the 5 header cells:
 
 ```pcob
-@@ main.pcob — a top-level "main program": nothing but an ordered import list. Subordinate
-@@ files (like demo.pcob above) stay fully self-contained — no @IMPORT of their own.
+@@ main.pcob — a top-level "main program": an ordered import list plus the 5 required
+@@ form-header cells. Subordinate files (like demo.pcob above) stay fully self-contained —
+@@ no @IMPORT or @HEADER-* of their own.
+@HEADER-LEFT-FIRST   "PROGRAMMER"     "SEBASTIAN SCHWINN"
+@HEADER-LEFT-SECOND  "PROGRAM"        "SSCHW-DEV"
+@HEADER-LEFT-THIRD   "CURRENT SYSTEM" "RETROCODE GMBH"
+@HEADER-RIGHT-FIRST  "XREF"           "{{link:demo-proc}}DEMO{{/link}}"
+@HEADER-RIGHT-SECOND "IDENTIFICATION" "{{link:demo-data}}FIELDS{{/link}}"
+
 @IMPORT demo.pcob
 ```
 
 Compiling `main.pcob` (not `demo.pcob` directly) merges `demo.pcob`'s two divisions/sections/cards
 in, so anything in the real program could now write e.g. `{{link:demo-data}}...{{/link}}` from a
 third imported file too — one shared anchor registry across every imported file, not one per file.
+The two `@HEADER-RIGHT-*` values each link back into `demo.pcob`'s own anchors (`demo-proc`,
+`demo-data`) — same `{{link:name}}` mechanism card text uses, just resolved once per header cell
+instead of once per token.

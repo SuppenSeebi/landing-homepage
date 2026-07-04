@@ -37,9 +37,25 @@ export interface CompiledSection {
     cards: CompiledCard[];
 }
 
+export interface HeaderCell {
+    label: string;
+    value: string;
+    /** Resolved href if the value's {{link}} tag (at most one) was present. */
+    href?: string;
+}
+
+export interface CompiledHeader {
+    /** PROGRAMMER / PROGRAM / CURRENT SYSTEM cells, in that row order. */
+    left: [HeaderCell, HeaderCell, HeaderCell];
+    /** XREF / IDENTIFICATION cells, in that row order. The 3rd right cell
+     * (DATE - VERSION) is computed in PunchCard.astro, not part of this. */
+    right: [HeaderCell, HeaderCell];
+}
+
 export interface CompiledProgram {
     sections: CompiledSection[];
     divisionMap: Record<DivisionId, string[]>;
     sectionsByDiv: Record<DivisionId, NavEntry[]>;
     parasBySection: Record<string, ParaNavEntry[]>;
+    header: CompiledHeader;
 }

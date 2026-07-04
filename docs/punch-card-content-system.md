@@ -227,7 +227,7 @@ also covers Phase 6's changes, not just Phase 4's).
   multi-card sections' whole-row scramble-on-swap. Once the base system is stable, design a
   small, deliberately narrow tag set for these rather than a general animation DSL.
 
-### Phase 6 — One shared program + generic rendering (6.1–6.4 done 2026-07-04, 6.5 deferred)
+### Phase 6 — One shared program + generic rendering (6.1–6.4 + 6.6 done 2026-07-04, 6.5 deferred)
 
 **The target test**: drop a new `.pcob` file in `src/content/_punchcard/`, add one line to
 `main.pcob` naming it, and it renders correctly — in nav, in scroll order, with working
@@ -346,6 +346,33 @@ far, not yet built:
     asset pipeline (`astro:assets`) fits in if at all.
 - This is deliberately its own scoped addition, sequenced after (or reviewed separately from)
   6.1–6.4 rather than bundled in — keeps each change small enough to verify independently.
+
+**6.6 — Form-header cells authored via `@HEADER-*` (requested 2026-07-04, right after 6.1–6.4
+shipped; done same day).** Not part of the original Phase 6 sketch — a follow-up request, per
+the process Phase 1 already established ("when Sebastian wants something the current tags can't
+express, that's a short scoped conversation, not a request to edit renderer internals"). The
+left 3 header cells (`PROGRAMMER`/`PROGRAM`/`CURRENT SYSTEM`) were plain `Props` on
+`PunchCard.astro`, hardcoded identically at every call site in `PunchSection.astro`; the right
+column's first 2 (`XREF`→"SERVICES"→`#links`, `IDENTIFICATION`→"IMPRESSUM"→`#impressum`) were
+hardcoded directly in `PunchCard.astro`'s markup — `XREF` wasn't parameterized at all. Same
+class of "fact typed in code instead of content" this whole system exists to eliminate.
+
+Five new directives, `main.pcob`-only (same top-level-only rule as `@IMPORT`, reusing the exact
+same "is this the top-level parse" signal): `@HEADER-LEFT-FIRST|SECOND|THIRD "label" "value"`
+and `@HEADER-RIGHT-FIRST|SECOND "label" "value"`. All 5 required — a missing one is a compile
+error, same rigor as `@ROWS` needing to resolve from somewhere. A value may contain one
+`{{link:name}}...{{/link}}` (reusing the existing tag/anchor machinery — `extractTags` plus the
+same `AnchorRegistry` card text already resolves through, no new tag-parsing logic); if present,
+the whole rendered cell becomes clickable, otherwise it renders as plain text.
+
+The 3rd right cell, `DATE - VERSION` (`PunchCard.astro`'s computed build date + git short-hash),
+is deliberately **not** part of this — asked twice whether it should also become authored text,
+no response either time, went with the documented recommended default: leave it fully computed.
+`@HEADER-RIGHT-THIRD` is an explicit compile error naming this, not a silently-accepted or
+generically-rejected directive. `PunchCard.astro` now takes one `header: CompiledHeader` prop
+(replacing the 4 old props) threaded from `index.astro` → `PunchSection.astro` /
+`SectionImpressum.astro`, same "compile once in index.astro, thread down" pattern `section`
+already uses.
 
 ---
 
@@ -560,4 +587,4 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
 | 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site, still outstanding. `punch-nav.ts` consolidation deliberately deferred, not yet scheduled. |
 | 5 — Animation tags | Deferred |
-| 6 — Shared program + generic rendering | **6.1–6.4 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks` hrefs including the new cross-file `{{link:top}}GOBACK{{/link}}`). Sebastian's visual pass still outstanding (no dev server per this project's testing-scope rule). 6.5 (embed tag) stays deferred, scoped separately. |
+| 6 — Shared program + generic rendering | **6.1–6.4 and 6.6 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island, and (6.6, a follow-up request) the 5 configurable form-header cells now authored via `@HEADER-*` in `main.pcob` instead of hardcoded `Props`/markup. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks`/header hrefs including the cross-file `{{link:top}}GOBACK{{/link}}`). Sebastian's visual pass still outstanding (no dev server per this project's testing-scope rule). 6.5 (embed tag) stays deferred, scoped separately. |
