@@ -598,14 +598,14 @@ p {
 /* ── IMPRESSUM OVERLAY ──────────────────────────────────────────────────────── */
 /* Sizing is this fragment's own responsibility now (embedded/impressum.html, referenced via
    {{embed:embedded/impressum.html}} in impressum.pcob) - position/viewport-placement comes
-   from the generic .pcf-embed wrapper above, not from this element itself. Width is an
-   explicit, author-chosen approximation of the old measured box, not pixel-matched to it;
-   height is intrinsic to content. */
+   from the generic .pcf-embed wrapper above, not from this element itself. Width/height are
+   an explicit, author-chosen size (tuned by Sebastian), not pixel-matched to the old measured
+   box; overflow: hidden below clips content if it doesn't fit rather than growing the box.*/
 .impressum-overlay {
     position: relative;
-    width: 640px;
+    width: 580px;
     max-width: 90vw;
-    height: auto;
+    height: 375px;
     overflow: hidden;
     background: rgba(245, 237, 212, 0.15);
     backdrop-filter: blur(2px);
