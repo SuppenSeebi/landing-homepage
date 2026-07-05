@@ -428,7 +428,7 @@ type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment
 type Token = [TT, string];
 type Line  = [string, Token[]];
 
-const COLS = 80;
+const COLS = 74;
 const CLS: Record<TT, string> = {
     div: 'pcc-div', section: 'pcc-section', para: 'pcc-para', lvl: 'pcc-lvl',
     name: 'pcc-name', kw: 'pcc-kw', val: 'pcc-val', numval: 'pcc-numval',
