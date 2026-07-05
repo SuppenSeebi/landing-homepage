@@ -162,6 +162,9 @@ p {
         radial-gradient(ellipse 40% 35% at 60% 50%, rgba(195,155,55,0.06) 0%, transparent 45%),
         linear-gradient(170deg, rgba(255,250,225,0.22) 0%, transparent 30%);
     border: 1.5px solid #C2A840;
+    border-left: 3px solid rgba(194,168,64,0.45);
+    border-right: 3px solid rgba(194,168,64,0.45);
+    padding-right: 5px;
     clip-path: polygon(22px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 22px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.14),
                 inset 0 0 80px rgba(139,90,20,0.07);
