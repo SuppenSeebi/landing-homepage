@@ -18,6 +18,20 @@
      {{link:links}}EXIT PARAGRAPH{{/link}}
      .
 
+@CARD INTERNAL-PRGRPH
+@VISIBILITY INTERNAL
+ PROCEDURE DIVISION.
+ LINKS SECTION.
+
+ INTERNAL-PRGRPH.
+* Arbitrary test text — should only appear in the internal build
+     CALL 'THIS ONLY SHOWS ON LAN'
+     .
+
+* GOBACK TO PROCEDURE DIVISION LINKS SECTION
+     {{link:links}}EXIT PARAGRAPH{{/link}}
+     .
+
 @CARD INFRA-PRGRPH
 @VISIBILITY INTERNAL
  PROCEDURE DIVISION.
