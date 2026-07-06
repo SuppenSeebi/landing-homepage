@@ -50,6 +50,31 @@ cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
     ErrorLog ${APACHE_LOG_DIR}/error-internal.log
     CustomLog ${APACHE_LOG_DIR}/access-internal.log combined
 </VirtualHost>
+
+# lan.sschw.dev — a real public DNS record (Namecheap) pointing straight at this
+# box's LAN IP, only resolvable by clients whose resolver has it allow-listed
+# past DNS-rebind protection (Fritz!Box: Heimnetz > Netzwerk > Netzwerkeinstellungen
+# > DNS-Rebind-Schutz). Name-based vhost, so it must come AFTER the unnamed :80
+# vhost above (Apache's default-vhost-is-first-listed rule) — any request whose
+# Host header doesn't match "lan.sschw.dev" exactly (raw IP, guest devices that
+# somehow got this far, everything else) falls through to the public dist/ vhost
+# above, not this one. The actual security boundary is the LAN's own guest-network
+# isolation blocking guest devices from reaching this private IP at all — this
+# vhost match alone doesn't gate anything.
+<VirtualHost *:80>
+    ServerName lan.sschw.dev
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html/dist-internal
+
+    <Directory /var/www/html/dist-internal>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error-lan.log
+    CustomLog ${APACHE_LOG_DIR}/access-lan.log combined
+</VirtualHost>
 APACHECONF
 
 a2dissite 000-default.conf 2>/dev/null || true
@@ -60,7 +85,8 @@ apache2ctl graceful 2>/dev/null || service apache2 reload 2>/dev/null || apachec
 
 echo ""
 echo "==> Setup complete. Apache now serves:"
-echo "      :80   -> /var/www/html/dist            (public build)"
-echo "      :8081 -> /var/www/html/dist-internal    (LAN-only build, includes @VISIBILITY INTERNAL content)"
-echo "    Don't forget to add the LAN check block in Nginx Proxy Manager (see README) —"
-echo "    route LAN-source requests to :8081, everyone else to :80."
+echo "      :80   (default)          -> /var/www/html/dist            (public build)"
+echo "      :80   (Host: lan.sschw.dev) -> /var/www/html/dist-internal (LAN-only build)"
+echo "      :8081                    -> /var/www/html/dist-internal    (LAN-only build, direct-port access)"
+echo "    lan.sschw.dev needs: a Namecheap A record -> this box's LAN IP, and a"
+echo "    Fritz!Box DNS-Rebind-Schutz exception for that hostname. See README."

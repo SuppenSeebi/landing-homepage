@@ -43,13 +43,39 @@ All commands are run from the root of the project, from a terminal:
 Runs via Apache in a Docker container — see `setup.sh` (first-time) / `update_site.sh` (updates).
 Each deploy builds two variants:
 
-- `pnpm build` → `dist/` — public site, served on :80.
+- `pnpm build` → `dist/` — public site, served on :80 (default vhost) and via Nginx Proxy Manager
+  for `sschw.dev`.
 - `pnpm build:internal` → `dist-internal/` — same content plus anything a `.pcob` file marks
   `@VISIBILITY INTERNAL` (see `docs/pcob-reference.md`'s "Internal-only content" section), served
-  on :8081.
+  two ways: directly on `:8081`, and on `:80` for requests whose `Host` header is
+  `lan.sschw.dev`.
 
-Nginx Proxy Manager, in front of this container, is responsible for routing LAN-source requests
-to :8081 and everyone else to :80 — that routing rule lives in NPM's own config, not this repo.
+### LAN-only access (`lan.sschw.dev`)
+
+Reaching internal content over the public `sschw.dev` domain doesn't work — NAT hairpinning makes
+LAN and guest-WiFi traffic indistinguishable by source IP once it round-trips through the router
+(this was tried and abandoned; see git history / conversation logs for why). Instead:
+
+1. **Namecheap** (DNS provider for `sschw.dev`) has a plain `A` record: host `lan`, value = this
+   box's LAN IP (`192.168.178.56` as of writing). This is separate from the DynamicDNS-managed
+   root record — it never changes automatically, so if the box's LAN IP changes, update this
+   record by hand.
+2. **Fritz!Box** has `lan.sschw.dev` allow-listed under DNS-Rebind-Schutz (Heimnetz > Netzwerk >
+   Netzwerkeinstellungen > Weitere Einstellungen, needs Expertenmodus) — without this, the router
+   blocks the DNS answer on sight, since "public domain name resolving to a private IP" is exactly
+   what rebind protection exists to stop.
+3. Apache's `sschw-landing.conf` has a third, name-based `<VirtualHost *:80>` matching
+   `ServerName lan.sschw.dev`, serving `dist-internal/` — so LAN devices just browse
+   `http://lan.sschw.dev`, no port number to remember.
+
+The actual security boundary is **guest-network isolation** (a router-level firewall rule
+blocking guest WiFi from reaching any other LAN device) — not the DNS setup itself. Every device
+on the Fritz!Box's network resolves `lan.sschw.dev` to the same private IP, guest WiFi included;
+what stops guest devices from actually seeing internal content is that they can't route to that
+IP at all. Confirm guest isolation is enabled if you rely on this.
+
+No TLS on this path — `lan.sschw.dev` is `http://` only (Apache has no certificate for it). Fine
+for a LAN-only convenience URL, not meant to be internet-facing.
 
 ## 👀 Want to learn more?
 
