@@ -47,8 +47,8 @@ Each deploy builds two variants:
   for `sschw.dev`.
 - `pnpm build:internal` → `dist-internal/` — same content plus anything a `.pcob` file marks
   `@VISIBILITY INTERNAL` (see `docs/pcob-reference.md`'s "Internal-only content" section), served
-  two ways: directly on `:8081`, and on `:80` for requests whose `Host` header is
-  `lan.sschw.dev`.
+  three ways: directly on `:8081`, and on `:80`/`:443` for requests whose `Host` header is
+  `lan.sschw.dev` (see below — `:443` is the one that actually works in a browser).
 
 ### LAN-only access (`lan.sschw.dev`)
 
@@ -64,9 +64,8 @@ LAN and guest-WiFi traffic indistinguishable by source IP once it round-trips th
    Netzwerkeinstellungen > Weitere Einstellungen, needs Expertenmodus) — without this, the router
    blocks the DNS answer on sight, since "public domain name resolving to a private IP" is exactly
    what rebind protection exists to stop.
-3. Apache's `sschw-landing.conf` has a third, name-based `<VirtualHost *:80>` matching
-   `ServerName lan.sschw.dev`, serving `dist-internal/` — so LAN devices just browse
-   `http://lan.sschw.dev`, no port number to remember.
+3. Apache's `sschw-landing.conf` has name-based vhosts for `ServerName lan.sschw.dev` on both
+   `:80` and `:443` — so LAN devices just browse `lan.sschw.dev`, no port number to remember.
 
 The actual security boundary is **guest-network isolation** (a router-level firewall rule
 blocking guest WiFi from reaching any other LAN device) — not the DNS setup itself. Every device
@@ -74,8 +73,20 @@ on the Fritz!Box's network resolves `lan.sschw.dev` to the same private IP, gues
 what stops guest devices from actually seeing internal content is that they can't route to that
 IP at all. Confirm guest isolation is enabled if you rely on this.
 
-No TLS on this path — `lan.sschw.dev` is `http://` only (Apache has no certificate for it). Fine
-for a LAN-only convenience URL, not meant to be internet-facing.
+**Must use `https://`, not `http://`.** Every major browser hardcodes "the entire `.dev` TLD
+requires HTTPS" (it's on Chrome's static HSTS preload list — confirmed via
+`chrome://net-internals/#hsts`: `static_sts_domain: dev`, `dynamic_sts_domain` empty). This isn't
+a header `sschw.dev`'s server ever sent and can't be turned off from the server side at all — it's
+compiled into the browser, independent of any config here. So the `:80` vhost is effectively
+dead for real browsers (kept only for non-browser HTTP clients like `curl`); `setup.sh` generates
+a **self-signed certificate** (`/etc/apache2/ssl-lan/lan-sschw-dev.crt`, 10-year validity) so `:443`
+has something to terminate TLS with. Since the preload rule only requires HTTPS, not a
+CA-trusted chain, this is enough to make the page load — browsers will show an untrusted-certificate
+warning until that cert is imported into a device's trust store (Windows: `certmgr.msc` →
+Trusted Root Certification Authorities → Import; similar per-OS elsewhere). A real DNS-01
+Let's Encrypt cert was considered and rejected as disproportionate effort for a LAN-only
+convenience URL (Namecheap has no official certbot DNS-01 plugin, and HTTP-01 can't work since
+Let's Encrypt's validators can't reach a private IP).
 
 ## 👀 Want to learn more?
 

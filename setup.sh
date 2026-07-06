@@ -22,6 +22,23 @@ npm run build:internal
 echo "==> Configuring Apache to serve dist/ on :80 and dist-internal/ on :8081..."
 grep -qx 'Listen 8081' /etc/apache2/ports.conf || echo 'Listen 8081' >> /etc/apache2/ports.conf
 
+echo "==> Generating self-signed cert for lan.sschw.dev (idempotent)..."
+# Every browser hardcodes "*.dev must be HTTPS" (the whole .dev TLD is on the
+# static HSTS preload list — this is not a header sschw.dev's server ever sent,
+# it's compiled into the browser and cannot be disabled from the server side).
+# So lan.sschw.dev needs *some* cert to be reachable at all — self-signed is
+# enough, since the preload rule only requires HTTPS, not a CA-trusted chain.
+# Browsers will show an untrusted-cert warning until this cert (or a CA you
+# make it with) is imported into each device's trust store — see README.
+mkdir -p /etc/apache2/ssl-lan
+if [ ! -f /etc/apache2/ssl-lan/lan-sschw-dev.crt ]; then
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout /etc/apache2/ssl-lan/lan-sschw-dev.key \
+        -out /etc/apache2/ssl-lan/lan-sschw-dev.crt \
+        -subj "/CN=lan.sschw.dev" \
+        -addext "subjectAltName=DNS:lan.sschw.dev"
+fi
+
 cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
@@ -54,13 +71,20 @@ cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
 # lan.sschw.dev — a real public DNS record (Namecheap) pointing straight at this
 # box's LAN IP, only resolvable by clients whose resolver has it allow-listed
 # past DNS-rebind protection (Fritz!Box: Heimnetz > Netzwerk > Netzwerkeinstellungen
-# > DNS-Rebind-Schutz). Name-based vhost, so it must come AFTER the unnamed :80
+# > DNS-Rebind-Schutz). Name-based vhosts, so they must come AFTER the unnamed :80
 # vhost above (Apache's default-vhost-is-first-listed rule) — any request whose
 # Host header doesn't match "lan.sschw.dev" exactly (raw IP, guest devices that
 # somehow got this far, everything else) falls through to the public dist/ vhost
 # above, not this one. The actual security boundary is the LAN's own guest-network
 # isolation blocking guest devices from reaching this private IP at all — this
 # vhost match alone doesn't gate anything.
+#
+# The :80 block below is effectively unreachable from any real browser — every
+# browser hardcodes "*.dev requires HTTPS" (HSTS static preload for the whole
+# .dev TLD, not something this server controls) and force-upgrades before the
+# request is even sent. It's kept only for non-browser HTTP clients (curl etc).
+# The :443 block is the one that actually works in a browser, using the
+# self-signed cert generated above.
 <VirtualHost *:80>
     ServerName lan.sschw.dev
     ServerAdmin webmaster@localhost
@@ -75,18 +99,41 @@ cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
     ErrorLog ${APACHE_LOG_DIR}/error-lan.log
     CustomLog ${APACHE_LOG_DIR}/access-lan.log combined
 </VirtualHost>
+
+<VirtualHost *:443>
+    ServerName lan.sschw.dev
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html/dist-internal
+
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/ssl-lan/lan-sschw-dev.crt
+    SSLCertificateKeyFile /etc/apache2/ssl-lan/lan-sschw-dev.key
+
+    <Directory /var/www/html/dist-internal>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error-lan-ssl.log
+    CustomLog ${APACHE_LOG_DIR}/access-lan-ssl.log combined
+</VirtualHost>
 APACHECONF
 
 a2dissite 000-default.conf 2>/dev/null || true
 a2ensite sschw-landing.conf
 a2enmod rewrite
+a2enmod ssl
 
-apache2ctl graceful 2>/dev/null || service apache2 reload 2>/dev/null || apachectl graceful 2>/dev/null || true
+# A full restart, not graceful/reload — newly a2enmod'd modules (mod_ssl) only
+# actually load into the master process on restart, not on a reload signal.
+systemctl restart apache2 2>/dev/null || apache2ctl graceful 2>/dev/null || service apache2 reload 2>/dev/null || apachectl graceful 2>/dev/null || true
 
 echo ""
 echo "==> Setup complete. Apache now serves:"
-echo "      :80   (default)          -> /var/www/html/dist            (public build)"
-echo "      :80   (Host: lan.sschw.dev) -> /var/www/html/dist-internal (LAN-only build)"
-echo "      :8081                    -> /var/www/html/dist-internal    (LAN-only build, direct-port access)"
+echo "      :80   (default)             -> /var/www/html/dist            (public build)"
+echo "      :80   (Host: lan.sschw.dev)  -> /var/www/html/dist-internal   (unreachable from browsers, see README)"
+echo "      :443  (Host: lan.sschw.dev)  -> /var/www/html/dist-internal   (self-signed cert — use this one)"
+echo "      :8081                       -> /var/www/html/dist-internal    (LAN-only build, direct-port access)"
 echo "    lan.sschw.dev needs: a Namecheap A record -> this box's LAN IP, and a"
 echo "    Fritz!Box DNS-Rebind-Schutz exception for that hostname. See README."
