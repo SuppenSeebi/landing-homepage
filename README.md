@@ -77,16 +77,32 @@ IP at all. Confirm guest isolation is enabled if you rely on this.
 requires HTTPS" (it's on Chrome's static HSTS preload list — confirmed via
 `chrome://net-internals/#hsts`: `static_sts_domain: dev`, `dynamic_sts_domain` empty). This isn't
 a header `sschw.dev`'s server ever sent and can't be turned off from the server side at all — it's
-compiled into the browser, independent of any config here. So the `:80` vhost is effectively
-dead for real browsers (kept only for non-browser HTTP clients like `curl`); `setup.sh` generates
-a **self-signed certificate** (`/etc/apache2/ssl-lan/lan-sschw-dev.crt`, 10-year validity) so `:443`
-has something to terminate TLS with. Since the preload rule only requires HTTPS, not a
-CA-trusted chain, this is enough to make the page load — browsers will show an untrusted-certificate
-warning until that cert is imported into a device's trust store (Windows: `certmgr.msc` →
-Trusted Root Certification Authorities → Import; similar per-OS elsewhere). A real DNS-01
-Let's Encrypt cert was considered and rejected as disproportionate effort for a LAN-only
-convenience URL (Namecheap has no official certbot DNS-01 plugin, and HTTP-01 can't work since
-Let's Encrypt's validators can't reach a private IP).
+compiled into the browser, independent of any config here. So the `:80` vhost is effectively dead
+for real browsers (kept only for non-browser HTTP clients like `curl`).
+
+**The cert must be genuinely trusted, not just present.** A self-signed cert was tried first, but
+Chrome refuses to even offer an "Advanced → Proceed anyway" bypass on HSTS-enforced domains (the
+whole point of HSTS is blocking exactly this kind of override) — so an untrusted cert isn't a
+"warning you click through" here, it's a hard wall with no escape hatch. A real cert is required.
+
+Let's Encrypt's usual HTTP-01 challenge can't work either — their validation servers can't reach
+`lan.sschw.dev`'s private IP. The fix is a **manual DNS-01 challenge**:
+```
+certbot certonly --manual --preferred-challenges dns -d lan.sschw.dev
+```
+This pauses and asks you to add a `TXT` record (`_acme-challenge.lan.sschw.dev`) via Namecheap's
+Advanced DNS with a value it gives you; once deployed, press Enter and it issues the cert to
+`/etc/letsencrypt/live/lan.sschw.dev/`. `setup.sh` prefers this cert automatically if present,
+falling back to generating a self-signed one (which still needs manual per-device trust-store
+import to be usable at all, given the above) only if it isn't.
+
+**This does not auto-renew.** `--manual` mode has no renewal hook, so certbot won't touch this
+cert again on its own — repeat the exact command above (and the TXT-record step) before the
+cert's expiry, or `lan.sschw.dev` goes back to being unusable in any real browser. Check the
+expiry with `certbot certificates` if unsure. An automated Namecheap-API-based DNS-01 setup was
+considered and rejected — it would need Namecheap API access IP-whitelisted to this box's public
+IP, which is dynamic (the same moving-target problem that broke the earlier nginx-based
+IP-detection attempt for this same feature).
 
 ## 👀 Want to learn more?
 

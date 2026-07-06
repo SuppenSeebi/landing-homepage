@@ -22,21 +22,34 @@ npm run build:internal
 echo "==> Configuring Apache to serve dist/ on :80 and dist-internal/ on :8081..."
 grep -qx 'Listen 8081' /etc/apache2/ports.conf || echo 'Listen 8081' >> /etc/apache2/ports.conf
 
-echo "==> Generating self-signed cert for lan.sschw.dev (idempotent)..."
 # Every browser hardcodes "*.dev must be HTTPS" (the whole .dev TLD is on the
 # static HSTS preload list — this is not a header sschw.dev's server ever sent,
 # it's compiled into the browser and cannot be disabled from the server side).
-# So lan.sschw.dev needs *some* cert to be reachable at all — self-signed is
-# enough, since the preload rule only requires HTTPS, not a CA-trusted chain.
-# Browsers will show an untrusted-cert warning until this cert (or a CA you
-# make it with) is imported into each device's trust store — see README.
-mkdir -p /etc/apache2/ssl-lan
-if [ ! -f /etc/apache2/ssl-lan/lan-sschw-dev.crt ]; then
-    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-        -keyout /etc/apache2/ssl-lan/lan-sschw-dev.key \
-        -out /etc/apache2/ssl-lan/lan-sschw-dev.crt \
-        -subj "/CN=lan.sschw.dev" \
-        -addext "subjectAltName=DNS:lan.sschw.dev"
+# So lan.sschw.dev needs *some* cert to be reachable at all. Prefer a real
+# Let's Encrypt cert (via manual DNS-01 — see README; HTTP-01 can't work since
+# Let's Encrypt's validators can't reach a private IP) if one's already been
+# issued; fall back to a self-signed cert (works, but needs importing into
+# every device's trust store) if not, so a from-scratch setup.sh run still
+# produces a working :443 vhost without requiring the interactive DNS-01 dance.
+if [ -f /etc/letsencrypt/live/lan.sschw.dev/fullchain.pem ]; then
+    echo "==> Using existing Let's Encrypt cert for lan.sschw.dev"
+    LAN_CERT=/etc/letsencrypt/live/lan.sschw.dev/fullchain.pem
+    LAN_KEY=/etc/letsencrypt/live/lan.sschw.dev/privkey.pem
+else
+    echo "==> No Let's Encrypt cert for lan.sschw.dev yet — generating a self-signed fallback"
+    mkdir -p /etc/apache2/ssl-lan
+    if [ ! -f /etc/apache2/ssl-lan/lan-sschw-dev.crt ]; then
+        openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+            -keyout /etc/apache2/ssl-lan/lan-sschw-dev.key \
+            -out /etc/apache2/ssl-lan/lan-sschw-dev.crt \
+            -subj "/CN=lan.sschw.dev" \
+            -addext "subjectAltName=DNS:lan.sschw.dev"
+    fi
+    LAN_CERT=/etc/apache2/ssl-lan/lan-sschw-dev.crt
+    LAN_KEY=/etc/apache2/ssl-lan/lan-sschw-dev.key
+    echo "    For a real, browser-trusted cert (no per-device import needed), run:"
+    echo "    certbot certonly --manual --preferred-challenges dns -d lan.sschw.dev"
+    echo "    (see README's LAN-only access section), then re-run this script."
 fi
 
 cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
@@ -83,8 +96,10 @@ cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
 # browser hardcodes "*.dev requires HTTPS" (HSTS static preload for the whole
 # .dev TLD, not something this server controls) and force-upgrades before the
 # request is even sent. It's kept only for non-browser HTTP clients (curl etc).
-# The :443 block is the one that actually works in a browser, using the
-# self-signed cert generated above.
+# The :443 block is the one that actually works in a browser, using whichever
+# cert was selected above (__LAN_CERT__/__LAN_KEY__ placeholders, substituted
+# after the heredoc — the heredoc itself must stay quoted so Apache's own
+# ${APACHE_LOG_DIR} references below aren't mistaken for bash variables).
 <VirtualHost *:80>
     ServerName lan.sschw.dev
     ServerAdmin webmaster@localhost
@@ -106,8 +121,8 @@ cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
     DocumentRoot /var/www/html/dist-internal
 
     SSLEngine on
-    SSLCertificateFile /etc/apache2/ssl-lan/lan-sschw-dev.crt
-    SSLCertificateKeyFile /etc/apache2/ssl-lan/lan-sschw-dev.key
+    SSLCertificateFile __LAN_CERT__
+    SSLCertificateKeyFile __LAN_KEY__
 
     <Directory /var/www/html/dist-internal>
         Options -Indexes +FollowSymLinks
@@ -119,6 +134,8 @@ cat > /etc/apache2/sites-available/sschw-landing.conf << 'APACHECONF'
     CustomLog ${APACHE_LOG_DIR}/access-lan-ssl.log combined
 </VirtualHost>
 APACHECONF
+
+sed -i "s#__LAN_CERT__#$LAN_CERT#; s#__LAN_KEY__#$LAN_KEY#" /etc/apache2/sites-available/sschw-landing.conf
 
 a2dissite 000-default.conf 2>/dev/null || true
 a2ensite sschw-landing.conf
@@ -133,7 +150,7 @@ echo ""
 echo "==> Setup complete. Apache now serves:"
 echo "      :80   (default)             -> /var/www/html/dist            (public build)"
 echo "      :80   (Host: lan.sschw.dev)  -> /var/www/html/dist-internal   (unreachable from browsers, see README)"
-echo "      :443  (Host: lan.sschw.dev)  -> /var/www/html/dist-internal   (self-signed cert — use this one)"
+echo "      :443  (Host: lan.sschw.dev)  -> /var/www/html/dist-internal   (cert: $LAN_CERT)"
 echo "      :8081                       -> /var/www/html/dist-internal    (LAN-only build, direct-port access)"
 echo "    lan.sschw.dev needs: a Namecheap A record -> this box's LAN IP, and a"
 echo "    Fritz!Box DNS-Rebind-Schutz exception for that hostname. See README."
