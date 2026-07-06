@@ -32,22 +32,6 @@
      {{link:links}}EXIT PARAGRAPH{{/link}}
      .
 
-@CARD INFRA-PRGRPH
-@VISIBILITY INTERNAL
- PROCEDURE DIVISION.
- LINKS SECTION.
-
- INFRA-PRGRPH.
-* Directory management (LAN only)
-     CALL 'LLDAP'
-* Password manager (LAN only)
-     CALL 'BITWARDEN' Testicom
-     .
-
-* GOBACK TO PROCEDURE DIVISION LINKS SECTION
-     {{link:links}}EXIT PARAGRAPH{{/link}}
-     .
-
 @CARD SOCIALS-PRGRPH
 @ROWS 12
  PROCEDURE DIVISION.
