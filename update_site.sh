@@ -11,7 +11,8 @@ git pull origin main
 echo "==> Installing any new dependencies..."
 npm install
 
-echo "==> Rebuilding site..."
+echo "==> Rebuilding site (public + LAN-only variants)..."
 npm run build
+npm run build:internal
 
 echo "==> Done. Site updated."

@@ -617,6 +617,56 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
   itself travels through `compileProgram()`'s output as data — see "Open / not yet decided" in
   `docs/pcob-reference.md`.
 
+### Phase 7 — LAN-only visibility gating (`@VISIBILITY`, requested 2026-07-06, done same day)
+
+Sebastian wants some content (Bitwarden, nginx admin, Proxmox — internal infra links) visible
+only to LAN visitors, never shipped to the public internet at all. Discussed three options
+(visual-only toggle via a server-set cookie/header, a client-side LAN-reachability probe, or
+building genuinely different HTML per audience); picked the last — visually hiding
+already-downloaded HTML isn't real access control, since view-source still leaks it. The chosen
+architecture: the compiler can exclude marked content entirely, and the site is built twice.
+
+- **`@VISIBILITY PUBLIC | INTERNAL`** — new directive, same scoping/precedence rule as `@ROWS`
+  (Card > Section > Division > program default; settable before any `@DIVISION`, right after a
+  `@SECTION`, or inside a `@CARD`), default `PUBLIC` when never set. `src/pcob/parseSource.ts`
+  gained `visibilityOverride`/`defaultVisibility` fields alongside the existing `rowsOverride`
+  ones, plus a `pushDownVisibility` mirroring `pushDownRows` (same reason: an imported file's own
+  division/program-level default must resolve against *that file's* sections before its
+  divisions get merged into a shared per-id bucket).
+- **`compileRawProgram(program, resolveEmbedFile, { includeInternal })`** (`src/pcob/compile.ts`)
+  — new `CompileOptions`, defaulting `includeInternal` to `false` (the safe default: forgetting
+  to pass it produces the public build, never an accidental leak). Cards are filtered by
+  resolved visibility *before* anchor registration and before nav/section derivation — an
+  excluded card contributes no `Line[]`, no `{{anchor}}`, no `parasBySection` entry, nothing. A
+  section whose every card gets excluded is dropped from `sections`/`divisionMap`/`sectionsByDiv`
+  entirely too, not left as an empty husk with a dangling nav tab.
+- **Two builds, not one.** `pnpm build` (public, `dist/`) and `pnpm build:internal` (LAN-only,
+  `dist-internal/`) — both via `scripts/build.mjs`, a thin Node wrapper (avoids adding a
+  `cross-env` dependency) that sets `PCF_INCLUDE_INTERNAL` and picks `--outDir`.
+  `src/pages/index.astro` reads `process.env.PCF_INCLUDE_INTERNAL` directly (not
+  `import.meta.env` — irrelevant here since this only ever runs in frontmatter at build time, no
+  client bundle involved) and passes it to `loadMainProgram(includeInternal)`.
+- **Where the actual gating happens: outside this repo.** Real deployment is Apache-in-Docker
+  (`setup.sh`/`update_site.sh`) fronted by Nginx Proxy Manager. `setup.sh` now builds both
+  variants and runs two Apache vhosts, `:80` → `dist/`, `:8081` → `dist-internal/`; routing
+  LAN-source requests to `:8081` and everyone else to `:80` is an NPM-side config decision
+  (documented at a conceptual level in `README.md`'s new Deployment section) — this repo's job
+  stops at producing two genuinely different HTML outputs to route between.
+- **Card-level granularity only, on purpose — no line-level `{{tag}}`.** Real content already
+  existed anticipating this (`links.pcob`'s `SERVICES-PRGRPH` card had LLDAP/BITWARDEN `CALL`
+  lines inline, commented `(LAN only)`, alongside a public KB link). A line-level
+  `{{internal}}...{{/internal}}` tag was considered — more flexible, lets internal/public lines
+  mix freely within one card — but rejected in favor of moving those lines into their own card
+  (`INFRA-PRGRPH`, `@VISIBILITY INTERNAL`, same `LINKS` section). Reuses the one mechanism
+  already built and verified rather than adding tokenizer-level complexity for a case content
+  restructuring already solves — same "keep the tag set minimal and request-driven" call this
+  doc's Risks section already made for embeds.
+- **Verified**: built both variants end-to-end (`PCF_INCLUDE_INTERNAL=false|true`, real
+  `astro build`, not just unit-level reasoning) and grepped the compiled HTML —public build's
+  `LINKS` nav has exactly `SERVICES-PRGRPH`/`SOCIALS-PRGRPH` (`cardIdx` 0/1), no `LLDAP`/
+  `BITWARDEN`/`INFRA-PRGRPH` anywhere in the output; internal build has all three cards
+  (`cardIdx` 0/1/2) and both LAN-only `CALL`s present.
+
 ---
 
 ## Quick status snapshot
@@ -630,3 +680,4 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
 | 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site, still outstanding. `punch-nav.ts` consolidation deliberately deferred, not yet scheduled. |
 | 5 — Animation tags | Deferred |
 | 6 — Shared program + generic rendering | **All of 6.1–6.6 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island, the 5 configurable form-header cells authored via `@HEADER-*` in `main.pcob` (6.6), and `{{embed:path}}` (6.5) — a zero-width pin, not a row-reserving slot — replacing Impressum's `positionImpressumOverlay()` JS-measurement hack entirely, which also let Impressum stop being `PunchSection`'s one hardcoded exception. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks`/header hrefs including the cross-file `{{link:top}}GOBACK{{/link}}`, and the Impressum card's `data-embeds` JSON resolving to the real German legal text with correct row/col/corner/section/cardIdx). Sebastian's visual pass still outstanding (no dev server per this project's testing-scope rule) — now covers 6.5/6.6 too, not just 6.1–6.4. |
+| 7 — LAN-only visibility gating | **Done** (2026-07-06): `@VISIBILITY PUBLIC \| INTERNAL` directive, `compileRawProgram`'s `includeInternal` option, two builds (`pnpm build` → `dist/`, `pnpm build:internal` → `dist-internal/`), `setup.sh`/`update_site.sh` updated to build+serve both (Apache `:80`/`:8081`) — NPM-side LAN routing itself is outside this repo. `links.pcob`'s LLDAP/BITWARDEN entries moved into a new `@VISIBILITY INTERNAL` card (`INFRA-PRGRPH`). Verified end-to-end against real `astro build` output, not just reasoning. |

@@ -1,5 +1,6 @@
-# dist/ is built on the server by setup.sh — do not commit it
+# dist/ and dist-internal/ are built on the server by setup.sh — do not commit them
 dist/
+dist-internal/
 
 # generated types
 .astro/

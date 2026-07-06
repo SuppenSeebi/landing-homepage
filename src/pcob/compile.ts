@@ -23,11 +23,21 @@ import {
 } from './parseSource';
 import {
     type CompiledCard, type CompiledHeader, type CompiledProgram, type CompiledSection, type HeaderCell,
-    type Line, PcobError,
+    type Line, PcobError, type Visibility,
 } from './types';
 
 // This module walks a fully-resolved RawProgram tree (any @IMPORTs already merged in by
 // parseSource) - it doesn't know or care whether that tree came from one file or several.
+
+export interface CompileOptions {
+    /** Whether @VISIBILITY internal cards/sections are compiled in at all. Defaults to false —
+     * the safe default is the public build, so a caller that forgets this option never leaks
+     * internal-only content. Excluded cards/sections don't just render hidden, they're absent
+     * from the compiled program entirely (no lines, no anchors, no nav entries) — see
+     * docs/punch-card-content-system.md's Phase 7 for why this has to happen at compile time,
+     * not in CSS/JS. */
+    includeInternal?: boolean;
+}
 
 interface AnchorEntry {
     sectionId: string;
@@ -35,7 +45,29 @@ interface AnchorEntry {
     lineNo: number;
 }
 
-function buildAnchorRegistry(program: RawProgram): Map<string, AnchorEntry> {
+/** Card > Section > Division > program-default precedence, same shape as resolveRows below. */
+function resolveVisibility(card: RawCard, section: RawSection, division: RawDivision, program: RawProgram): Visibility {
+    return card.visibilityOverride ?? section.visibilityOverride ?? division.visibilityOverride ?? program.defaultVisibility ?? 'public';
+}
+
+/** Per-section list of cards that survive this compile's visibility filter, in file order.
+ * A section with zero surviving cards is dropped entirely further down (sections, divisionMap,
+ * sectionsByDiv, parasBySection, anchor registry all key off this same map, so "fully internal
+ * section" and "individually internal card" both fall out of one filtering pass). */
+function filterVisibleCards(program: RawProgram, includeInternal: boolean): Map<RawSection, RawCard[]> {
+    const bySection = new Map<RawSection, RawCard[]>();
+    for (const division of program.divisions) {
+        for (const section of division.sections) {
+            const kept = section.cards.filter(
+                card => includeInternal || resolveVisibility(card, section, division, program) === 'public',
+            );
+            bySection.set(section, kept);
+        }
+    }
+    return bySection;
+}
+
+function buildAnchorRegistry(program: RawProgram, sectionCards: Map<RawSection, RawCard[]>): Map<string, AnchorEntry> {
     const registry = new Map<string, AnchorEntry>();
     const declare = (name: string, sectionId: string, kind: AnchorEntry['kind'], lineNo: number) => {
         const existing = registry.get(name);
@@ -50,8 +82,10 @@ function buildAnchorRegistry(program: RawProgram): Map<string, AnchorEntry> {
 
     for (const division of program.divisions) {
         for (const section of division.sections) {
+            const cards = sectionCards.get(section) ?? [];
+            if (cards.length === 0) continue;
             declare(section.id, section.id, 'section', section.lineNo);
-            for (const card of section.cards) {
+            for (const card of cards) {
                 for (const bodyLine of card.body) {
                     if (!bodyLine.raw) continue;
                     const { spans } = extractTags(bodyLine.raw, bodyLine.lineNo);
@@ -164,8 +198,13 @@ function compileCard(
     return { name: card.name, lines: seqedLines, callLinks, embeds };
 }
 
-export function compileRawProgram(program: RawProgram, resolveEmbedFile: (path: string) => string | undefined): CompiledProgram {
-    const registry = buildAnchorRegistry(program);
+export function compileRawProgram(
+    program: RawProgram,
+    resolveEmbedFile: (path: string) => string | undefined,
+    options: CompileOptions = {},
+): CompiledProgram {
+    const sectionCards = filterVisibleCards(program, options.includeInternal ?? false);
+    const registry = buildAnchorRegistry(program, sectionCards);
     const anchors = makeAnchorRegistry(registry);
     const embedResolver = makeEmbedResolver(resolveEmbedFile);
     const header = resolveHeader(program, anchors);
@@ -177,16 +216,19 @@ export function compileRawProgram(program: RawProgram, resolveEmbedFile: (path: 
 
     for (const division of program.divisions) {
         for (const section of division.sections) {
+            const cards = sectionCards.get(section) ?? [];
+            if (cards.length === 0) continue; // fully @VISIBILITY internal, this compile excludes it
+
             divisionMap[division.id].push(section.id);
             sectionsByDiv[division.id].push({ label: `${section.name} SECTION`, href: `#${section.id}` });
-            parasBySection[section.id] = section.cards.map((card, cardIdx) => ({
+            parasBySection[section.id] = cards.map((card, cardIdx) => ({
                 label: card.name,
                 href: `#${section.id}`,
                 cardIdx,
             }));
 
-            const cards = section.cards.map((card, cardIdx) => compileCard(card, section, division, program, anchors, embedResolver, cardIdx));
-            sections.push({ id: section.id, name: section.name, division: division.id, cards });
+            const compiledCards = cards.map((card, cardIdx) => compileCard(card, section, division, program, anchors, embedResolver, cardIdx));
+            sections.push({ id: section.id, name: section.name, division: division.id, cards: compiledCards });
         }
     }
 
@@ -199,6 +241,10 @@ export function compileRawProgram(program: RawProgram, resolveEmbedFile: (path: 
  * src/pcob/loadProgram.ts's loadMainProgram() instead, which resolves @IMPORT before calling
  * compileRawProgram directly. `resolveEmbedFile` defaults to "nothing found" - fine for
  * anything that doesn't reference {{embed}}. */
-export function compileProgram(source: string, resolveEmbedFile: (path: string) => string | undefined = () => undefined): CompiledProgram {
-    return compileRawProgram(parseSource(source), resolveEmbedFile);
+export function compileProgram(
+    source: string,
+    resolveEmbedFile: (path: string) => string | undefined = () => undefined,
+    options?: CompileOptions,
+): CompiledProgram {
+    return compileRawProgram(parseSource(source), resolveEmbedFile, options);
 }

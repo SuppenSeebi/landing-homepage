@@ -5,7 +5,11 @@ import PunchSection from '../components/sections/PunchSection.astro';
 import { loadMainProgram } from '../pcob/loadProgram';
 import '../styles/global.css';
 
-const program = loadMainProgram();
+// PCF_INCLUDE_INTERNAL is a build-time-only flag (see loadProgram.ts's loadMainProgram) —
+// unset/anything else builds the public site; "true" builds the LAN-only variant that nginx
+// serves to internal requesters (see docs/punch-card-content-system.md's Phase 7).
+const includeInternal = process.env.PCF_INCLUDE_INTERNAL === 'true';
+const program = loadMainProgram(includeInternal);
 
 const navData = JSON.stringify({
     divisionMap: program.divisionMap,

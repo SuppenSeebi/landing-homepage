@@ -12,6 +12,18 @@
  SERVICES-PRGRPH.
 * Personal wiki and notes
      CALL {{link:'https://kb.sschw.dev'}}'KB.SSCHW.DEV'{{/link}}
+     .
+
+* GOBACK TO PROCEDURE DIVISION LINKS SECTION
+     {{link:links}}EXIT PARAGRAPH{{/link}}
+     .
+
+@CARD INFRA-PRGRPH
+@VISIBILITY INTERNAL
+ PROCEDURE DIVISION.
+ LINKS SECTION.
+
+ INFRA-PRGRPH.
 * Directory management (LAN only)
      CALL 'LLDAP'
 * Password manager (LAN only)

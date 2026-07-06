@@ -7,6 +7,8 @@ export type Line = [seq: string, tokens: Token[]];
 
 export type DivisionId = 'data' | 'proc';
 
+export type Visibility = 'public' | 'internal';
+
 export class PcobError extends Error {
     constructor(message: string, public line?: number) {
         super(line !== undefined ? `${message} (line ${line})` : message);

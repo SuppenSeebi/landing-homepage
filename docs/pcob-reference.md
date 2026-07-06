@@ -39,6 +39,7 @@ for any line shape.
 | `@HEADER-LEFT-FIRST\|SECOND\|THIRD "label" "value"` | top-level "main program" only, same rule as `@IMPORT` | Authors one of the 3 left form-header cells (`PROGRAMMER`/`PROGRAM`/`CURRENT SYSTEM` today). All 3 are required — a missing one is a compile error. |
 | `@HEADER-RIGHT-FIRST\|SECOND "label" "value"` | top-level "main program" only, same rule as `@IMPORT` | Authors one of the first 2 right form-header cells (`XREF`/`IDENTIFICATION` today). Both required. `value` may contain one `{{link:...}}...{{/link}}` — if present, the whole rendered cell becomes clickable to that target; if absent, the cell renders as plain (non-linked) text. There is no `@HEADER-RIGHT-THIRD` — the 3rd right cell (`DATE - VERSION`) is computed at build time (today's date + git short-hash), not authored content, and using that combination is a compile error with a message saying so. |
 | `@ROWS N` | before any `DIVISION`; right after a `SECTION`; inside a `CARD` | Sets the row count for everything from here down until a more specific `@ROWS` overrides it. Precedence: Card > Section > program default. |
+| `@VISIBILITY PUBLIC \| INTERNAL` | before any `DIVISION`; right after a `SECTION`; inside a `CARD` | Same scoping/precedence as `@ROWS` (Card > Section > Division > program default), default `PUBLIC` if never set. `INTERNAL` cards/sections are compiled out entirely (not just hidden) unless the build passes `includeInternal: true` — see "Internal-only content" below. A section whose every card ends up excluded is dropped from the compiled program too (no dangling nav entry, no anchor). |
 | `@DIVISION DATA \| PROCEDURE` | top level | Starts a division. |
 | `@SECTION NAME attr=val ...` | inside a division | Starts a section. See attributes below. |
 | `@CARD NAME` | inside a section | Starts one card = one COBOL paragraph. `NAME` is also its nav label. |
@@ -102,6 +103,25 @@ WYSIWYG rule as everything else. The embedded HTML/CSS is free to overflow the c
 screen, entirely; sizing and layout are its own responsibility, not something `@ROWS` or any
 `.pcob` construct controls.
 
+## Internal-only content (`@VISIBILITY`)
+
+Some cards (a Bitwarden/nginx-admin/Proxmox card, say) should never reach the public internet at
+all — not "hidden by CSS," genuinely absent from the HTML a public visitor's browser receives.
+`@VISIBILITY INTERNAL` marks a card (or a whole section, or the whole program) as excluded from
+the compiled program *unless* the compile is explicitly run with `includeInternal: true`
+(`compileRawProgram`'s/`compileProgram`'s `CompileOptions`, threaded from `loadMainProgram(includeInternal)`
+in `src/pcob/loadProgram.ts`). Excluding at compile time — not at render time — means an excluded
+card contributes no lines, no anchor, no nav entry to that compile's output; there is nothing in
+the resulting HTML to view-source for.
+
+This site is built twice for exactly this reason: `pnpm build` (public, `dist/`) and `pnpm
+build:internal` (`dist-internal/`, everything `@VISIBILITY INTERNAL` included). Both read the same
+`.pcob` sources; only the `PCF_INCLUDE_INTERNAL` build-time env var (read via `process.env`, not
+`import.meta.env`, in `index.astro`'s frontmatter — this only ever runs at build time, never in a
+browser) differs. Which build a given visitor gets is an nginx decision (source-IP based),
+entirely outside this repo — the compiler's job stops at producing two genuinely different HTML
+outputs to route between.
+
 ## Open / not yet decided
 
 - DATA DIVISION boilerplate beyond what's shown (deeper field/condition patterns) gets added to
@@ -164,6 +184,13 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
 
      {{link:demo-data}}GOBACK{{/link}}
      .
+
+@CARD DEMO-INTERNAL-CARD
+@VISIBILITY INTERNAL
+@ROWS 4
+ DEMO-INTERNAL-CARD.
+     DISPLAY
+     END-DISPLAY
 ```
 
 What's exercised, in order: `@@` comment, program-level `@ROWS`, `@DIVISION DATA`, `@SECTION`
@@ -186,9 +213,13 @@ Impressum's real `{{embed:embedded/impressum.html}}`, which omits it and default
 (bare-name) `{{link}}` to the `{{anchor}}` declared earlier; a standalone `.` indented to match
 the statements above it (also typed, not automatic); a content blank line (kept, since it
 precedes card text, not a directive); `EXIT PARAGRAPH` and `EXIT SECTION`, each linking back to
-their own section by explicit name (no implicit `self`); and a final `GOBACK`, linking back across
+their own section by explicit name (no implicit `self`); a final `GOBACK`, linking back across
 divisions to the other section's anchor (`demo-data`) — same statement-row treatment as any other
-recognized verb, just a different word.
+recognized verb, just a different word; and a second card in the same section,
+`DEMO-INTERNAL-CARD`, with a card-level `@VISIBILITY INTERNAL` — compiling this file with default
+options (`compileProgram(source)`, `includeInternal` defaulting to false) produces a
+`DEMO-PROC` section with only `DEMO-CARD` in it; passing `{ includeInternal: true }` produces
+both, in file order.
 
 (Actually compiling this exact snippet needs a `resolveEmbedFile` callback that can find
 `demo-photo.html` — unlike everything else here, which compiles standalone via a bare

@@ -12,12 +12,13 @@
 // time and deliberately not part of this) - see compile.ts for how a value's {{link}} tag (if
 // any) gets resolved into an href.
 
-import { PcobError, type DivisionId } from './types';
+import { PcobError, type DivisionId, type Visibility } from './types';
 
 export interface RawCard {
     name: string;
     lineNo: number;
     rowsOverride?: number;
+    visibilityOverride?: Visibility;
     body: { raw: string; lineNo: number }[];
 }
 
@@ -25,6 +26,7 @@ export interface RawSection {
     name: string;
     id: string;
     rowsOverride?: number;
+    visibilityOverride?: Visibility;
     lineNo: number;
     cards: RawCard[];
 }
@@ -32,6 +34,7 @@ export interface RawSection {
 export interface RawDivision {
     id: DivisionId;
     rowsOverride?: number;
+    visibilityOverride?: Visibility;
     lineNo: number;
     sections: RawSection[];
 }
@@ -46,6 +49,7 @@ export type HeaderSlot = 'leftFirst' | 'leftSecond' | 'leftThird' | 'rightFirst'
 
 export interface RawProgram {
     defaultRows?: number;
+    defaultVisibility?: Visibility;
     divisions: RawDivision[];
     header: Partial<Record<HeaderSlot, RawHeaderCell>>;
 }
@@ -80,8 +84,22 @@ function pushDownRows(program: RawProgram): void {
     }
 }
 
+/** Same reasoning as pushDownRows, for @VISIBILITY: a division/program-level default is only
+ * meaningful scoped to the file that declared it, so it's pushed onto that file's own sections
+ * before merging into a shared per-division-id bucket. */
+function pushDownVisibility(program: RawProgram): void {
+    for (const division of program.divisions) {
+        const divDefault = division.visibilityOverride ?? program.defaultVisibility;
+        if (divDefault === undefined) continue;
+        for (const section of division.sections) {
+            if (section.visibilityOverride === undefined) section.visibilityOverride = divDefault;
+        }
+    }
+}
+
 function mergeImportedProgram(target: RawProgram, imported: RawProgram): void {
     pushDownRows(imported);
+    pushDownVisibility(imported);
     for (const division of imported.divisions) {
         const existing = target.divisions.find(d => d.id === division.id);
         if (existing) existing.sections.push(...division.sections);
@@ -183,6 +201,16 @@ export function parseSource(source: string, resolveImport?: (name: string) => st
             else if (section) section.rowsOverride = n;
             else if (division) division.rowsOverride = n;
             else program.defaultRows = n;
+            continue;
+        }
+
+        const visibilityMatch = trimmed.match(/^@VISIBILITY\s+(PUBLIC|INTERNAL)\s*$/);
+        if (visibilityMatch) {
+            const visibility = visibilityMatch[1].toLowerCase() as Visibility;
+            if (card) card.visibilityOverride = visibility;
+            else if (section) section.visibilityOverride = visibility;
+            else if (division) division.visibilityOverride = visibility;
+            else program.defaultVisibility = visibility;
             continue;
         }
 

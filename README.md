@@ -38,6 +38,19 @@ All commands are run from the root of the project, from a terminal:
 | `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `pnpm astro -- --help` | Get help using the Astro CLI                     |
 
+## Deployment
+
+Runs via Apache in a Docker container — see `setup.sh` (first-time) / `update_site.sh` (updates).
+Each deploy builds two variants:
+
+- `pnpm build` → `dist/` — public site, served on :80.
+- `pnpm build:internal` → `dist-internal/` — same content plus anything a `.pcob` file marks
+  `@VISIBILITY INTERNAL` (see `docs/pcob-reference.md`'s "Internal-only content" section), served
+  on :8081.
+
+Nginx Proxy Manager, in front of this container, is responsible for routing LAN-source requests
+to :8081 and everyone else to :80 — that routing rule lives in NPM's own config, not this repo.
+
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

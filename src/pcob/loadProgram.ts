@@ -37,9 +37,14 @@ for (const [path, content] of Object.entries(embedFiles)) {
     embedFileMap[path.replace('../content/_punchcard/', '')] = content;
 }
 
-export function loadMainProgram(): CompiledProgram {
+/** @param includeInternal Whether @VISIBILITY internal cards/sections are compiled in — see
+ * compile.ts's CompileOptions. Defaults to false (the public build); index.astro passes this
+ * from the PCF_INCLUDE_INTERNAL build-time env var, read via process.env (not import.meta.env,
+ * so it's never subject to Vite's client-exposure rules — this only ever runs in frontmatter,
+ * at build time, for a static site with no server runtime). */
+export function loadMainProgram(includeInternal = false): CompiledProgram {
     const mainSource = fileMap['main.pcob'];
     if (mainSource === undefined) throw new Error('main.pcob not found in src/content/_punchcard');
     const program = parseSource(mainSource, name => fileMap[name]);
-    return compileRawProgram(program, path => embedFileMap[path]);
+    return compileRawProgram(program, path => embedFileMap[path], { includeInternal });
 }
