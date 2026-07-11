@@ -30,6 +30,10 @@ const {
     noStage = false,
 } = Astro.props;
 
+// Row count in the title bar ("80-COL N ROW") mirrors this card's actual @ROWS, not a fixed
+// number - lines is already padded to the resolved @ROWS by compile.ts, so its length is exact.
+const rows = lines.length;
+
 const linesJson = JSON.stringify(lines);
 const callLinksJson = JSON.stringify(callLinks);
 const embedsJson = JSON.stringify(embeds);
@@ -41,7 +45,7 @@ const embedsJson = JSON.stringify(embeds);
     <div class="pcf-title-bar">
         <span class="pcf-title-side">Program Information</span>
         <span class="pcf-title-name">Program Navigation</span>
-        <span class="pcf-title-side pcf-title-right">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;18&nbsp;ROW</span>
+        <span class="pcf-title-side pcf-title-right">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;{rows}&nbsp;ROW</span>
     </div>
 
     <!-- ── 3-row form header ── -->
@@ -138,7 +142,7 @@ const embedsJson = JSON.stringify(embeds);
         <div class="pcf-title-bar">
             <span class="pcf-title-side">Program Information</span>
             <span class="pcf-title-name">Program Navigation</span>
-            <span class="pcf-title-side pcf-title-right">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;18&nbsp;ROW</span>
+            <span class="pcf-title-side pcf-title-right">COBOL CODING FORM&nbsp;&nbsp;C61897 · 80-COL&nbsp;&nbsp;{rows}&nbsp;ROW</span>
         </div>
 
         <!-- ── 3-row form header ── -->
