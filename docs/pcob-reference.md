@@ -42,13 +42,19 @@ for any line shape.
 | `@VISIBILITY PUBLIC \| INTERNAL` | before any `DIVISION`; right after a `SECTION`; inside a `CARD` | Same scoping/precedence as `@ROWS` (Card > Section > Division > program default), default `PUBLIC` if never set. `INTERNAL` cards/sections are compiled out entirely (not just hidden) unless the build passes `includeInternal: true` — see "Internal-only content" below. A section whose every card ends up excluded is dropped from the compiled program too (no dangling nav entry, no anchor). |
 | `@DIVISION DATA \| PROCEDURE` | top level | Starts a division. |
 | `@SECTION NAME attr=val ...` | inside a division | Starts a section. See attributes below. |
-| `@CARD NAME` | inside a section | Starts one card = one COBOL paragraph. `NAME` is also its nav label. |
+| `@CARD NAME attr=val ...` | inside a section | Starts one card = one COBOL paragraph. `NAME` is also its nav label. See attributes below. |
 
 ### `@SECTION` attributes
 
 | Attribute | Required | Meaning |
 |---|---|---|
 | `id=` | always | Anchor id (`#id`) and the name other content links to it by. |
+
+### `@CARD` attributes
+
+| Attribute | Required | Meaning |
+|---|---|---|
+| `id=` | no | Anchor id, shares the same flat namespace as `@SECTION id=`/`{{anchor:name}}`. Lets `{{link:name}}` jump to this exact card within a multi-card section, instead of just landing on the section's first card (native `#hash` navigation can't distinguish cards — see "Linking to a specific card" below). Most cards never need this. |
 
 ## Card text
 
@@ -79,9 +85,9 @@ Used inside card text to mark a span without leaving plain-text mode. All follow
 
 | Tag | Meaning |
 |---|---|
-| `{{link:name}}...{{/link}}` | Internal link to an anchor (a `@SECTION id=` or an `{{anchor:}}`), referenced by bare name. |
+| `{{link:name}}...{{/link}}` | Internal link to an anchor (a `@SECTION id=`, a `@CARD id=`, or an `{{anchor:}}`), referenced by bare name. |
 | `{{link:'https://...'}}...{{/link}}` | External link — quotes mean "literal URL," distinguishing it from an internal anchor name. |
-| `{{anchor:name}}...{{/anchor}}` | Declares a named link target finer-grained than a whole section. Shares one namespace with `@SECTION id=` — names must be unique document-wide. |
+| `{{anchor:name}}...{{/anchor}}` | Declares a named link target finer-grained than a whole section — scoped to whichever card's body it's written in. Shares one namespace with `@SECTION id=`/`@CARD id=` — names must be unique document-wide. |
 | `{{cycle:groupId}}...{{/cycle}}` | Marks a span as a rotating/dynamic value belonging to cycle-group `groupId` (replaces today's hand-counted character-offset constants). |
 | `{{noise}}...{{/noise}}` | Marks a span to noise/ASCII-scramble in on scroll. Composable by nesting with other tags. |
 | `{{embed:path}}` / `{{embed:path corner}}` | Pins a separate HTML file's raw content to this exact row+character position — a zero-width marker, no closing tag (see below). `path` is relative to the referencing `.pcob` file. `corner` (optional, default `top-left`) picks which corner of the *embedded content* touches the pin — one of `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`; anything else is a compile error. |
@@ -102,6 +108,28 @@ want visual space made for the embedded content, you type blank lines around it 
 WYSIWYG rule as everything else. The embedded HTML/CSS is free to overflow the card, or the
 screen, entirely; sizing and layout are its own responsibility, not something `@ROWS` or any
 `.pcob` construct controls.
+
+## Linking to a specific card
+
+A `{{link:name}}` normally targets a whole section, and lands on that section's *first* card —
+sections aren't a single scrollable element, they're several cards stacked at one screen
+position, and only scroll offset decides which one shows, so a plain `#hash` jump can only ever
+reach the start of that range (offset 0 = card 0). To jump straight to a card further into a
+multi-card section, give that `@CARD` its own `id=`:
+
+```pcob
+@CARD CAREER-CURR id=career-curr
+ ...
+
+@@ ... elsewhere, possibly in a different imported file ...
+     CALL {{link:career-curr}}'SEE CURRENT ROLE'{{/link}}
+```
+
+`{{anchor:name}}` placed inside a card's body works the same way — it's scoped to whichever card
+it's physically written in, not just the section, so linking to it also jumps to that exact card.
+Both forms share the one flat anchor namespace with `@SECTION id=`, so the usual duplicate-name
+compile error applies across all three. Linking to a plain `@SECTION id=` (not a specific card)
+keeps today's behavior — it lands on card 0, unchanged.
 
 ## Internal-only content (`@VISIBILITY`)
 
@@ -176,6 +204,7 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
 {{embed:demo-photo.html bottom-right}}
      CALL {{link:'https://example.com'}}'EXAMPLE'{{/link}}
      CALL {{link:demo-label}}'JUMP TO LABEL'{{/link}}
+     CALL {{link:demo-card-two}}'JUMP TO DEMO-CARD-TWO'{{/link}}
      .
 
      {{link:demo-proc}}EXIT PARAGRAPH{{/link}}
@@ -185,6 +214,11 @@ example must stay in sync with the tables above — see the upkeep rule in `CLAU
 
      {{link:demo-data}}GOBACK{{/link}}
      .
+
+@CARD DEMO-CARD-TWO id=demo-card-two
+ DEMO-CARD-TWO.
+     DISPLAY
+     END-DISPLAY
 
 @CARD DEMO-INTERNAL-CARD
 @VISIBILITY INTERNAL
@@ -211,22 +245,30 @@ by hand); `{{embed:demo-photo.html bottom-right}}` on its own line, column 0 —
 so this line still renders blank, with the explicit `corner` form used here (contrast with
 Impressum's real `{{embed:embedded/impressum.html}}`, which omits it and defaults to
 `top-left`); a `CALL` with an external (quoted) `{{link}}` and one with an internal
-(bare-name) `{{link}}` to the `{{anchor}}` declared earlier; a standalone `.` indented to match
-the statements above it (also typed, not automatic); a content blank line (kept, since it
-precedes card text, not a directive); `EXIT PARAGRAPH` and `EXIT SECTION`, each linking back to
-their own section by explicit name (no implicit `self`); a final `GOBACK`, linking back across
-divisions to the other section's anchor (`demo-data`) — same statement-row treatment as any other
-recognized verb, just a different word; and a second card in the same section,
-`DEMO-INTERNAL-CARD`, with a card-level `@VISIBILITY INTERNAL` — compiling this file with default
-options (`compileProgram(source)`, `includeInternal` defaulting to false) produces a
-`DEMO-PROC` section with only `DEMO-CARD` in it; passing `{ includeInternal: true }` produces
-both, in file order.
+(bare-name) `{{link}}` to the `{{anchor}}` declared earlier, and a third `CALL` linking by bare
+name to `demo-card-two` — a `@CARD id=` declared further down, in the *same* section, resolving
+to that exact card (not just "the section, card 0") since the target anchor carries its own
+`cardIdx`; a standalone `.` indented to match the statements above it (also typed, not automatic);
+a content blank line (kept, since it precedes card text, not a directive); `EXIT PARAGRAPH` and
+`EXIT SECTION`, each linking back to their own section by explicit name (no implicit `self`); a
+final `GOBACK`, linking back across divisions to the other section's anchor (`demo-data`) — same
+statement-row treatment as any other recognized verb, just a different word; a second card in the
+same section, `DEMO-CARD-TWO`, whose `@CARD ... id=demo-card-two` is the very target the earlier
+`CALL` links to; and a third card, `DEMO-INTERNAL-CARD`, with a card-level `@VISIBILITY INTERNAL`
+— compiling this file with default options (`compileProgram(source)`, `includeInternal` defaulting
+to false) produces a `DEMO-PROC` section with only `DEMO-CARD`/`DEMO-CARD-TWO` in it; passing
+`{ includeInternal: true }` produces all three, in file order.
 
 (Actually compiling this exact snippet needs a `resolveEmbedFile` callback that can find
-`demo-photo.html` — unlike everything else here, which compiles standalone via a bare
-`compileProgram(source)` call, since that function's `resolveEmbedFile` param defaults to
-"nothing found." Not a real file in this repo — illustrative only, same as `demo-data`/
-`demo-proc` aren't real anchors anywhere outside this example.)
+`demo-photo.html`, since that function's `resolveEmbedFile` param defaults to "nothing found" —
+not a real file in this repo, illustrative only, same as `demo-data`/`demo-proc` aren't real
+anchors anywhere outside this example. It also needs the 5 header cells resolved from
+somewhere — since Phase 6.6, `resolveHeader` requires all 5 unconditionally, and a bare
+`compileProgram(source)` call on *this* snippet alone has nowhere to get them from (`@HEADER-*`
+itself requires the top-level `resolveImport` this single-file wrapper doesn't pass). Which is
+exactly why the next block below treats this snippet as `demo.pcob` and compiles it through a
+`main.pcob` that supplies the headers via `@IMPORT` — that's the real, verified compile path,
+not the single-file snippet in isolation.)
 
 `@IMPORT` and `@HEADER-*` are both top-level-only constructs, so they don't fit inside the
 single-file example above — here's the whole `.pcob` file above treated as `demo.pcob`, with a

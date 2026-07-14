@@ -22,8 +22,8 @@ import {
     parseSource,
 } from './parseSource';
 import {
-    type CompiledCard, type CompiledHeader, type CompiledProgram, type CompiledSection, type HeaderCell,
-    type Line, PcobError, type Visibility,
+    type CallLinkTarget, type CompiledCard, type CompiledHeader, type CompiledProgram, type CompiledSection,
+    type HeaderCell, type Line, PcobError, type Visibility,
 } from './types';
 
 // This module walks a fully-resolved RawProgram tree (any @IMPORTs already merged in by
@@ -41,7 +41,12 @@ export interface CompileOptions {
 
 interface AnchorEntry {
     sectionId: string;
-    kind: 'section' | 'anchor';
+    kind: 'section' | 'card' | 'anchor';
+    /** Which card within the section this anchor targets - present for a 'card' kind
+     * (@CARD id=) and for an 'anchor' kind declared inside a card's body (an {{anchor:name}}
+     * is now card-scoped, not just section-scoped). Absent for a plain 'section' anchor,
+     * which intentionally still lands on the section's first card (unchanged behavior). */
+    cardIdx?: number;
     lineNo: number;
 }
 
@@ -69,7 +74,7 @@ function filterVisibleCards(program: RawProgram, includeInternal: boolean): Map<
 
 function buildAnchorRegistry(program: RawProgram, sectionCards: Map<RawSection, RawCard[]>): Map<string, AnchorEntry> {
     const registry = new Map<string, AnchorEntry>();
-    const declare = (name: string, sectionId: string, kind: AnchorEntry['kind'], lineNo: number) => {
+    const declare = (name: string, sectionId: string, kind: AnchorEntry['kind'], lineNo: number, cardIdx?: number) => {
         const existing = registry.get(name);
         if (existing) {
             throw new PcobError(
@@ -77,7 +82,7 @@ function buildAnchorRegistry(program: RawProgram, sectionCards: Map<RawSection, 
                 lineNo,
             );
         }
-        registry.set(name, { sectionId, kind, lineNo });
+        registry.set(name, { sectionId, kind, cardIdx, lineNo });
     };
 
     for (const division of program.divisions) {
@@ -85,17 +90,18 @@ function buildAnchorRegistry(program: RawProgram, sectionCards: Map<RawSection, 
             const cards = sectionCards.get(section) ?? [];
             if (cards.length === 0) continue;
             declare(section.id, section.id, 'section', section.lineNo);
-            for (const card of cards) {
+            cards.forEach((card, cardIdx) => {
+                if (card.id) declare(card.id, section.id, 'card', card.lineNo, cardIdx);
                 for (const bodyLine of card.body) {
                     if (!bodyLine.raw) continue;
                     const { spans } = extractTags(bodyLine.raw, bodyLine.lineNo);
                     for (const span of spans) {
                         if (span.tag === 'anchor' && span.param) {
-                            declare(span.param, section.id, 'anchor', bodyLine.lineNo);
+                            declare(span.param, section.id, 'anchor', bodyLine.lineNo, cardIdx);
                         }
                     }
                 }
-            }
+            });
         }
     }
     return registry;
@@ -103,12 +109,12 @@ function buildAnchorRegistry(program: RawProgram, sectionCards: Map<RawSection, 
 
 function makeAnchorRegistry(registry: Map<string, AnchorEntry>): AnchorRegistry {
     return {
-        resolveAnchor(name, lineNo) {
+        resolveAnchor(name, lineNo): CallLinkTarget {
             const entry = registry.get(name);
             if (!entry) {
-                throw new PcobError(`{{link:${name}}} does not match any @SECTION id= or {{anchor:}}`, lineNo);
+                throw new PcobError(`{{link:${name}}} does not match any @SECTION id=, @CARD id=, or {{anchor:}}`, lineNo);
             }
-            return `#${entry.sectionId}`;
+            return { href: `#${entry.sectionId}`, cardIdx: entry.cardIdx };
         },
     };
 }
@@ -123,7 +129,7 @@ function resolveHeaderCell(raw: RawHeaderCell, anchors: AnchorRegistry): HeaderC
     let href: string | undefined;
     if (linkSpan) {
         const param = linkSpan.param ?? '';
-        href = param.startsWith("'") && param.endsWith("'") ? param.slice(1, -1) : anchors.resolveAnchor(param, raw.lineNo);
+        href = param.startsWith("'") && param.endsWith("'") ? param.slice(1, -1) : anchors.resolveAnchor(param, raw.lineNo).href;
     }
     return { label: raw.label, value: clean, href };
 }
@@ -175,7 +181,7 @@ function compileCard(
     const resolvedRows = resolveRows(card, section, division, program);
 
     const lines: Line[] = [];
-    const callLinks: Record<string, string> = {};
+    const callLinks: Record<string, CallLinkTarget> = {};
     const embeds: CompiledCard['embeds'] = [];
 
     card.body.forEach((bodyLine, row) => {

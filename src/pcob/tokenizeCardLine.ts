@@ -11,11 +11,12 @@
 // there is no canonical/auto-applied indent for any line shape.
 
 import { extractTags, isFullyCoveredBy, type TagSpan } from './tags';
-import { EMBED_CORNERS, PcobError, type EmbedCorner, type Token } from './types';
+import { EMBED_CORNERS, PcobError, type CallLinkTarget, type EmbedCorner, type Token } from './types';
 
 export interface AnchorRegistry {
-    /** Resolve a bare internal anchor name (a @SECTION id= or {{anchor:name}}) to its href. */
-    resolveAnchor(name: string, lineNo?: number): string;
+    /** Resolve a bare internal anchor name (a @SECTION id=, @CARD id=, or {{anchor:name}}) to
+     * its target - cardIdx is present only when the anchor is scoped to one specific card. */
+    resolveAnchor(name: string, lineNo?: number): CallLinkTarget;
 }
 
 export interface EmbedResolver {
@@ -32,8 +33,8 @@ export interface LineEmbed {
 
 export interface LineResult {
     tokens: Token[];
-    /** exact token text -> resolved href, for every {{link}} span this line produced. */
-    callLinks: Record<string, string>;
+    /** exact token text -> resolved link target, for every {{link}} span this line produced. */
+    callLinks: Record<string, CallLinkTarget>;
     /** every {{embed}} pin on this line - zero-width, so unrelated to `tokens`/rendered chars. */
     embeds: LineEmbed[];
 }
@@ -61,18 +62,17 @@ function findWord(haystack: string, word: string, from = 0): number {
     return idx === -1 ? -1 : idx + from;
 }
 
-/** Resolves a {{link:...}} span's param to an href, recording the callLinks entry. */
+/** Resolves a {{link:...}} span's param to a link target, recording the callLinks entry. */
 function resolveLinkSpan(
     span: TagSpan,
     tokenText: string,
     anchors: AnchorRegistry,
-    callLinks: Record<string, string>,
+    callLinks: Record<string, CallLinkTarget>,
     lineNo?: number,
 ): void {
     const param = span.param ?? '';
     const isExternal = param.startsWith("'") && param.endsWith("'");
-    const href = isExternal ? param.slice(1, -1) : anchors.resolveAnchor(param, lineNo);
-    callLinks[tokenText] = href;
+    callLinks[tokenText] = isExternal ? { href: param.slice(1, -1) } : anchors.resolveAnchor(param, lineNo);
 }
 
 /** Classifies one "value position" run (quoted / bare-number / tag-forced / other). */
@@ -81,7 +81,7 @@ function classifyValueRun(
     absStart: number,
     spans: TagSpan[],
     anchors: AnchorRegistry,
-    callLinks: Record<string, string>,
+    callLinks: Record<string, CallLinkTarget>,
     lineNo?: number,
 ): Token[] {
     const trimmed = text.trim();
@@ -115,7 +115,7 @@ function tokenizeLevelLine(
     clean: string,
     spans: TagSpan[],
     anchors: AnchorRegistry,
-    callLinks: Record<string, string>,
+    callLinks: Record<string, CallLinkTarget>,
     lineNo?: number,
 ): Token[] | null {
     const m = clean.match(/^(\s*)(01|05|10|88)(\s+)(.*)$/s);
@@ -161,7 +161,7 @@ function tokenizeStatementLine(
     clean: string,
     spans: TagSpan[],
     anchors: AnchorRegistry,
-    callLinks: Record<string, string>,
+    callLinks: Record<string, CallLinkTarget>,
     lineNo?: number,
 ): Token[] | null {
     const leadMatch = clean.match(/^(\s*)/)!;
@@ -225,7 +225,7 @@ function tokenizeFallbackLine(
     clean: string,
     spans: TagSpan[],
     anchors: AnchorRegistry,
-    callLinks: Record<string, string>,
+    callLinks: Record<string, CallLinkTarget>,
     lineNo?: number,
 ): Token[] {
     return classifyValueRun(clean, 0, spans, anchors, callLinks, lineNo);
@@ -234,7 +234,7 @@ function tokenizeFallbackLine(
 export function tokenizeCardLine(raw: string, anchors: AnchorRegistry, embedResolver: EmbedResolver, lineNo?: number): LineResult {
     const { clean, spans } = extractTags(raw, lineNo);
     const trimmedBoth = clean.trim();
-    const callLinks: Record<string, string> = {};
+    const callLinks: Record<string, CallLinkTarget> = {};
     // Embeds are zero-width pins - extracted once here regardless of which line shape below
     // ends up handling the rest of the line, same as any other tag can appear on any shape.
     const embeds = spans.filter(s => s.tag === 'embed').map(s => resolveEmbedSpan(s, embedResolver, lineNo));

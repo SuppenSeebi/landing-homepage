@@ -16,6 +16,11 @@ import { PcobError, type DivisionId, type Visibility } from './types';
 
 export interface RawCard {
     name: string;
+    /** Optional anchor id (shares the same flat namespace as @SECTION id=/{{anchor:name}}) —
+     * lets a {{link:}} target this exact card within a multi-card section instead of just
+     * landing on the section's first card. Unlike @SECTION, not required: most cards are never
+     * linked to directly. */
+    id?: string;
     lineNo: number;
     rowsOverride?: number;
     visibilityOverride?: Visibility;
@@ -239,10 +244,15 @@ export function parseSource(source: string, resolveImport?: (name: string) => st
             continue;
         }
 
-        const cardMatch = trimmed.match(/^@CARD\s+(\S+)\s*$/);
+        const cardMatch = trimmed.match(/^@CARD\s+(\S+)(?:\s+(.*))?$/);
         if (cardMatch) {
             if (!section) throw new PcobError('@CARD outside of any @SECTION', lineNo);
-            card = { name: cardMatch[1], lineNo, body: [] };
+            const attrs = parseAttrs(cardMatch[2] ?? '', lineNo);
+            const unknownAttrs = Object.keys(attrs).filter(k => k !== 'id');
+            if (unknownAttrs.length) {
+                throw new PcobError(`@CARD ${cardMatch[1]} has unknown attribute(s): ${unknownAttrs.join(', ')}`, lineNo);
+            }
+            card = { name: cardMatch[1], id: attrs.id, lineNo, body: [] };
             section.cards.push(card);
             continue;
         }

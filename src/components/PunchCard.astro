@@ -1,7 +1,7 @@
 ---
 import { execSync } from 'child_process';
 import { punchText } from '../utils/punchText';
-import type { CompiledEmbed, CompiledHeader } from '../pcob/types';
+import type { CallLinkTarget, CompiledEmbed, CompiledHeader } from '../pcob/types';
 
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
@@ -10,7 +10,7 @@ type Line  = [string, Token[]];
 interface Props {
     header: CompiledHeader;
     lines?: Line[];
-    callLinks?: Record<string, string>;
+    callLinks?: Record<string, CallLinkTarget>;
     embeds?: CompiledEmbed[];
     noStage?: boolean;
 }
@@ -318,10 +318,23 @@ function jumpToCard(sectionId: string, cardIdx: number) {
 }
 
 document.addEventListener('click', e => {
-    const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('.pcf-para-item');
-    if (!link?.dataset.sec) return;
-    e.preventDefault();
-    jumpToCard(link.dataset.sec, Number(link.dataset.cardIdx ?? 0));
+    const paraLink = (e.target as HTMLElement).closest<HTMLAnchorElement>('.pcf-para-item');
+    if (paraLink?.dataset.sec) {
+        e.preventDefault();
+        jumpToCard(paraLink.dataset.sec, Number(paraLink.dataset.cardIdx ?? 0));
+        return;
+    }
+
+    // A {{link:...}} that resolved to a specific card (via @CARD id= or a card-scoped
+    // {{anchor:name}}) carries data-card-idx - native '#hash' navigation can only reach a
+    // section's first card (all cards in a multi-card section share one screen position;
+    // which one shows is purely a function of scroll offset), so this needs the same
+    // jumpToCard math as paragraph-nav, not a plain anchor jump.
+    const callLink = (e.target as HTMLElement).closest<HTMLAnchorElement>('.pcf-call-link');
+    if (callLink?.dataset.cardIdx !== undefined) {
+        e.preventDefault();
+        jumpToCard(new URL(callLink.href).hash.slice(1), Number(callLink.dataset.cardIdx));
+    }
 });
 
 // Uses scrollY directly (not a viewport-midpoint offset), matching app.ts's getActiveSection()
@@ -439,7 +452,8 @@ const CLS: Record<TT, string> = {
     dot: 'pcc-dot', comment: 'pcc-comment',
 };
 
-interface CharItem { ch: string; cls: string; href?: string; }
+interface CallLinkTarget { href: string; cardIdx?: number; }
+interface CharItem { ch: string; cls: string; href?: string; cardIdx?: number; }
 
 // pcc-empty spans get a nbsp text node (not left childless) so they get a real line box
 // sized like any other char span - a childless <span> collapses to 0 height regardless of
@@ -449,14 +463,14 @@ function renderLinesForArea(area: HTMLElement) {
     area.dataset.rendered = '1';
 
     const lines: Line[] = JSON.parse(area.dataset.lines || '[]');
-    const callLinks: Record<string, string> = JSON.parse(area.dataset.callLinks || '{}');
+    const callLinks: Record<string, CallLinkTarget> = JSON.parse(area.dataset.callLinks || '{}');
 
     lines.forEach(([seq, tokens], idx) => {
         const chars: CharItem[] = [];
         for (const [type, text] of tokens) {
             const cls = CLS[type as TT] || 'pcc-kw';
-            const href = (type === 'val' && callLinks[text]) ? callLinks[text] : undefined;
-            for (const ch of text) chars.push({ ch, cls, href });
+            const target = type === 'val' ? callLinks[text] : undefined;
+            for (const ch of text) chars.push({ ch, cls, href: target?.href, cardIdx: target?.cardIdx });
         }
         while (chars.length < COLS) chars.push({ ch: ' ', cls: 'pcc-kw' });
 
@@ -487,12 +501,14 @@ function renderLinesForArea(area: HTMLElement) {
         while (i < COLS) {
             const item = chars[i];
             if (item.href) {
-                // Collect the full run of chars sharing this href
+                // Collect the full run of chars sharing this href+cardIdx (two adjacent links
+                // can share a section-level href while targeting different cards within it).
                 let j = i;
-                while (j < COLS && chars[j].href === item.href) j++;
+                while (j < COLS && chars[j].href === item.href && chars[j].cardIdx === item.cardIdx) j++;
                 const a = document.createElement('a');
                 a.href = item.href;
                 if (!item.href.startsWith('#')) { a.target = '_blank'; a.rel = 'noopener'; }
+                else if (item.cardIdx !== undefined) { a.dataset.cardIdx = String(item.cardIdx); }
                 a.className = 'pcf-call-link';
                 for (let k = i; k < j; k++) {
                     const span = document.createElement('span');

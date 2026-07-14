@@ -49,10 +49,18 @@ export interface CompiledEmbed {
     cardIdx: number;
 }
 
+export interface CallLinkTarget {
+    href: string;
+    /** Present when the link resolves to a specific card within a multi-card section (via
+     * @CARD id= or {{anchor:name}} placed inside that card's body) - lets the client jump to
+     * that exact card's scroll position instead of just landing on the section's first card. */
+    cardIdx?: number;
+}
+
 export interface CompiledCard {
     name: string;
     lines: Line[];
-    callLinks: Record<string, string>;
+    callLinks: Record<string, CallLinkTarget>;
     embeds: CompiledEmbed[];
 }
 
