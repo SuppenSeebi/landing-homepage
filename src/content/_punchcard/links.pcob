@@ -27,7 +27,6 @@
 * Arbitrary test text — should only appear in the internal build
      CALL 'THIS ONLY SHOWS ON LAN'
      .
-     Hallo Julian ;)
 
 * GOBACK TO PROCEDURE DIVISION LINKS SECTION
      {{link:links}}EXIT PARAGRAPH{{/link}}
