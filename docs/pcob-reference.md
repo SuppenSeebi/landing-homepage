@@ -136,8 +136,9 @@ outputs to route between.
 ## Deferred to the compiler (Phase 2, design already settled)
 
 - Anchor uniqueness: `@SECTION id=` and `{{anchor:name}}` share one flat namespace and must be
-  globally unique — not yet implemented as a validation rule. `{{link}}` references may duplicate
-  freely; that's normal.
+  globally unique — **implemented**: `compile.ts`'s `buildAnchorRegistry` throws a compile error
+  on a second declaration of the same name, across the whole merged (`@IMPORT`-resolved) program,
+  not just within one file. `{{link}}` references may duplicate freely; that's normal.
 - There is no self-link concept. A card only ever defines an anchor or links to one by name; if
   the resolved target happens to be the current page, that's not special-cased.
 

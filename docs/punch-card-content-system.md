@@ -218,9 +218,8 @@ silently worked around.
 **All five sections (Links, AboutMe, Work, Impressum, Top) are now compiled from `.pcob` source.**
 No hand-written `Line[]` arrays remain in any section component. The `punch-nav.ts` consolidation
 mentioned here as deferred is now done — see Phase 6.4 below, which extended nav-derivation to
-carry `cardIdx` and retired the file entirely. Sebastian's one comprehensive visual pass across
-the whole site is still outstanding (no dev server per this project's testing-scope rule; now
-also covers Phase 6's changes, not just Phase 4's).
+carry `cardIdx` and retired the file entirely. Sebastian's comprehensive visual pass across the
+whole site (covering Phase 4 and Phase 6) is **confirmed, 2026-07-14**.
 
 ### Phase 5 — Re-introduce animation/transition tags (deferred, not blocking)
 - Today there are two distinct behaviors: SectionTop's per-field scramble-cycle and the
@@ -452,7 +451,8 @@ was decided and why, and what was found not to port cleanly.
       (before any `@DIVISION`), nesting/duplicate-import/missing-file are all compile errors.
       `main.pcob` carries no directive beyond an ordered `@IMPORT` list (a leading `@@` comment
       is the only other thing in it).
-- [ ] Phase 6.5's exact embed-tag name, params, and file-path-vs-inline-content shape.
+- [x] Phase 6.5's exact embed-tag name, params, and file-path-vs-inline-content shape: settled
+      as `{{embed:path}}` / `{{embed:path corner}}`, a zero-width pin — see that phase below.
 
 ### Risks to keep in mind while building (carried over from initial design discussion)
 - **Column-budget tension**: the DSL must not auto-layout `PIC X(N)` padding or column
@@ -579,12 +579,14 @@ Reported 2026-07-03 right as a session ended; root-caused and fixed the next ses
   added to `STATEMENT_VERBS` in `tokenizeCardLine.ts`, with `docs/pcob-reference.md`'s statement
   row table and Complete example updated in the same commit (a new `GOBACK` line linking across
   sections, `{{link:demo-data}}GOBACK{{/link}}`) per `CLAUDE.md`'s DSL-doc-sync rule. Also
-  surfaced: anchors don't span `.pcob` files — each file compiles as its own independent
-  `compileProgram()` call with its own anchor registry, so `{{link:top}}` from within
-  `impressum.pcob` fails (`top` is only declared in `top.pcob`). Worked around with the existing
+  surfaced at the time: anchors didn't yet span `.pcob` files — each file compiled as its own
+  independent `compileProgram()` call with its own anchor registry, so `{{link:top}}` from within
+  `impressum.pcob` failed (`top` was only declared in `top.pcob`). Worked around then with the
   external-link form, `{{link:'#top'}}` (a quoted param is used as a literal href with no anchor
-  lookup, regardless of whether it's actually off-site) — cross-file internal navigation has no
-  dedicated syntax yet, this is the pragmatic option today's compiler already supports.
+  lookup, regardless of whether it's actually off-site). **Superseded by Phase 6.1**: `main.pcob`'s
+  `@IMPORT` now merges every file into one `RawProgram` before a single `compileRawProgram` call,
+  giving one shared anchor registry across the whole program — `impressum.pcob`'s `GOBACK` is a
+  real `{{link:top}}GOBACK{{/link}}` today, not the quoted-URL workaround. See Phase 6.1 below.
 - **Fixed: hyphen-joined header line misclassified as a paragraph name.** Found while migrating
   Impressum: `IMPRESSUM-SECTION.` (the card's own heading, styled `section` in the original
   hand-written array) was coming out of the compiler as `para` instead. Root cause:
@@ -677,7 +679,7 @@ architecture: the compiler can exclude marked content entirely, and the site is 
 | 1 — Format design | Syntax finalized — see `docs/dsl-mockup.pcob` + `docs/pcob-reference.md` |
 | 2 — Parser/compiler | Core built in `src/pcob/` (parser, tag extractor, level-row/statement-row tokenizers, anchor resolution, nav derivation). Validated by compiling `docs/dsl-mockup.pcob` and the reference's Complete example. Not yet wired into any Astro page or `.pcob` content file — that's Phase 3. |
 | 3 — Pilot migration (Links) | **Confirmed.** Links section renders from `src/content/_punchcard/links.pcob` via the compiler; 3.6 visual confirmation done 2026-07-03. |
-| 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site, still outstanding. `punch-nav.ts` consolidation deliberately deferred, not yet scheduled. |
+| 4 — Full migration | Content migration done for all 5 sections (AboutMe, Work, Impressum, Top, plus Links from Phase 3). AboutMe visually confirmed (4.1–4.4); Work/Impressum/Top's per-section confirmation gate waived (Sebastian: "go for it") in favor of one comprehensive visual pass across the whole site — **confirmed 2026-07-14**. `punch-nav.ts` consolidation, deferred here, was completed by Phase 6.4. |
 | 5 — Animation tags | Deferred |
-| 6 — Shared program + generic rendering | **All of 6.1–6.6 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island, the 5 configurable form-header cells authored via `@HEADER-*` in `main.pcob` (6.6), and `{{embed:path}}` (6.5) — a zero-width pin, not a row-reserving slot — replacing Impressum's `positionImpressumOverlay()` JS-measurement hack entirely, which also let Impressum stop being `PunchSection`'s one hardcoded exception. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks`/header hrefs including the cross-file `{{link:top}}GOBACK{{/link}}`, and the Impressum card's `data-embeds` JSON resolving to the real German legal text with correct row/col/corner/section/cardIdx). Sebastian's visual pass still outstanding (no dev server per this project's testing-scope rule) — now covers 6.5/6.6 too, not just 6.1–6.4. |
+| 6 — Shared program + generic rendering | **All of 6.1–6.6 done** (2026-07-04): `main.pcob`/`@IMPORT`/one shared program, card-height math folded into the one generic `PunchSection.astro` component (replacing 5 hand-authored files), `punch-nav.ts` retired in favor of compiler-derived nav delivered via a `#pcf-nav-data` JSON island, the 5 configurable form-header cells authored via `@HEADER-*` in `main.pcob` (6.6), and `{{embed:path}}` (6.5) — a zero-width pin, not a row-reserving slot — replacing Impressum's `positionImpressumOverlay()` JS-measurement hack entirely, which also let Impressum stop being `PunchSection`'s one hardcoded exception. `astro build` passes; compiled output spot-checked (nav `cardIdx`s, all `callLinks`/header hrefs including the cross-file `{{link:top}}GOBACK{{/link}}`, and the Impressum card's `data-embeds` JSON resolving to the real German legal text with correct row/col/corner/section/cardIdx). Sebastian's visual pass — covering 6.5/6.6 too, not just 6.1–6.4 — is **confirmed 2026-07-14**. |
 | 7 — LAN-only visibility gating | **Done** (2026-07-06): `@VISIBILITY PUBLIC \| INTERNAL` directive, `compileRawProgram`'s `includeInternal` option, two builds (`pnpm build` → `dist/`, `pnpm build:internal` → `dist-internal/`), `setup.sh`/`update_site.sh` updated to build+serve both (Apache `:80`/`:8081`) — NPM-side LAN routing itself is outside this repo. `links.pcob`'s LLDAP/BITWARDEN entries moved into a new `@VISIBILITY INTERNAL` card (`INFRA-PRGRPH`). Verified end-to-end against real `astro build` output, not just reasoning. |
