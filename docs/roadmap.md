@@ -39,9 +39,10 @@ edit it" concern doesn't apply.
 - Reachable from main nav like any other section, or more hidden?
 
 **Done (2026-07-23).** `src/content/_claude/claude.pcob` — `@SECTION CLAUDE id=claude`,
-PROCEDURE division, 4 cards (`OVERVIEW-PRGRPH`, `DESIGN-PRGRPH`, `COMMENTARY-PRGRPH`,
-`AUTHORSHIP-PRGRPH`) covering what the page does, how it's designed (with tradeoffs), Claude's
-own commentary, and an explicit authorship/ownership statement. Answered the open questions by
+PROCEDURE division, 6 cards (`OVERVIEW-PRGRPH`, `ARCHITECTURE-PRGRPH`, `DESIGN-PRGRPH`,
+`COLLAB-PRGRPH`, `COMMENTARY-PRGRPH`, `AUTHORSHIP-PRGRPH`) covering what the page does, the real
+engineering underneath it, tradeoffs, the human/AI authorship split, Claude's own commentary, and
+an explicit authorship/ownership statement. Answered the open questions by
 precedent: the `PROGRAM` header cell's existing value (`SSCHW-DEV`) now links to this section
 (`{{link:claude}}SSCHW-DEV{{/link}}` in `main.pcob`) — same pattern as `XREF`→`links` and
 `IDENTIFICATION`→`impressum` already use — and it's a normal section in nav (`proc` division),
@@ -76,6 +77,21 @@ became the new last import. Fixed generically with `.pcf-scroll-end-spacer`, a f
 `<div>` appended once after all sections in `index.astro` — guarantees reachability for whichever
 section ends up last from now on, with no per-section special-casing. Both fixes verified via
 `astro build` + compiled-HTML spot checks (see `CLAUDE.md`'s "Established patterns" for detail).
+
+A third round: Sebastian caught a factual error (`DESIGN-PRGRPH` claimed row counts were derived
+from the text — they're not, `@ROWS` is authored directly, only sequence numbers/nav/links are
+actually derived) and asked for more depth on the real engineering and the human/AI split, rather
+than describing it in the abstract — "this page itself should resemble the technicality it uses."
+Added two cards: `ARCHITECTURE-PRGRPH` (the actual mechanisms — `.pcob`'s parse/tokenize/compile
+pipeline, `@IMPORT`'s shared anchor registry, `{{embed:path}}`'s zero-width pin, `@VISIBILITY`'s
+dual static builds) and `COLLAB-PRGRPH` (concretely: Sebastian authors `_punchcard/`, Claude
+authors `_claude/` and built every mechanism above; Claude never runs a dev server or sees the
+rendered page, so all visual judgment on this site is Sebastian's, by rule, not by omission).
+`DESIGN-PRGRPH` now states the row-count correction plainly rather than being silently fixed.
+Writing literal `{{link}}`/`{{embed:path}}` syntax into card *text* (not as functioning tags)
+required the DSL's `\{{` escape — confirmed via a real `astro build` that it renders as literal
+text rather than either erroring or firing as a real tag. Now 6 cards total, `astro build`
+verified.
 
 ---
 

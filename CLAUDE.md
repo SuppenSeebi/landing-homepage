@@ -247,7 +247,8 @@ parasBySection = {
   work:      [WORK-CURRENT(0), WORK-PREV(1)]
   links:     [SERVICES-PRGRPH(0), SOCIALS-PRGRPH(1)]
   impressum: [IMPRESSUM-SECTION(0)]
-  claude:    [OVERVIEW-PRGRPH(0), DESIGN-PRGRPH(1), COMMENTARY-PRGRPH(2), AUTHORSHIP-PRGRPH(3)]
+  claude:    [OVERVIEW-PRGRPH(0), ARCHITECTURE-PRGRPH(1), DESIGN-PRGRPH(2), COLLAB-PRGRPH(3),
+              COMMENTARY-PRGRPH(4), AUTHORSHIP-PRGRPH(5)]
 }
 ```
 (`top` has 6 entries, not 7 — `COMMUNITY` is a field inside `INTERESTS`'s card text, not its own
@@ -361,9 +362,14 @@ so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LIN
 - `callLinks` maps the exact val token string (including leading space and quotes) → URL
 - Font: `"Share Tech Mono", monospace` throughout
 - `src/content/_claude/claude.pcob` (added 2026-07-23, `@SECTION CLAUDE id=claude`, PROCEDURE
-  division, 4 cards) is authored solely by Claude, not Sebastian — the one section on the site
-  with that split, and the reason it lives in its own `src/content/_claude/` root rather than
-  `src/content/_punchcard/` (Sebastian's own content — see `loadProgram.ts`'s two-glob setup).
+  division, 6 cards — `OVERVIEW`/`ARCHITECTURE`/`DESIGN`/`COLLAB`/`COMMENTARY`/`AUTHORSHIP`) is
+  authored solely by Claude, not Sebastian — the one section on the site with that split, and
+  the reason it lives in its own `src/content/_claude/` root rather than `src/content/_punchcard/`
+  (Sebastian's own content — see `loadProgram.ts`'s two-glob setup). `DESIGN-PRGRPH` originally
+  claimed row counts were compiler-derived; they aren't (`@ROWS` is authored directly, Card >
+  Section > program precedence — only sequence numbers/nav/links are actually derived) — fixed
+  the same day Sebastian caught it, and the card now says so explicitly rather than being quietly
+  corrected.
   It's linked from the second left header cell (`SSCHW-DEV` → `#claude`), which is what required
   the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above. That cell's label
   was relabeled `PROGRAM` → `ABOUT PROGRAM` the same day, since `PROGRAM`/`SSCHW-DEV` alone gave
