@@ -61,12 +61,9 @@ const PX_PER_CARD = 200;
 </section>
 
 <script>
-import { setupMultiCardSection } from '../../scripts/multiCardSection.ts';
-
-// One sweep for every multi-card section on the page - this script tag is byte-identical
-// across all PunchSection instances, so Astro/the browser only ever runs it once, same
-// dedup guarantee PunchCard.astro's own script already relies on.
-document.querySelectorAll<HTMLElement>('section[data-multi-card="true"]').forEach(s => {
-    setupMultiCardSection(s.id);
-});
+// Side-effect import: multiCardSection.ts self-registers one scrollSync subscription that
+// handles every multi-card section on the page, so there's nothing to call here per-section
+// anymore. This script tag is byte-identical across all PunchSection instances, so Astro/the
+// browser only ever runs it once, same dedup guarantee PunchCard.astro's own script relies on.
+import '../../scripts/multiCardSection.ts';
 </script>

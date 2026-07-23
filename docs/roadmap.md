@@ -124,6 +124,31 @@ dropped their `-PRGRPH` suffix (`OVERVIEW`/`ARCHITECTURE`/`DESIGN`/`COLLAB`/`COM
 at once (`.pcf-fh-nav` has no ellipsis, just `overflow: hidden`). `astro build` verified; both
 embeds' compiled `col`/`row` re-confirmed against the new pin positions.
 
+A sixth round, split into three asks: (1) a standing rule, added to `CLAUDE.md` near the top
+(alongside the existing `.pcob` DSL-docs-sync rule) — the CLAUDE section must be updated in the
+same commit as any change that makes one of its factual claims stop being true. (2) A real bug,
+not a symptom: nav highlighting and embed visibility visibly lagged the card actually on screen
+by one scroll event, and scrolling past the last section could show a wrong, off-screen section's
+card. Root cause was three independent "what's active" computations (`app.ts`'s
+`getActiveSection`, a near-duplicate `getActiveId` in `PunchCard.astro`, and one
+`multiCardSection.ts` listener per multi-card section) racing on separate `scroll` listeners with
+no ordering guarantee, plus a hardcoded `"top"` fallback masking the overscroll case — exactly
+the tech debt already flagged in the (now resolved) `project_duplicate_scroll_logic` memory.
+Unified into `src/scripts/scrollSync.ts`: one computation, one listener, one `{sectionId,
+cardIdx}` value every consumer subscribes to and receives directly rather than re-reading a DOM
+attribute another script wrote. Sebastian's own proposed framing ("scale height by card count ×
+ticks × height per tick, shouldn't that fix nav/embeds too") was structurally right — the fix is
+a single source of truth, which is what this is. (3) An audit for other hardcoded pcob↔design-master
+coupling turned up one more: the DIVISION-nav row's jump links were hardcoded to `#top`/`#links`,
+assuming those are each division's first section — now derived from `divisionMap`'s first entry
+per division (`patchDivisionLinks()`), so a future `@IMPORT` reorder can't silently break them.
+The one remaining hardcoded content id (`app.ts`: logo only shows on `id === 'top'`) is
+intentional and documented as such — it names a specific concept (the identity/home section),
+not a positional "first of N" fact with an array to derive from. `astro build` verified; the
+compiled JS bundle for `scrollSync.ts`, `app.ts`, and `multiCardSection.ts` was read directly
+(post-bundle, pre-minified logic confirmed by hand) since scroll behavior itself can't be
+verified without a browser.
+
 ---
 
 ## 2. Tools page redesign + embed

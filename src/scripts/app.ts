@@ -1,25 +1,11 @@
-const sections      = document.querySelectorAll<HTMLElement>("section");
-const logoWrapper   = document.getElementById("logo-wrapper")!;
+import { onActiveStateChange } from './scrollSync';
 
-/* ── active section ────────────────────────────── */
-// Uses scrollY directly (not a viewport-midpoint offset) so the section boundary lines up
-// exactly with multiCardSection.ts's own scrollY-based card math - otherwise the section
-// deactivates innerHeight/2 early, cutting its last card's effective scroll range short.
-function getActiveSection(): string {
-    const y = window.scrollY;
-    let active = "top";
-    sections.forEach(s => {
-        if (y >= s.offsetTop && y < s.offsetTop + s.offsetHeight) active = s.id;
-    });
-    return active;
-}
+const logoWrapper = document.getElementById('logo-wrapper')!;
 
 /* ── section transitions (instant snap, no animation) ──────────────────── */
-let activeSectionId: string | null = null;
-
 function transitionTo(id: string) {
     const next    = document.querySelector<HTMLElement>(`#${id} .section-content-wrapper`);
-    const current = document.querySelector<HTMLElement>(".section-content-wrapper.active");
+    const current = document.querySelector<HTMLElement>('.section-content-wrapper.active');
     if (!next || next === current) return;
 
     current?.classList.remove('active');
@@ -27,21 +13,14 @@ function transitionTo(id: string) {
 }
 
 /* ── logo ───────────────────────────────────────── */
+// "top" is a deliberate, specific reference to the identity/home section, not a positional
+// "first section" fact - unlike a first-of-division link, there's no divisionMap-style array to
+// derive "the section the logo should show on" from, so this one hardcoded id is intentional.
 function updateLogo(id: string) {
-    if (id === "top") logoWrapper.classList.add("visible");
-    else              logoWrapper.classList.remove("visible");
+    logoWrapper.classList.toggle('visible', id === 'top');
 }
 
-/* ── main scroll handler ───────────────────────── */
-function onScroll() {
-    const id = getActiveSection();
-    updateLogo(id);
-
-    if (id !== activeSectionId) {
-        transitionTo(id);
-        activeSectionId = id;
-    }
-}
-
-window.addEventListener("scroll", onScroll);
-window.addEventListener("DOMContentLoaded", onScroll);
+onActiveStateChange(({ sectionId }) => {
+    transitionTo(sectionId);
+    updateLogo(sectionId);
+});

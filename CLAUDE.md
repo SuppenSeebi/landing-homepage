@@ -8,6 +8,8 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 
 **`.pcob` DSL docs must stay in sync: any change to the punch-card DSL grammar (new/changed directive, attribute, line shape, or `{{tag}}`) must update `docs/pcob-reference.md`'s tables AND its trailing "Complete example" in the same commit, so the example always exercises every documented construct at least once. See `docs/pcob-reference.md` and `docs/punch-card-content-system.md` (project plan/status) before touching the DSL.**
 
+**The CLAUDE section (`src/content/_claude/claude.pcob`) must stay factually accurate: any change that would make a claim in it stop being true — a real number it states (card/section/`@IMPORT` counts, currently in `OVERVIEW`'s `compile-trace.html` embed), a mechanism it describes (`ARCHITECTURE`), or an architectural fact (`DESIGN`/`COLLAB`) — gets updated in the same commit that changes the underlying reality, not left to go stale. This is the same discipline as the `.pcob` DSL docs rule above, applied to Claude's own content instead of the reference docs.**
+
 ---
 
 ## File map
@@ -18,8 +20,9 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 | `src/components/Logo.astro` | Fixed SVG logo, noise + arc marquee |
 | `src/components/PunchCard.astro` | Reusable IBM punch card shell (title bar, form header, coding area, `{{embed}}` pin rendering) |
 | `src/components/sections/PunchSection.astro` | Generic section renderer (replaces the old per-section `Section*.astro` files, including `SectionImpressum.astro`) — branches on card count for multi- vs. single-card layout |
-| `src/scripts/app.ts` | Main scroll handler: section activation, instant panel snap, logo visibility |
-| `src/scripts/multiCardSection.ts` | Shared card-switching logic for multi-card sections (count read from DOM) |
+| `src/scripts/scrollSync.ts` | Single source of truth for "active section + card," recomputed from live DOM on one `scroll` listener — see "Scroll sync" below. Everything else scroll-driven subscribes to this instead of computing its own |
+| `src/scripts/app.ts` | Subscribes to `scrollSync`: section-wrapper instant snap, logo visibility |
+| `src/scripts/multiCardSection.ts` | Subscribes to `scrollSync`: applies `.pcf-card-active` to the right card in whichever section is active (count read from DOM) |
 | `src/pcob/loadProgram.ts` | Loads every `.pcob` file once (Vite eager `?raw` glob), resolves `main.pcob`'s `@IMPORT`s and every `{{embed}}` file reference, compiles the merged program — `loadMainProgram()`, called once from `index.astro` |
 | `src/content/_punchcard/main.pcob` | The shared program — ordered `@IMPORT` lines naming every section file, plus the 5 `@HEADER-*` form-header directives |
 | `src/content/_punchcard/embedded/*.html` | `{{embed:path}}`-referenced HTML fragments, one per embed (e.g. `embedded/impressum.html`) — plain content, not compiled as `.pcob` |
@@ -160,20 +163,11 @@ Cards are absolutely centered (`top: 50%; left: 50%; transform: translate(-50%,-
 intrinsic to row count (not stretched to a fixed region), `opacity: 0` by default.
 Active card: `pcf-card-active` → `opacity: 1`.
 
-Card switching is a shared module, `src/scripts/multiCardSection.ts` (`setupMultiCardSection(sectionId)`).
-`PunchSection.astro`'s own script (Astro-deduped across every instance, so it runs exactly once)
-sweeps `document.querySelectorAll('section[data-multi-card="true"]')` and calls
-`setupMultiCardSection` on each — no per-section hardcoded id. Card count is read from the DOM
-(`cards.length`) inside that module, not a separately-maintained constant, so the math is correct
-for any number of cards. Switching is a direct, synchronous class toggle — no scramble animation,
-no transition lock.
-
-Scroll calc (inside `multiCardSection.ts`):
-```js
-relScroll = window.scrollY - section.offsetTop;
-cardH     = section.scrollHeight / cards.length;
-newIdx    = clamp(Math.floor(relScroll / cardH), 0, cards.length - 1);
-```
+Card switching is driven by `src/scripts/scrollSync.ts` (see below) — `multiCardSection.ts` just
+applies whatever section+card it's told is active to `.pcf-card-active`, it doesn't compute
+anything itself. Card count is read from the DOM (`cards.length`) each time, not a
+separately-maintained constant, so the math is correct for any number of cards. Switching is a
+direct, synchronous class toggle — no scramble animation, no transition lock.
 
 The per-card scroll distance (`PX_PER_CARD`, fixed px not vh — a scroll wheel "tick" is a fixed
 pixel amount, so vh would take a different number of ticks on every monitor) has exactly one
@@ -184,21 +178,57 @@ common ~100px/tick default) — adjust that one constant directly if it doesn't 
 
 ---
 
-## Scroll / section activation system (app.ts)
+## Scroll sync (`src/scripts/scrollSync.ts`) — single source of truth
 
-- Each section: `.section-scroll-container` (tall, gives scrollable space) + `.section-content-wrapper` (position: fixed)
-- `getActiveSection()`: uses `window.scrollY + innerHeight/2` vs section `offsetTop + offsetHeight`
-- On section change: `transitionTo(id)` toggles `.active` on the wrapper — instant snap, no
-  animation (no `transition` CSS property, no enter/exit classes, no direction-from-scroll logic)
+Everything scroll-driven on the page (section visibility, card visibility, nav highlighting,
+embed visibility, logo visibility) reads from one computed value: `{ sectionId, cardIdx }`,
+recomputed from live DOM measurements (`window.scrollY` vs. each `<section>`'s `offsetTop`/
+`offsetHeight`/`.pcf-card` count) on one `window.addEventListener('scroll', ...)`. Consumers
+call `onActiveStateChange(fn)` to subscribe; `fn` runs once immediately with the current state
+and again on every change, always with the exact same object every other subscriber for that
+event got — there's nothing left to race.
 
-(There used to be a `sectionRunners` map calling a per-section `window.__xRun` hook every scroll
-tick; removed 2026-07-04 — every hook was already a no-op, since SectionTop's per-field cycling
-animation, the thing `__topRun` originally drove, had been removed earlier. Card switching is
-entirely `multiCardSection.ts`'s own `addEventListener('scroll', ...)`, independent of app.ts.)
+```js
+// computeActiveState(), scrollSync.ts — the whole page's active section+card, in one pass
+for (const section of allSections) {           // DOM order
+    if (scrollY < section.offsetTop) continue;  // keep overwriting `active` as long as this
+    const cardCount = max(section's .pcf-card count, 1);   // holds - the furthest-down section
+    const cardIdx = clamp(floor((scrollY - section.offsetTop) / (section.offsetHeight / cardCount)),
+                           0, cardCount - 1);              // whose offsetTop is still <= scrollY
+    active = { sectionId: section.id, cardIdx };            // wins, clamped to its own last card
+}
+```
 
-`updateLogo(id)` toggles `.visible` on `#logo-wrapper` (visible only on `#top`) — the only other
-thing `app.ts`'s scroll handler does besides section switching. `Logo.astro`'s own arc/noise
-marquee animation is separate and always-running, unrelated to scroll.
+This replaced three independent computations that used to exist: `app.ts`'s old
+`getActiveSection()` (section only), a near-identical `getActiveId()` duplicated inside
+`PunchCard.astro` rather than shared, and one `multiCardSection.ts` listener *per* multi-card
+section (card index within that one section, running continuously regardless of whether that
+section was even visible). Three separate `scroll` listeners, each reading/writing shared DOM
+state (`section.dataset.activeCard`) with no ordering guarantee between them, is exactly what
+caused nav highlighting and embed visibility to visibly lag the card actually on screen by one
+scroll event (found 2026-07-23) — whichever listener happened to run first each tick read the
+*previous* tick's value. It also meant an off-screen section's card index could silently drift
+to something wrong (scrolling past the last real section, into `.pcf-scroll-end-spacer`, fell
+back to `getActiveSection()`'s hardcoded `"top"` default while `top`'s own still-running listener
+kept recomputing against a huge out-of-range `scrollY`, clamping to its *last* card) — both bugs
+are structurally gone now: there's one fallback (`sections[0]?.id`, derived from DOM order, not a
+hardcoded name) and inactive sections are never touched until scrolled into.
+
+Consumers, each just applying the shared state to its own concern, no computation of their own:
+- **`app.ts`**: toggles `.section-content-wrapper.active` (instant snap, no transition) and
+  `#logo-wrapper`'s `.visible` class (`id === 'top'` — see that file for why this one hardcoded
+  section id is legitimate, unlike a first-of-division link).
+- **`multiCardSection.ts`**: toggles `.pcf-card-active` on the right card (skips sections with
+  fewer than 2 cards — nothing to switch). Self-registers on import; `PunchSection.astro`'s
+  script is just a side-effect `import`, not a per-section setup call.
+- **`PunchCard.astro`**'s `updatePcfNav(sectionId, cardIdx)` and `updateAllEmbedVisibility(sectionId, cardIdx)`
+  — both take the state as parameters directly rather than re-reading it from a DOM attribute
+  another script wrote (that DOM round-trip, `section.dataset.activeCard`, is what the race
+  above actually was — passing the value directly instead of writing-then-re-reading it removes
+  the race by construction, not just by getting the ordering right).
+
+`Logo.astro`'s own arc/noise marquee animation is separate and always-running, unrelated to
+scroll.
 
 ---
 
@@ -258,16 +288,16 @@ eliminates — see `docs/punch-card-content-system.md`'s Phase 6 notes.)
 
 Nav highlight: `pcf-nav-active` class + `▶ ` pseudo-content before active items.
 
-Paragraph-level nav is card-aware, not just section-aware: `multiCardSection.ts` writes the
-active card index onto its `<section>` as `data-active-card` on every switch (and at setup).
-`PunchCard.astro`'s `updatePcfNav` reads that attribute and only highlights the `.pcf-para-item`
-whose `data-sec`/`data-card-idx` match the active section + active card — not every paragraph
-in the section at once. Clicking a paragraph link doesn't rely on native anchor scrolling
-(which would always land on the section's start = card 0); a delegated click handler on
-`.pcf-para-item` computes the target card's scroll position (`section.offsetTop + cardIdx *
-cardH + cardH/2`, same math `multiCardSection.ts` uses internally) and calls `window.scrollTo()`
-directly. Single-card sections (Impressum) need no wiring — `data-active-card` is simply never
-set, and the lookup falls back to `'0'`, matching `cardIdx: 0`.
+Paragraph-level nav is card-aware, not just section-aware: `PunchCard.astro`'s
+`updatePcfNav(activeId, activeCardIdx)` — called with `scrollSync.ts`'s computed state directly,
+see "Scroll sync" above — only highlights the `.pcf-para-item` whose `data-sec`/`data-card-idx`
+match the active section + active card, not every paragraph in the section at once. Clicking a
+paragraph link doesn't rely on native anchor scrolling (which would always land on the section's
+start = card 0); a delegated click handler on `.pcf-para-item` computes the target card's scroll
+position (`section.offsetTop + cardIdx * cardH + cardH/2`, the same formula `scrollSync.ts` uses
+internally, computed independently here so a click lands exactly within the target card's range)
+and calls `window.scrollTo()` directly. Single-card sections (Impressum) need no special
+handling — their one `.pcf-card` is always `cardIdx: 0`, same formula, no branch needed.
 
 ---
 
@@ -340,10 +370,10 @@ appended to `.section-content-wrapper` — **not** inside `.pcf-stage-multi`, wh
 `overflow: hidden` and would clip anything meant to extend past the card or the screen — and
 positions it via `getBoundingClientRect()` on the exact character span at `(row, col)`, applying
 a `transform: translate(x%, y%)` looked up from `corner` (no need to measure the embedded
-content's own size). Multi-card visibility reuses the existing `data-active-card` convention
-(each wrapper carries `data-embed-section`/`data-embed-card-idx`, checked by the same scroll
-listener that already drives paragraph-nav highlighting) — no changes needed to
-`multiCardSection.ts`.
+content's own size). Multi-card visibility is driven the same way as nav highlighting: each
+wrapper carries `data-embed-section`/`data-embed-card-idx`, and `updateEmbedVisibility(wrapper,
+activeSectionId, activeCardIdx)` compares them against `scrollSync.ts`'s computed state, passed
+in directly rather than read back off a DOM attribute — see "Scroll sync" above.
 
 The card's own `IMPRESSUM-SECTION.` line is intentionally styled as a section-header token
 (`pcc-section`), not a paragraph-name token — it doubles as both this card's only heading and a

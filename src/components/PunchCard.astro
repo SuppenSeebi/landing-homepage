@@ -64,10 +64,12 @@ const embedsJson = JSON.stringify(embeds);
             )}
             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                 <span class="pcf-fh-lbl">DIVISION</span>
+                <!-- href="#" here is a placeholder - patchDivisionLinks() (client script) sets
+                     the real target from divisionMap's first entry per division, once, at init -->
                 <div class="pcf-fh-nav">
-                    <a class="pcf-div-item" data-div="data" href="#top"  >DATA DIVISION</a>
+                    <a class="pcf-div-item" data-div="data" href="#">DATA DIVISION</a>
                     <span class="pcf-nav-dot">·</span>
-                    <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
+                    <a class="pcf-div-item" data-div="proc" href="#">PROCEDURE DIVISION</a>
                 </div>
             </div>
             {header.right[0].href ? (
@@ -182,10 +184,12 @@ const embedsJson = JSON.stringify(embeds);
                 )}
                 <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                     <span class="pcf-fh-lbl">DIVISION</span>
+                    <!-- href="#" here is a placeholder - patchDivisionLinks() (client script)
+                         sets the real target from divisionMap's first entry per division -->
                     <div class="pcf-fh-nav">
-                        <a class="pcf-div-item" data-div="data" href="#top"  >DATA DIVISION</a>
+                        <a class="pcf-div-item" data-div="data" href="#">DATA DIVISION</a>
                         <span class="pcf-nav-dot">·</span>
-                        <a class="pcf-div-item" data-div="proc" href="#links">PROCEDURE DIVISION</a>
+                        <a class="pcf-div-item" data-div="proc" href="#">PROCEDURE DIVISION</a>
                     </div>
                 </div>
                 {header.right[0].href ? (
@@ -279,6 +283,8 @@ const embedsJson = JSON.stringify(embeds);
 )}
 
 <script>
+import { onActiveStateChange } from '../scripts/scrollSync';
+
 // Nav data (divisionMap/sectionsByDiv/parasBySection) is derived by the compiler from the
 // shared main.pcob program (src/pcob/loadProgram.ts) and embedded once, page-side, as a JSON
 // island by index.astro - there's no static punch-nav.ts to import client-side anymore, since
@@ -346,6 +352,17 @@ function buildNavGroups() {
     });
 }
 
+// The DATA/PROCEDURE division-nav links jump to "the first section in that division" - derived
+// from divisionMap (already parsed above), not hardcoded, so this stays correct regardless of
+// which section @IMPORT order happens to put first in a given division. The template renders a
+// harmless "#" placeholder; this patches it to the real target once, at init.
+function patchDivisionLinks() {
+    document.querySelectorAll<HTMLAnchorElement>('.pcf-div-item[data-div]').forEach(a => {
+        const firstSection = DIVISION_MAP[a.dataset.div ?? '']?.[0];
+        if (firstSection) a.href = `#${firstSection}`;
+    });
+}
+
 // Jump directly to a specific card within a section, rather than just the section's start -
 // same scroll-position math multiCardSection.ts uses internally, computed independently here
 // so a click can land exactly within the target card's scroll range (midpoint, to avoid
@@ -379,18 +396,6 @@ document.addEventListener('click', e => {
     }
 });
 
-// Uses scrollY directly (not a viewport-midpoint offset), matching app.ts's getActiveSection()
-// and multiCardSection.ts's card math - otherwise nav highlighting flips to the next
-// section/card before the visible card actually switches.
-function getActiveId(): string {
-    const y = window.scrollY;
-    let active = 'top';
-    document.querySelectorAll<HTMLElement>('section').forEach(s => {
-        if (y >= s.offsetTop && y < s.offsetTop + s.offsetHeight) active = s.id;
-    });
-    return active;
-}
-
 function getActiveDivId(id: string): string {
     for (const [div, ids] of Object.entries(DIVISION_MAP)) {
         if (ids.includes(id)) return div;
@@ -398,7 +403,7 @@ function getActiveDivId(id: string): string {
     return 'data';
 }
 
-function updatePcfNav(activeId: string) {
+function updatePcfNav(activeId: string, activeCardIdx: number) {
     const divId = getActiveDivId(activeId);
 
     document.querySelectorAll<HTMLElement>('.pcf-div-item').forEach(el =>
@@ -413,7 +418,7 @@ function updatePcfNav(activeId: string) {
     document.querySelectorAll<HTMLElement>('.pcf-sec-item').forEach(el =>
         el.classList.toggle('pcf-nav-active', el.getAttribute('href') === `#${activeId}`));
 
-    const activeCard = document.getElementById(activeId)?.dataset.activeCard ?? '0';
+    const activeCard = String(activeCardIdx);
     document.querySelectorAll<HTMLElement>('.pcf-para-item').forEach(el =>
         el.classList.toggle('pcf-nav-active', el.dataset.sec === activeId && el.dataset.cardIdx === activeCard));
 }
@@ -613,15 +618,20 @@ function positionEmbedWrapper(wrapper: HTMLElement) {
 }
 
 // Multi-card sections stack every card at the same screen position and show one at a time
-// (pcf-card-active) - an embed belonging to a card that isn't currently active hides, same
-// convention data-active-card already establishes for paragraph-nav highlighting (falls back
-// to '0', so single-card sections like Impressum - which never set data-active-card - work
-// unchanged, always "active").
-function updateEmbedVisibility(wrapper: HTMLElement) {
-    const sectionId = wrapper.dataset.embedSection;
-    const activeCard = sectionId ? (document.getElementById(sectionId)?.dataset.activeCard ?? '0') : '0';
-    wrapper.hidden = wrapper.dataset.embedCardIdx !== activeCard;
+// (pcf-card-active) - an embed belonging to a card that isn't currently active hides. Takes
+// scrollSync's active section+card directly rather than re-reading DOM state some other script
+// wrote, so this can never lag behind whichever card is actually on screen.
+function updateEmbedVisibility(wrapper: HTMLElement, activeSectionId: string, activeCardIdx: number) {
+    const matches = wrapper.dataset.embedSection === activeSectionId
+        && wrapper.dataset.embedCardIdx === String(activeCardIdx);
+    wrapper.hidden = !matches;
 }
+
+// Mirrors scrollSync's last-known state, kept in sync by the onActiveStateChange subscription
+// below - renderEmbedsForCard runs inside a requestAnimationFrame callback (after that
+// subscription's synchronous initial call has already fired), so this is always current by the
+// time a newly-created embed wrapper needs an initial visibility.
+let currentActive = { sectionId: '', cardIdx: 0 };
 
 function renderEmbedsForCard(card: HTMLElement) {
     const area = card.querySelector<HTMLElement>('.pcf-punch-area');
@@ -646,12 +656,13 @@ function renderEmbedsForCard(card: HTMLElement) {
         wrapper.innerHTML = embed.html;
         container.appendChild(wrapper);
         positionEmbedWrapper(wrapper);
-        updateEmbedVisibility(wrapper);
+        updateEmbedVisibility(wrapper, currentActive.sectionId, currentActive.cardIdx);
     }
 }
 
-function updateAllEmbedVisibility() {
-    document.querySelectorAll<HTMLElement>('.pcf-embed').forEach(updateEmbedVisibility);
+function updateAllEmbedVisibility(activeSectionId: string, activeCardIdx: number) {
+    document.querySelectorAll<HTMLElement>('.pcf-embed')
+        .forEach(wrapper => updateEmbedVisibility(wrapper, activeSectionId, activeCardIdx));
 }
 
 function repositionAllEmbeds() {
@@ -662,6 +673,7 @@ function repositionAllEmbeds() {
 
 function initAllCards() {
     buildNavGroups();
+    patchDivisionLinks();
     document.querySelectorAll<HTMLElement>('.pcf-card').forEach(card => {
         buildRulersForCard(card);
         card.querySelectorAll<HTMLElement>('.pcf-punch-area').forEach(renderLinesForArea);
@@ -676,14 +688,14 @@ function initAllCards() {
 
 initAllCards();
 
-window.addEventListener('scroll', () => {
-    updatePcfNav(getActiveId());
-    updateAllEmbedVisibility();
-}, { passive: true });
+onActiveStateChange(state => {
+    currentActive = state;
+    updatePcfNav(state.sectionId, state.cardIdx);
+    updateAllEmbedVisibility(state.sectionId, state.cardIdx);
+});
+
 window.addEventListener('resize', () => {
     document.querySelectorAll<HTMLElement>('.pcf-card').forEach(buildCharsRulerForCard);
     repositionAllEmbeds();
 }, { passive: true });
-
-updatePcfNav(getActiveId());
 </script>
