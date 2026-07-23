@@ -7,6 +7,15 @@ export type Line = [seq: string, tokens: Token[]];
 
 export type DivisionId = 'data' | 'proc';
 
+/** The DSL's fixed, closed @DIVISION vocabulary, in COBOL's own fixed division order - DATA and
+ * PROCEDURE are the only values @DIVISION accepts. Defined once, here: parseSource.ts's
+ * @DIVISION regex and compile.ts's division-nav labels are both derived from this, neither
+ * independently retypes the COBOL words. Unlike section/card names, this is a closed 2-value
+ * grammar fact (like @VISIBILITY's PUBLIC|INTERNAL), not author-chosen content - but the actual
+ * rendered text/order still traces back to this one declaration, not a template literal that
+ * could drift from what the compiler actually recognizes. */
+export const DIVISION_WORDS: Record<DivisionId, string> = { data: 'DATA', proc: 'PROCEDURE' };
+
 export type Visibility = 'public' | 'internal';
 
 export class PcobError extends Error {
@@ -86,9 +95,20 @@ export interface CompiledHeader {
     right: [HeaderCell, HeaderCell];
 }
 
+/** One DATA/PROCEDURE division-nav link, fully resolved server-side - label from DIVISION_WORDS,
+ * href from that division's first section (divisionMap[id][0]). Rendered directly, no
+ * client-side patch needed; a division with zero surviving sections is simply absent, same "no
+ * dangling nav entry" rule @VISIBILITY already applies to sections/cards. */
+export interface DivisionNavEntry {
+    id: DivisionId;
+    label: string;
+    href: string;
+}
+
 export interface CompiledProgram {
     sections: CompiledSection[];
     divisionMap: Record<DivisionId, string[]>;
+    divisionNav: DivisionNavEntry[];
     sectionsByDiv: Record<DivisionId, NavEntry[]>;
     parasBySection: Record<string, ParaNavEntry[]>;
     header: CompiledHeader;

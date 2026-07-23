@@ -9,15 +9,16 @@
 // genuinely bespoke Astro-side markup + a JS-measurement script, both replaced by a plain
 // {{embed:path}} tag in impressum.pcob. Every section, including Impressum, renders through
 // this one template now.
-import type { CompiledHeader, CompiledSection } from '../../pcob/types';
+import type { CompiledHeader, CompiledSection, DivisionNavEntry } from '../../pcob/types';
 import PunchCard from '../PunchCard.astro';
 
 interface Props {
     section: CompiledSection;
     header: CompiledHeader;
+    divisionNav: DivisionNavEntry[];
 }
 
-const { section, header } = Astro.props;
+const { section, header, divisionNav } = Astro.props;
 const isMulti = section.cards.length > 1;
 
 // Fixed px, not vh - a scroll "tick" (mouse wheel notch) is a fixed pixel amount, not a
@@ -35,6 +36,7 @@ const PX_PER_CARD = 200;
                     <PunchCard
                         noStage={true}
                         header={header}
+                        divisionNav={divisionNav}
                         lines={card.lines}
                         callLinks={card.callLinks}
                         embeds={card.embeds}
@@ -50,6 +52,7 @@ const PX_PER_CARD = 200;
                 <PunchCard
                     noStage={true}
                     header={header}
+                    divisionNav={divisionNav}
                     lines={section.cards[0].lines}
                     callLinks={section.cards[0].callLinks}
                     embeds={section.cards[0].embeds}

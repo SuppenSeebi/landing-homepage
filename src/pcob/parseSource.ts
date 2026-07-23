@@ -12,7 +12,7 @@
 // time and deliberately not part of this) - see compile.ts for how a value's {{link}} tag (if
 // any) gets resolved into an href.
 
-import { PcobError, type DivisionId, type Visibility } from './types';
+import { DIVISION_WORDS, PcobError, type DivisionId, type Visibility } from './types';
 
 export interface RawCard {
     name: string;
@@ -59,7 +59,12 @@ export interface RawProgram {
     header: Partial<Record<HeaderSlot, RawHeaderCell>>;
 }
 
-const DIVISION_IDS: Record<string, DivisionId> = { DATA: 'data', PROCEDURE: 'proc' };
+// Derived from DIVISION_WORDS (types.ts), not independently retyped - the word->id direction
+// this parser needs, plus the regex pattern that validates @DIVISION's value.
+const DIVISION_IDS = Object.fromEntries(
+    (Object.entries(DIVISION_WORDS) as [DivisionId, string][]).map(([id, word]) => [word, id]),
+) as Record<string, DivisionId>;
+const DIVISION_REGEX = new RegExp(`^@DIVISION\\s+(${Object.values(DIVISION_WORDS).join('|')})\\s*$`);
 
 function parseAttrs(text: string, lineNo: number): Record<string, string> {
     const attrs: Record<string, string> = {};
@@ -219,7 +224,7 @@ export function parseSource(source: string, resolveImport?: (name: string) => st
             continue;
         }
 
-        const divisionMatch = trimmed.match(/^@DIVISION\s+(DATA|PROCEDURE)\s*$/);
+        const divisionMatch = trimmed.match(DIVISION_REGEX);
         if (divisionMatch) {
             const id = DIVISION_IDS[divisionMatch[1]];
             division = { id, lineNo, sections: [] };

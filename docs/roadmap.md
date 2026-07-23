@@ -149,6 +149,28 @@ compiled JS bundle for `scrollSync.ts`, `app.ts`, and `multiCardSection.ts` was 
 (post-bundle, pre-minified logic confirmed by hand) since scroll behavior itself can't be
 verified without a browser.
 
+A seventh round: Sebastian caught the exact hardcoding the audit above described but didn't
+actually fix — `<a class="pcf-div-item" data-div="proc" href="#">PROCEDURE DIVISION</a>` still
+had its *label text* ("DATA DIVISION"/"PROCEDURE DIVISION") typed directly in `PunchCard.astro`'s
+template, only the `href` had been derived. Stated rule of thumb: darker-beige chrome (title bar,
+zone-row labels) is legitimately fixed design; lighter-beige areas (form header, navbar, links,
+card content) should trace back to `.pcob`-compiled data, not independently-typed template
+literals. Fixed properly this time: `types.ts`'s new `DIVISION_WORDS` constant is now the *one*
+place `DATA`/`PROCEDURE` are spelled out — `parseSource.ts`'s `@DIVISION` regex/word-map and
+`compile.ts`'s new `divisionNav: DivisionNavEntry[]` (fully resolved `{id, label, href}` per
+division, server-side) both derive from it. Threaded as a plain prop (`index.astro` →
+`PunchSection.astro` → `PunchCard.astro`, same pattern as `header`) rather than the client-side
+placeholder-then-patch approach from the previous round, which is now removed entirely
+(`patchDivisionLinks()` deleted). See `CLAUDE.md`'s new "DIVISION nav" section for full detail.
+
+Broader audit against the stated rule found no other clear-cut violations, but surfaced a
+genuinely ambiguous case Sebastian asked to discuss rather than have decided unilaterally: the
+`DIVISION`/`SECTION`/`PARAGRAPH`/`DATE - VERSION` caption words above each header nav row are
+hardcoded template text, visually inside the lighter-beige area, but arguably not "content" at
+all — they're fixed COBOL/form structural category names with no pcob-authored source to derive
+from, same category as `DATE - VERSION` (already a deliberate, previously-discussed exception via
+the `@HEADER-RIGHT-THIRD` compile error). Open, pending Sebastian's call.
+
 ---
 
 ## 2. Tools page redesign + embed

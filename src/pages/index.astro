@@ -20,7 +20,7 @@ const navData = JSON.stringify({
 <Layout>
     <Logo />
     {program.sections.map(section => (
-        <PunchSection section={section} header={program.header} />
+        <PunchSection section={section} header={program.header} divisionNav={program.divisionNav} />
     ))}
     <div class="pcf-scroll-end-spacer"></div>
     <script type="application/json" id="pcf-nav-data" set:html={navData} />

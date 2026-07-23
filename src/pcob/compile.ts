@@ -23,7 +23,7 @@ import {
 } from './parseSource';
 import {
     type CallLinkTarget, type CompiledCard, type CompiledHeader, type CompiledProgram, type CompiledSection,
-    type HeaderCell, type Line, PcobError, type Visibility,
+    DIVISION_WORDS, type DivisionId, type HeaderCell, type Line, PcobError, type Visibility,
 } from './types';
 
 // This module walks a fully-resolved RawProgram tree (any @IMPORTs already merged in by
@@ -238,7 +238,15 @@ export function compileRawProgram(
         }
     }
 
-    return { sections, divisionMap, sectionsByDiv, parasBySection, header };
+    // Fully resolved server-side (label from DIVISION_WORDS, href from this division's first
+    // section) so PunchCard.astro never has to independently retype "DATA DIVISION"/"PROCEDURE
+    // DIVISION" or guess which section is first - a division with no surviving sections is
+    // just absent, same "no dangling nav entry" rule @VISIBILITY already applies elsewhere.
+    const divisionNav: CompiledProgram['divisionNav'] = (Object.keys(DIVISION_WORDS) as DivisionId[])
+        .filter(id => divisionMap[id].length > 0)
+        .map(id => ({ id, label: `${DIVISION_WORDS[id]} DIVISION`, href: `#${divisionMap[id][0]}` }));
+
+    return { sections, divisionMap, divisionNav, sectionsByDiv, parasBySection, header };
 }
 
 /** Single-file entry point — parses then compiles one self-contained .pcob source (no

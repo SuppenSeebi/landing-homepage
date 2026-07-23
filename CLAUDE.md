@@ -254,6 +254,35 @@ this, not a silently-accepted or generically-rejected directive.
 
 ---
 
+## DIVISION nav (`DivisionNavEntry[]`, prop-threaded, not JSON-islanded)
+
+The `DATA DIVISION` / `PROCEDURE DIVISION` nav links (in the `DIVISION` row of the form header)
+used to be literal text typed directly in `PunchCard.astro`'s template — found and fixed
+2026-07-23 as exactly the kind of hardcoded design/content coupling this project tries to avoid:
+the label words were independently retyped (not sourced from anything the compiler actually
+knows), and the link targets were hardcoded to `#top`/`#links`, silently assuming those are each
+division's first section. `types.ts`'s `DIVISION_WORDS: Record<DivisionId, string>` (`{ data:
+'DATA', proc: 'PROCEDURE' }`) is now the *one* place that vocabulary is spelled out —
+`parseSource.ts`'s `@DIVISION` regex and `DIVISION_IDS` word→id map, and `compile.ts`'s
+`divisionNav` labels, are both derived from it, not independently hardcoded a second/third time.
+`compile.ts` resolves `CompiledProgram.divisionNav: DivisionNavEntry[]` fully server-side —
+`{ id, label: '<WORD> DIVISION', href: '#' + divisionMap[id][0] }` per division that has at
+least one surviving section (a division with zero sections is simply absent, same "no dangling
+nav entry" rule `@VISIBILITY` already applies to sections/cards). This is a closed 2-value COBOL
+grammar fact, not author-chosen content in the way a section/card name is — but the *text that
+actually renders* still traces back to the compiler, not a template literal that could drift
+from what `@DIVISION` actually recognizes.
+
+Threaded as a plain prop — `index.astro` → `PunchSection.astro` → `PunchCard.astro` — the same
+pattern `header` already uses, *not* through the `#pcf-nav-data` JSON island: unlike
+`sectionsByDiv`/`parasBySection` (built into DOM nodes client-side by `buildNavGroups()`, since
+those need to run inside every page instance's own nav-group containers), the 2 division links
+are few, fixed, and known entirely at build time, so there's no reason to defer them to a
+client-side patch — this fully replaced an earlier version of this fix that rendered a `href="#"`
+placeholder and patched it in JS after load.
+
+---
+
 ## Navigation data (compiler-derived, no more `punch-nav.ts`)
 
 `src/config/punch-nav.ts` is gone. Nav data (`divisionMap`/`sectionsByDiv`/`parasBySection`) is

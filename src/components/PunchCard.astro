@@ -1,7 +1,7 @@
 ---
 import { execSync } from 'child_process';
 import { punchText } from '../utils/punchText';
-import type { CallLinkTarget, CompiledEmbed, CompiledHeader } from '../pcob/types';
+import type { CallLinkTarget, CompiledEmbed, CompiledHeader, DivisionNavEntry } from '../pcob/types';
 
 type TT = 'div'|'section'|'para'|'lvl'|'name'|'kw'|'val'|'numval'|'dot'|'comment';
 type Token = [TT, string];
@@ -9,6 +9,7 @@ type Line  = [string, Token[]];
 
 interface Props {
     header: CompiledHeader;
+    divisionNav: DivisionNavEntry[];
     lines?: Line[];
     callLinks?: Record<string, CallLinkTarget>;
     embeds?: CompiledEmbed[];
@@ -24,6 +25,7 @@ try { gitHash = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).tri
 
 const {
     header,
+    divisionNav,
     lines = [],
     callLinks = {},
     embeds = [],
@@ -64,12 +66,11 @@ const embedsJson = JSON.stringify(embeds);
             )}
             <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                 <span class="pcf-fh-lbl">DIVISION</span>
-                <!-- href="#" here is a placeholder - patchDivisionLinks() (client script) sets
-                     the real target from divisionMap's first entry per division, once, at init -->
                 <div class="pcf-fh-nav">
-                    <a class="pcf-div-item" data-div="data" href="#">DATA DIVISION</a>
-                    <span class="pcf-nav-dot">·</span>
-                    <a class="pcf-div-item" data-div="proc" href="#">PROCEDURE DIVISION</a>
+                    {divisionNav.map((d, i) => (<>
+                        {i > 0 && <span class="pcf-nav-dot">·</span>}
+                        <a class="pcf-div-item" data-div={d.id} href={d.href}>{d.label}</a>
+                    </>))}
                 </div>
             </div>
             {header.right[0].href ? (
@@ -184,12 +185,11 @@ const embedsJson = JSON.stringify(embeds);
                 )}
                 <div class="pcf-fh-cell pcf-fh-w2 pcf-fh-nav-cell">
                     <span class="pcf-fh-lbl">DIVISION</span>
-                    <!-- href="#" here is a placeholder - patchDivisionLinks() (client script)
-                         sets the real target from divisionMap's first entry per division -->
                     <div class="pcf-fh-nav">
-                        <a class="pcf-div-item" data-div="data" href="#">DATA DIVISION</a>
-                        <span class="pcf-nav-dot">·</span>
-                        <a class="pcf-div-item" data-div="proc" href="#">PROCEDURE DIVISION</a>
+                        {divisionNav.map((d, i) => (<>
+                            {i > 0 && <span class="pcf-nav-dot">·</span>}
+                            <a class="pcf-div-item" data-div={d.id} href={d.href}>{d.label}</a>
+                        </>))}
                     </div>
                 </div>
                 {header.right[0].href ? (
@@ -349,17 +349,6 @@ function buildNavGroups() {
                 container.appendChild(grp);
             }
         }
-    });
-}
-
-// The DATA/PROCEDURE division-nav links jump to "the first section in that division" - derived
-// from divisionMap (already parsed above), not hardcoded, so this stays correct regardless of
-// which section @IMPORT order happens to put first in a given division. The template renders a
-// harmless "#" placeholder; this patches it to the real target once, at init.
-function patchDivisionLinks() {
-    document.querySelectorAll<HTMLAnchorElement>('.pcf-div-item[data-div]').forEach(a => {
-        const firstSection = DIVISION_MAP[a.dataset.div ?? '']?.[0];
-        if (firstSection) a.href = `#${firstSection}`;
     });
 }
 
@@ -673,7 +662,6 @@ function repositionAllEmbeds() {
 
 function initAllCards() {
     buildNavGroups();
-    patchDivisionLinks();
     document.querySelectorAll<HTMLElement>('.pcf-card').forEach(card => {
         buildRulersForCard(card);
         card.querySelectorAll<HTMLElement>('.pcf-punch-area').forEach(renderLinesForArea);
