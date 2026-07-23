@@ -16,7 +16,7 @@ all. Kept together here anyway since they're one connected roadmap Sebastian is 
 | # | Project | Repo | State |
 |---|---|---|---|
 | 1 | Claude's own section | landing-homepage | **Done** (2026-07-23) |
-| 2 | Tools page redesign + embed | tool-homepage (+ landing-homepage for the embed point) | Not started |
+| 2 | Tools page redesign + embed | tool-homepage (+ landing-homepage for the embed point) | **In progress** — plan doc written, see `tool-homepage/docs/redesign-plan.md` |
 | 3 | AI tool-authoring pipeline | tool-homepage | Not started, deliberately deferred until after #2 |
 | 4 | Blog / projects write-ups | landing-homepage | Not started, needs a content-model discussion first |
 | 5 | 3D-printed lamp (design + PCB + firmware) | new, non-code project | Not started, intentionally last |
@@ -176,23 +176,21 @@ hardcoded design chrome — see `CLAUDE.md`'s "DIVISION nav" section for the set
 
 ## 2. Tools page redesign + embed
 
-Rework `tool.sschw.dev` (`D:\WRK\tool-homepage`): sophisticated design, default tools, and
-tagging/grouping (e.g. "string", "pdf"). Embed into this page, replacing the
-`CURRENT SYSTEM RETROCODE GMBH` header cell/value.
+**In progress — full plan lives in `D:\WRK\tool-homepage\docs\redesign-plan.md`, this is now
+just a pointer + summary, not the source of truth for this item.**
 
-**Recommended approach:** treat this as its own project in `tool-homepage`, not a reskin into
-the COBOL punch-card aesthetic — a tools directory has different UI needs (forms, previews,
-outputs) than 80-column fixed-format cards. Keep it thematically consistent but let it be its
-own "system" the user jumps into, similar to how `CURRENT SYSTEM`/`IDENTIFICATION` already act
-as pointers to other systems, not embedded page content.
+Rework `tool.sschw.dev` (`D:\WRK\tool-homepage`): dark-HUD design (same visual language as this
+site's `compile-trace.html` embed, not a punch-card reskin), tag-based grouping, an
+auto-discovery registry backend (contract-first polyglot — Python tools in-process now, other
+languages join the same contract when actually needed), and per-tool language badge / setup
+view / source view, all driven by the same registry entry. Initial tool set (proposed, spanning
+4 languages) and a full security-notes section for #3 (still deferred) are both in the linked
+doc. Embed into this page as a link-out from the `CURRENT SYSTEM` header cell (not a true
+iframe), once the redesign exists.
 
-**Scope for this step specifically:** redesign + tagging/grouping only. No AI-authoring pipeline
-yet — that's #3, deliberately sequenced after this exists and is stable.
-
-**Open questions:** current stack of `tool-homepage` (needs a look before any design decision);
-exact mechanism for "embed" (iframe vs. link-out vs. shared header/nav) — likely a link-out from
-the header cell rather than a true embed, to avoid cross-origin/styling entanglement, but worth
-confirming once the redesign shape is clearer.
+Infra: moving to its own Proxmox CT, separate from the Vaultwarden/Wiki.js VM — isolates the one
+workload that will eventually run AI-generated code. Sebastian provisions this; doesn't block
+app-level work.
 
 ---
 
