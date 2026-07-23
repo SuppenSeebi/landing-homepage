@@ -281,6 +281,13 @@ are few, fixed, and known entirely at build time, so there's no reason to defer 
 client-side patch — this fully replaced an earlier version of this fix that rendered a `href="#"`
 placeholder and patched it in JS after load.
 
+**Settled, not left hardcoded by oversight:** the `DIVISION`/`SECTION`/`PARAGRAPH` caption words
+above each nav row, and `DATE - VERSION`'s, stay hardcoded template text — raised and confirmed
+with Sebastian 2026-07-23. Unlike `DATA DIVISION`/`PROCEDURE DIVISION` above, there's no
+`.pcob`-authored fact these could ever drift from (no directive names a row's caption), so
+they're the same category as the darker-beige zone-row labels (`LINE`/`SEQUENCE`) — fixed
+form/COBOL structural names, not content, even though they sit in the lighter-beige area.
+
 ---
 
 ## Navigation data (compiler-derived, no more `punch-nav.ts`)

@@ -169,7 +169,8 @@ genuinely ambiguous case Sebastian asked to discuss rather than have decided uni
 hardcoded template text, visually inside the lighter-beige area, but arguably not "content" at
 all — they're fixed COBOL/form structural category names with no pcob-authored source to derive
 from, same category as `DATE - VERSION` (already a deliberate, previously-discussed exception via
-the `@HEADER-RIGHT-THIRD` compile error). Open, pending Sebastian's call.
+the `@HEADER-RIGHT-THIRD` compile error). **Resolved**: Sebastian confirmed leaving them as
+hardcoded design chrome — see `CLAUDE.md`'s "DIVISION nav" section for the settled reasoning.
 
 ---
 
