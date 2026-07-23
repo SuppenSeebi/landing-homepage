@@ -125,11 +125,24 @@ p {
    ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── SECTION HEIGHT ─────────────────────────────────────────────────────────── */
-/* Impressum is the last section - unlike every other section, there's no further content
-   below it to keep the document scrollable, so its own height must be >= one full viewport
-   (100vh) or the browser's max scroll position falls short of its offsetTop entirely and it
-   can never become reachable/active. 110vh leaves a safety margin over the exact boundary. */
+/* Scroll-pacing height for single-card sections (currently just Impressum) - same role
+   PX_PER_CARD*cards.length plays for multi-card sections, just not derived from a card count
+   since there's only ever one "card" here. NOT what guarantees the last section on the page is
+   reachable - see .pcf-scroll-end-spacer below for that (this class used to carry both jobs,
+   back when Impressum was always the last section; it no longer is, now that CLAUDE can be
+   imported after it). */
 .pcf-section-height { height: 110vh; }
+
+/* Whichever section main.pcob's @IMPORT order happens to put last needs enough trailing space
+   for the browser's max scroll position to actually reach its offsetTop - otherwise scrolling
+   (and clicking a link into it) silently stops short, no matter how tall that section itself is.
+   A flat one-viewport spacer after every section, unconditionally, guarantees this for whichever
+   section ends up last - past, present, or after some future @IMPORT reorder - without needing
+   any section to inflate its own height just in case it happens to be the final one. Not a
+   <section> itself, so getActiveSection() (app.ts) and multiCardSection.ts both ignore it
+   entirely; scrolling into it just leaves the true last section active, same as scrolling into
+   Impressum's old safety margin used to. */
+.pcf-scroll-end-spacer { height: 110vh; }
 
 /* ── STAGE ──────────────────────────────────────────────────────────────────── */
 .pcf-stage {

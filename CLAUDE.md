@@ -203,7 +203,7 @@ marquee animation is separate and always-running, unrelated to scroll.
 
 ## Form-header cells (authored via `@HEADER-*` in `main.pcob`)
 
-The 5 configurable form-header cells — left column `PROGRAMMER`/`PROGRAM`/`CURRENT SYSTEM`,
+The 5 configurable form-header cells — left column `PROGRAMMER`/`ABOUT PROGRAM`/`CURRENT SYSTEM`,
 right column `XREF`/`IDENTIFICATION` — are `@HEADER-LEFT-FIRST|SECOND|THIRD "label" "value"` /
 `@HEADER-RIGHT-FIRST|SECOND "label" "value"` directives in `main.pcob`, resolved once by
 `compile.ts`'s `resolveHeader`/`resolveHeaderCell` into `CompiledProgram.header`. All 5 are
@@ -212,8 +212,9 @@ required (missing one is a compile error, same rigor as `@ROWS`). A `value` may 
 through, no separate tag-parsing path — and if present, `PunchCard.astro` renders the whole cell
 as an `<a>`; if absent, a plain `<div>`. This applies uniformly to all 5 cells — left cells
 (`header.left[0..2]`) only gained the same conditional `<a>`/`<div>` branch right cells already
-had in 2026-07-23, when `PROGRAM` became the first left cell to actually carry a link (see
-"Established patterns" below); before that fix a left cell's `href` was silently ignored.
+had in 2026-07-23, when the second left cell (label originally `PROGRAM`, since relabeled `ABOUT
+PROGRAM` for click affordance — see "Established patterns" below) became the first left cell to
+actually carry a link; before that fix a left cell's `href` was silently ignored.
 
 The 3rd right cell, `DATE - VERSION`, is deliberately **not** part of this — it's computed build
 metadata (today's date + `git rev-parse --short HEAD`), not authored content, and stays inline in
@@ -363,5 +364,19 @@ so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LIN
   division, 4 cards) is authored solely by Claude, not Sebastian — the one section on the site
   with that split, and the reason it lives in its own `src/content/_claude/` root rather than
   `src/content/_punchcard/` (Sebastian's own content — see `loadProgram.ts`'s two-glob setup).
-  It's linked from the `PROGRAM` header cell (`SSCHW-DEV` → `#claude`), which is what required
-  the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above.
+  It's linked from the second left header cell (`SSCHW-DEV` → `#claude`), which is what required
+  the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above. That cell's label
+  was relabeled `PROGRAM` → `ABOUT PROGRAM` the same day, since `PROGRAM`/`SSCHW-DEV` alone gave
+  no textual hint it was clickable (hover was the only affordance) — chosen to stay within the
+  ~14-char width `CURRENT SYSTEM`/`IDENTIFICATION` already prove fits the cell without clipping
+  (`.pcf-fh-cell` is `overflow: hidden`, and `.pcf-fh-lbl` has no ellipsis truncation, unlike
+  `.pcf-fh-val`).
+- `.pcf-scroll-end-spacer` (`global.css`, appended once after `program.sections.map()` in
+  `index.astro`) — a flat one-viewport `<div>` after every section, unconditionally. Whichever
+  section ends up last (via `main.pcob`'s `@IMPORT` order) needs its own height to sum with
+  everything before it to at least one viewport past its own `offsetTop`, or the browser's max
+  scroll position falls short and it's silently unreachable by scroll *or* by clicking a link
+  into it. This used to be special-cased onto Impressum alone (`.pcf-section-height: 110vh`,
+  back when it was always last) and broke the instant `claude.pcob` got imported after it — the
+  spacer fixes it generically, for whichever section is last from now on, without any section
+  needing to know or care whether it's the final one.

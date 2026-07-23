@@ -64,6 +64,19 @@ by a real build failure, fixed by inlining the patterns). `@IMPORT claude.pcob` 
 needed no change — both roots flatten into the same by-basename lookup map. Re-verified with a
 full `astro build` after the move.
 
+After deploying, Sebastian found two real bugs: (1) the `PROGRAM`/`SSCHW-DEV` header cell gave no
+textual hint it was clickable — fixed by relabeling it `ABOUT PROGRAM` (value unchanged), staying
+within the ~14-char width already proven safe by `CURRENT SYSTEM`/`IDENTIFICATION`. (2) Scrolling
+or clicking into the CLAUDE section never got past Impressum — root cause turned out to be a real
+layout constraint, not leftover hardcoding: whichever section is physically last in the document
+needs its own height to reach at least one viewport past its `offsetTop`, or the browser's max
+scroll position falls short and it's unreachable. That was special-cased onto Impressum alone
+(`.pcf-section-height: 110vh`, "Impressum is the last section") and broke the moment `claude.pcob`
+became the new last import. Fixed generically with `.pcf-scroll-end-spacer`, a flat one-viewport
+`<div>` appended once after all sections in `index.astro` — guarantees reachability for whichever
+section ends up last from now on, with no per-section special-casing. Both fixes verified via
+`astro build` + compiled-HTML spot checks (see `CLAUDE.md`'s "Established patterns" for detail).
+
 ---
 
 ## 2. Tools page redesign + embed
