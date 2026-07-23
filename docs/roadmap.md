@@ -38,7 +38,7 @@ edit it" concern doesn't apply.
   `{{link:name}}`), or something else?
 - Reachable from main nav like any other section, or more hidden?
 
-**Done (2026-07-23).** `src/content/_punchcard/claude.pcob` — `@SECTION CLAUDE id=claude`,
+**Done (2026-07-23).** `src/content/_claude/claude.pcob` — `@SECTION CLAUDE id=claude`,
 PROCEDURE division, 4 cards (`OVERVIEW-PRGRPH`, `DESIGN-PRGRPH`, `COMMENTARY-PRGRPH`,
 `AUTHORSHIP-PRGRPH`) covering what the page does, how it's designed (with tradeoffs), Claude's
 own commentary, and an explicit authorship/ownership statement. Answered the open questions by
@@ -55,6 +55,14 @@ three left cells, in both `PunchCard.astro` templates — this was also a blocke
 for #2 below, since `CURRENT SYSTEM` (a left cell) is exactly the cell that project needs to link.
 `astro build` verified end-to-end (compiled HTML spot-checked: `PROGRAM` → `href="#claude"`, all
 4 cards present with correct `cardIdx` nav entries).
+
+Sebastian then asked for the content itself to live in a folder that's visibly Claude's, not
+mixed into `_punchcard/` (his own content root) — moved to `src/content/_claude/claude.pcob`,
+`src/pcob/loadProgram.ts` updated to glob both content roots (two literal glob-pattern arrays;
+Vite's `import.meta.glob` requires a static array, not one built from a shared constant — found
+by a real build failure, fixed by inlining the patterns). `@IMPORT claude.pcob` in `main.pcob`
+needed no change — both roots flatten into the same by-basename lookup map. Re-verified with a
+full `astro build` after the move.
 
 ---
 

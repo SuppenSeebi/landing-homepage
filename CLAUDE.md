@@ -23,6 +23,7 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 | `src/pcob/loadProgram.ts` | Loads every `.pcob` file once (Vite eager `?raw` glob), resolves `main.pcob`'s `@IMPORT`s and every `{{embed}}` file reference, compiles the merged program — `loadMainProgram()`, called once from `index.astro` |
 | `src/content/_punchcard/main.pcob` | The shared program — ordered `@IMPORT` lines naming every section file, plus the 5 `@HEADER-*` form-header directives |
 | `src/content/_punchcard/embedded/*.html` | `{{embed:path}}`-referenced HTML fragments, one per embed (e.g. `embedded/impressum.html`) — plain content, not compiled as `.pcob` |
+| `src/content/_claude/*.pcob` | Second content root, Claude's own (not Sebastian's) — currently just `claude.pcob`. Loaded/merged the same way as `_punchcard/` by `loadProgram.ts`'s two-glob setup; `@IMPORT` doesn't care which root a file lives in |
 | `src/styles/global.css` | All styles (pcf-* punch card, section scroll system, token colors) |
 | `src/utils/punchText.ts` | Renders strings as per-character span markup for form header values (wear/jitter effect removed 2026-07-04 — see CSS history if reviving it) |
 
@@ -358,7 +359,9 @@ so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LIN
 - Comment lines: `['000013', [['comment','* GOBACK TO ...']]]`
 - `callLinks` maps the exact val token string (including leading space and quotes) → URL
 - Font: `"Share Tech Mono", monospace` throughout
-- `src/content/_punchcard/claude.pcob` (added 2026-07-23, `@SECTION CLAUDE id=claude`, PROCEDURE
+- `src/content/_claude/claude.pcob` (added 2026-07-23, `@SECTION CLAUDE id=claude`, PROCEDURE
   division, 4 cards) is authored solely by Claude, not Sebastian — the one section on the site
-  with that split. It's linked from the `PROGRAM` header cell (`SSCHW-DEV` → `#claude`), which is
-  what required the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above.
+  with that split, and the reason it lives in its own `src/content/_claude/` root rather than
+  `src/content/_punchcard/` (Sebastian's own content — see `loadProgram.ts`'s two-glob setup).
+  It's linked from the `PROGRAM` header cell (`SSCHW-DEV` → `#claude`), which is what required
+  the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above.

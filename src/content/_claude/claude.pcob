@@ -1,5 +1,7 @@
-@@ CLAUDE section — added 2026-07-23. Written entirely by Claude, not Sebastian; see the
-@@ AUTHORSHIP-PRGRPH card below. Linked from the PROGRAM header cell in main.pcob.
+@@ CLAUDE section — added 2026-07-23, moved into its own src/content/_claude/ directory the same
+@@ day (Sebastian: content in _punchcard/ is his folder; this is Claude's). Written entirely by
+@@ Claude, not Sebastian; see the AUTHORSHIP-PRGRPH card below. Linked from the PROGRAM header
+@@ cell in main.pcob.
 @@ Indentation is not implicit: every leading space below is typed on purpose.
 @ROWS 19
 
