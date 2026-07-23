@@ -1,0 +1,139 @@
+# Roadmap — Upcoming Projects
+
+Status: **planning**. Nothing below has code yet. This doc tracks four initiatives Sebastian
+raised in one conversation (2026-07-23), in the order agreed to tackle them — that order does
+**not** match the order they were originally raised in. Each gets its own dedicated design doc
+(same pattern as `docs/punch-card-content-system.md`) once work actually starts; this file is
+the index + current state, updated as things move.
+
+Only #1 and #4 live in this repo. #2/#3 live in `D:\WRK\tool-homepage`. #5 isn't a code repo at
+all. Kept together here anyway since they're one connected roadmap Sebastian is tracking.
+
+---
+
+## Priority order
+
+| # | Project | Repo | State |
+|---|---|---|---|
+| 1 | Claude's own section | landing-homepage | Not started |
+| 2 | Tools page redesign + embed | tool-homepage (+ landing-homepage for the embed point) | Not started |
+| 3 | AI tool-authoring pipeline | tool-homepage | Not started, deliberately deferred until after #2 |
+| 4 | Blog / projects write-ups | landing-homepage | Not started, needs a content-model discussion first |
+| 5 | 3D-printed lamp (design + PCB + firmware) | new, non-code project | Not started, intentionally last |
+
+---
+
+## 1. Claude's own section
+
+A new section on this page, authored solely by Claude — explains what the page is/does, how
+it's designed (tradeoffs, opinions), and states explicitly that this section is Claude's own and
+not Sebastian's to edit. Fits the existing architecture directly: one new `.pcob` file +
+`@IMPORT` line in `main.pcob`, same as any section (see `CLAUDE.md`'s "Sections are generic").
+Since Claude is the sole author here, the usual "keep content plain-text so Sebastian can safely
+edit it" concern doesn't apply.
+
+**Open questions to settle before writing it:**
+- What does "embedded in the header PROGRAM SSCHW-DEV ABOUT THIS PAGE" mean concretely — a new
+  `@HEADER-*` cell linking to this section (cells already support an optional `href` via
+  `{{link:name}}`), or something else?
+- Reachable from main nav like any other section, or more hidden?
+
+**Recommended next step:** short scoping conversation to answer the above, then write it as one
+self-contained session (small, no cross-cutting changes expected).
+
+---
+
+## 2. Tools page redesign + embed
+
+Rework `tool.sschw.dev` (`D:\WRK\tool-homepage`): sophisticated design, default tools, and
+tagging/grouping (e.g. "string", "pdf"). Embed into this page, replacing the
+`CURRENT SYSTEM RETROCODE GMBH` header cell/value.
+
+**Recommended approach:** treat this as its own project in `tool-homepage`, not a reskin into
+the COBOL punch-card aesthetic — a tools directory has different UI needs (forms, previews,
+outputs) than 80-column fixed-format cards. Keep it thematically consistent but let it be its
+own "system" the user jumps into, similar to how `CURRENT SYSTEM`/`IDENTIFICATION` already act
+as pointers to other systems, not embedded page content.
+
+**Scope for this step specifically:** redesign + tagging/grouping only. No AI-authoring pipeline
+yet — that's #3, deliberately sequenced after this exists and is stable.
+
+**Open questions:** current stack of `tool-homepage` (needs a look before any design decision);
+exact mechanism for "embed" (iframe vs. link-out vs. shared header/nav) — likely a link-out from
+the header cell rather than a true embed, to avoid cross-origin/styling entanglement, but worth
+confirming once the redesign shape is clearer.
+
+---
+
+## 3. AI tool-authoring pipeline
+
+The ambitious part: prompt something like "add a tool to remove all whitespace from a string"
+and have Claude write the backend + frontend, wire it into the API, install dependencies, and
+commit — gated so only Sebastian (or an explicitly authorized other person) can trigger it, via
+token/MFA/similar, with no need for Sebastian to touch the underlying files directly.
+
+**Recommendation: don't build this as custom always-on agent infrastructure for v1.** What's
+described is a secure remote-code-execution-on-request system with auto-deploy — real
+infrastructure (auth, sandboxing, dependency install, auto-commit, auto-deploy), not a feature
+on top of the tools page. The risk is blast radius: a compromised token or a bad prompt
+modifying a live backend with no human in the loop.
+
+**Staged plan:**
+- **v1 (do first, ships immediately, zero new infra):** exactly what already happens in a
+  Claude Code session — Sebastian prompts in a coding session against `tool-homepage`, Claude
+  writes the tool, Sebastian reviews the diff, Claude commits. This is "AI writes the tool" with
+  none of the remote-trigger risk.
+- **v2 (only if v1 proves inconvenient in practice — e.g. wanting to trigger from a phone with
+  no laptop/session open):** a gated remote trigger — token/MFA-authenticated endpoint that
+  kicks off a Claude Code run against `tool-homepage` in an isolated worktree/sandbox, with a
+  mandatory review or CI gate before anything merges or deploys. Scope narrowly: allowlisted
+  repo/paths only, rate-limited, secrets never reachable by the agent, no direct prod-deploy
+  path without that gate passing.
+
+**Open questions (for when we actually design v2):** what "gate" looks like in practice (human
+approval vs. automated checks only), how dependency installation is sandboxed, how tokens are
+issued/revoked, whether "someone else" ever gets access and what that access model looks like.
+
+---
+
+## 4. Blog / project write-ups
+
+Longer-form content — project descriptions, possibly images and embedded external content
+(e.g. GitHub). Needs a content-model discussion before any implementation, since prose at this
+length doesn't fit the existing 80-column punch-card line format well.
+
+**Starting point for that discussion:** `{{embed:path}}` (`src/pcob/tags.ts`,
+`src/content/_punchcard/embedded/*.html`) is already a generic, freely-positioned HTML-fragment
+pin — not Impressum-specific — and may already cover images/GitHub-card-style embeds without
+inventing new tag vocabulary (per the project's established preference for reusing existing
+directives — see `docs/punch-card-content-system.md`'s Phase 1 process note). The actual gap is
+long-form prose itself: either stretch the punch-card metaphor with a sibling format (e.g. a
+"printout"/greenbar-report sheet, thematically consistent but not row/column-constrained the
+same way), or keep cards as a terse index that links out to differently-templated pages.
+
+**Recommended next step:** dedicated design conversation (own doc, same pattern as the punch-card
+content system doc) before writing any code — this is a content-model decision, not a small
+addition.
+
+---
+
+## 5. 3D-printed lamp
+
+FreeCAD 3D-print design, KiCad PCB design + sourcing, and (if scoped) firmware — Claude doing
+all of the design work. Intentionally last, and structurally different from everything else
+here: it's not a web project, doesn't live in a code repo yet, and iteration depends on physical
+prototyping (fit, thermals, tolerances) that Claude can't verify directly — expect a
+print/assemble → report back → adjust loop rather than the usual build/typecheck iteration.
+
+**Open questions (for when this starts):** new working directory/repo for CAD + firmware
+sources; what "lamp" actually needs to do (just light, or dimming/color/smart-home integration —
+this determines whether firmware/PCB complexity is trivial or substantial); sourcing constraints
+(budget, preferred suppliers, what Sebastian can actually assemble/solder himself vs. needs
+pre-assembled).
+
+---
+
+## Next action
+
+Pick which of #1–#4 to actually scope first (the priority order above says #1, Claude's own
+section) and start that project's own design conversation.
