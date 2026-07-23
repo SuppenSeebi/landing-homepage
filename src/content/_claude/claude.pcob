@@ -21,6 +21,7 @@
 
      DISPLAY 'SSCHW-DEV: CV, LINKS AND IMPRESSUM, ONE PUNCH CARD'
      END-DISPLAY
+                                                            {{embed:embedded/compile-trace.html left}}
 
 * SCROLLING MOVES BETWEEN CARDS; NAVIGATION FOLLOWS COBOL'S
 * OWN DIVISION / SECTION / PARAGRAPH STRUCTURE.

@@ -1,0 +1,118 @@
+<div class="cthud">
+    <div class="cthud-corner cthud-corner-tl"></div>
+    <div class="cthud-corner cthud-corner-br"></div>
+    <div class="cthud-title"><span class="cthud-dot"></span>COMPILE TRACE — LIVE</div>
+    <div class="cthud-body">
+        <div class="cthud-track">
+            <div class="cthud-line">$ parse main.pcob</div>
+            <div class="cthud-line">$ resolve 6 @IMPORT &rarr; 1 shared program</div>
+            <div class="cthud-line">$ merge anchor registry: 6 sections, 0 collisions</div>
+            <div class="cthud-line">$ tokenize 23 cards, line by line</div>
+            <div class="cthud-line">$ derive nav: divisionMap / sectionsByDiv / parasBySection</div>
+            <div class="cthud-line">$ compile &rarr; Line[] (renderer needs zero changes)</div>
+            <div class="cthud-line">$ astro build &rarr; dist/index.html</div>
+            <div class="cthud-line cthud-ok">$ status: OK &mdash; you are reading the output</div>
+            <div class="cthud-line">$ parse main.pcob</div>
+            <div class="cthud-line">$ resolve 6 @IMPORT &rarr; 1 shared program</div>
+            <div class="cthud-line">$ merge anchor registry: 6 sections, 0 collisions</div>
+            <div class="cthud-line">$ tokenize 23 cards, line by line</div>
+            <div class="cthud-line">$ derive nav: divisionMap / sectionsByDiv / parasBySection</div>
+            <div class="cthud-line">$ compile &rarr; Line[] (renderer needs zero changes)</div>
+            <div class="cthud-line">$ astro build &rarr; dist/index.html</div>
+            <div class="cthud-line cthud-ok">$ status: OK &mdash; you are reading the output</div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Fully self-contained, same convention as embedded/impressum.html: every rule this fragment
+   needs lives here. --blue-primary is the shared palette token (:root, global.css) - referencing
+   it isn't the same as depending on CSS that lives outside this file.
+   Deliberately NOT styled like the aged-paper card around it - this is Claude's own instrument
+   panel bolted onto a human-authored form, not trying to blend in. The numbers in the trace below
+   (6 imports, 6 sections, 23 cards) are real, pulled from the actual .pcob sources at the time
+   this was written, not placeholder text - see ARCHITECTURE-PRGRPH for what they refer to. */
+.cthud {
+    position: relative;
+    width: 250px;
+    max-width: 74vw;
+    background: #0B0A08;
+    border: 1px solid #C2A840;
+    box-shadow: 0 0 14px rgba(194, 168, 64, 0.35), 0 2px 10px rgba(0, 0, 0, 0.5);
+    padding: 8px 10px 9px;
+    pointer-events: none;
+    font-family: "Share Tech Mono", monospace;
+}
+.cthud-corner {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--blue-primary);
+    opacity: 0.85;
+}
+.cthud-corner-tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.cthud-corner-br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.cthud-title {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    color: #C2A840;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cthud-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #6FE07A;
+    box-shadow: 0 0 5px #6FE07A;
+    animation: cthud-blink 1.6s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+.cthud-body {
+    height: 108px;
+    overflow: hidden;
+    position: relative;
+}
+.cthud-body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.035) 0px,
+        rgba(255, 255, 255, 0.035) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+}
+.cthud-track {
+    animation: cthud-scroll 18s linear infinite;
+}
+.cthud-line {
+    font-size: 0.6rem;
+    line-height: 1.35;
+    color: var(--blue-primary);
+    white-space: nowrap;
+    padding: 1px 0;
+}
+.cthud-ok { color: #6FE07A; }
+
+@keyframes cthud-scroll {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-50%); }
+}
+@keyframes cthud-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cthud-track { animation: none; }
+    .cthud-dot { animation: none; }
+}
+</style>

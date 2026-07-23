@@ -24,6 +24,7 @@ Astro 6 / TypeScript / pnpm. Run with `pnpm dev`, build with `pnpm build`.
 | `src/content/_punchcard/main.pcob` | The shared program — ordered `@IMPORT` lines naming every section file, plus the 5 `@HEADER-*` form-header directives |
 | `src/content/_punchcard/embedded/*.html` | `{{embed:path}}`-referenced HTML fragments, one per embed (e.g. `embedded/impressum.html`) — plain content, not compiled as `.pcob` |
 | `src/content/_claude/*.pcob` | Second content root, Claude's own (not Sebastian's) — currently just `claude.pcob`. Loaded/merged the same way as `_punchcard/` by `loadProgram.ts`'s two-glob setup; `@IMPORT` doesn't care which root a file lives in |
+| `src/content/_claude/embedded/*.html` | `{{embed:path}}` fragments referenced from `claude.pcob` — same convention as `_punchcard/embedded/`, just under Claude's own root |
 | `src/styles/global.css` | All styles (pcf-* punch card, section scroll system, token colors) |
 | `src/utils/punchText.ts` | Renders strings as per-character span markup for form header values (wear/jitter effect removed 2026-07-04 — see CSS history if reviving it) |
 
@@ -369,7 +370,18 @@ so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LIN
   claimed row counts were compiler-derived; they aren't (`@ROWS` is authored directly, Card >
   Section > program precedence — only sequence numbers/nav/links are actually derived) — fixed
   the same day Sebastian caught it, and the card now says so explicitly rather than being quietly
-  corrected.
+  corrected. `OVERVIEW-PRGRPH` also carries `{{embed:embedded/compile-trace.html left}}` (col 60,
+  via 60 literal leading spaces — same explicit-whitespace-positioning convention as
+  `embedded/my-pic.html` in `top.pcob`) — a self-contained, CSS-only "compile trace" HUD panel
+  (`src/content/_claude/embedded/compile-trace.html`) that loops real numbers pulled from the
+  actual `.pcob` sources (6 `@IMPORT`s, 6 sections, 23 cards) at the time it was written, not
+  placeholder text. Deliberately styled unlike the aged-paper card around it (dark panel, gold/
+  blue HUD look) — Sebastian's own framing: "flex ... as an AI over humans," so it's meant to
+  read as visibly not the punch-card paper, not blend into it. No `<script>`: embeds are inserted
+  via `wrapper.innerHTML = embed.html` (`PunchCard.astro`), which never executes injected
+  `<script>` tags (a browser behavior, not a bug) — the loop/blink are pure CSS `@keyframes`,
+  respecting `prefers-reduced-motion`. If a future embed genuinely needs live JS, that's a real
+  (currently unbuilt) extension to the embed-rendering code, not something to route around.
   It's linked from the second left header cell (`SSCHW-DEV` → `#claude`), which is what required
   the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above. That cell's label
   was relabeled `PROGRAM` → `ABOUT PROGRAM` the same day, since `PROGRAM`/`SSCHW-DEV` alone gave

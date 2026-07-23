@@ -93,6 +93,17 @@ required the DSL's `\{{` escape — confirmed via a real `astro build` that it r
 text rather than either erroring or firing as a real tag. Now 6 cards total, `astro build`
 verified.
 
+Sebastian also pointed out the section was still fairly text-only and explicitly invited a
+visual flex, since `{{embed:path}}` already exists and this section is Claude's to decide.
+Added `src/content/_claude/embedded/compile-trace.html`, a self-contained CSS-only "HUD" panel
+pinned into `OVERVIEW-PRGRPH` (`{{embed:embedded/compile-trace.html left}}` at col 60) — loops
+real numbers (6 `@IMPORT`s, 6 sections, 23 cards) pulled from the actual `.pcob` sources, styled
+deliberately unlike the aged-paper card around it. No `<script>` — embeds are injected via
+`innerHTML`, which never executes injected `<script>` tags, so the animation is pure CSS
+`@keyframes` (respecting `prefers-reduced-motion`). Verified via `astro build` + inspecting the
+compiled `data-embeds` JSON (`col: 60, row: 9, corner: "left", cardIdx: 0`, matching the pin's
+placement exactly).
+
 ---
 
 ## 2. Tools page redesign + embed
