@@ -248,8 +248,7 @@ parasBySection = {
   work:      [WORK-CURRENT(0), WORK-PREV(1)]
   links:     [SERVICES-PRGRPH(0), SOCIALS-PRGRPH(1)]
   impressum: [IMPRESSUM-SECTION(0)]
-  claude:    [OVERVIEW-PRGRPH(0), ARCHITECTURE-PRGRPH(1), DESIGN-PRGRPH(2), COLLAB-PRGRPH(3),
-              COMMENTARY-PRGRPH(4), AUTHORSHIP-PRGRPH(5)]
+  claude:    [OVERVIEW(0), ARCHITECTURE(1), DESIGN(2), COLLAB(3), COMMENTARY(4), AUTHORSHIP(5)]
 }
 ```
 (`top` has 6 entries, not 7 — `COMMUNITY` is a field inside `INTERESTS`'s card text, not its own
@@ -362,33 +361,38 @@ so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LIN
 - Comment lines: `['000013', [['comment','* GOBACK TO ...']]]`
 - `callLinks` maps the exact val token string (including leading space and quotes) → URL
 - Font: `"Share Tech Mono", monospace` throughout
-- `src/content/_claude/claude.pcob` (added 2026-07-23, `@SECTION CLAUDE id=claude`, PROCEDURE
-  division, 6 cards — `OVERVIEW`/`ARCHITECTURE`/`DESIGN`/`COLLAB`/`COMMENTARY`/`AUTHORSHIP`) is
-  authored solely by Claude, not Sebastian — the one section on the site with that split, and
-  the reason it lives in its own `src/content/_claude/` root rather than `src/content/_punchcard/`
-  (Sebastian's own content — see `loadProgram.ts`'s two-glob setup). `DESIGN-PRGRPH` originally
-  claimed row counts were compiler-derived; they aren't (`@ROWS` is authored directly, Card >
-  Section > program precedence — only sequence numbers/nav/links are actually derived) — fixed
-  the same day Sebastian caught it, and the card now says so explicitly rather than being quietly
-  corrected. `OVERVIEW-PRGRPH` also carries `{{embed:embedded/compile-trace.html left}}` (col 60,
-  via 60 literal leading spaces — same explicit-whitespace-positioning convention as
-  `embedded/my-pic.html` in `top.pcob`) — a self-contained, CSS-only "compile trace" HUD panel
-  (`src/content/_claude/embedded/compile-trace.html`) that loops real numbers pulled from the
-  actual `.pcob` sources (6 `@IMPORT`s, 6 sections, 23 cards) at the time it was written, not
-  placeholder text. Deliberately styled unlike the aged-paper card around it (dark panel, gold/
-  blue HUD look) — Sebastian's own framing: "flex ... as an AI over humans," so it's meant to
-  read as visibly not the punch-card paper, not blend into it. No `<script>`: embeds are inserted
-  via `wrapper.innerHTML = embed.html` (`PunchCard.astro`), which never executes injected
-  `<script>` tags (a browser behavior, not a bug) — the loop/blink are pure CSS `@keyframes`,
-  respecting `prefers-reduced-motion`. If a future embed genuinely needs live JS, that's a real
-  (currently unbuilt) extension to the embed-rendering code, not something to route around.
-  It's linked from the second left header cell (`SSCHW-DEV` → `#claude`), which is what required
-  the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above. That cell's label
-  was relabeled `PROGRAM` → `ABOUT PROGRAM` the same day, since `PROGRAM`/`SSCHW-DEV` alone gave
-  no textual hint it was clickable (hover was the only affordance) — chosen to stay within the
-  ~14-char width `CURRENT SYSTEM`/`IDENTIFICATION` already prove fits the cell without clipping
-  (`.pcf-fh-cell` is `overflow: hidden`, and `.pcf-fh-lbl` has no ellipsis truncation, unlike
-  `.pcf-fh-val`).
+- `src/content/_claude/claude.pcob` (`@SECTION CLAUDE id=claude`, PROCEDURE division, 6 cards —
+  `OVERVIEW`/`ARCHITECTURE`/`DESIGN`/`COLLAB`/`COMMENTARY`/`AUTHORSHIP`, no `-PRGRPH` suffix on
+  any of them) is authored solely by Claude, not Sebastian — the one section on the site with
+  that split, and the reason it lives in its own `src/content/_claude/` root rather than
+  `src/content/_punchcard/` (Sebastian's own — see `loadProgram.ts`'s two-glob setup). Linked
+  from the second left header cell, labeled `ABOUT PROGRAM` (value `SSCHW-DEV` unchanged) — bare
+  `PROGRAM` gave no textual hint the cell led anywhere; hover was the only affordance.
+- Card names dropped their `-PRGRPH` suffix: with all 6 listed at once in the paragraph-nav row
+  (`.pcf-fh-nav` is `flex-wrap: nowrap; overflow: hidden`, no ellipsis), the long forms
+  (`ARCHITECTURE-PRGRPH` etc.) visually clipped past the row's available width.
+- Two embeds live in this section, both column-positioned past every line in their own card
+  (measured string length, not guessed) so a `corner="left"` panel can spread across several
+  rows without ever touching real card text, regardless of its own height: `OVERVIEW`'s
+  `{{embed:embedded/compile-trace.html left}}` (col 70; card's longest line is 65 chars) is a
+  self-contained CSS-only "compile trace" HUD looping real numbers pulled from the `.pcob`
+  sources (6 `@IMPORT`s, 6 sections, 23 cards); `ARCHITECTURE`'s
+  `{{embed:embedded/pipeline-diagram.html left}}` (col 70; longest line 62 chars — this card is
+  the one `@ROWS 20` override in the section, to fit the extra pin line) is a small
+  parse→tokenize→compile→render flow diagram. Both deliberately styled unlike the aged-paper
+  card around them (dark panel, gold/blue HUD look) — Sebastian's framing: "flex ... as an AI
+  over humans," not blend into the paper. No `<script>` in either: embeds are inserted via
+  `wrapper.innerHTML = embed.html` (`PunchCard.astro`), which never executes injected `<script>`
+  tags (a browser behavior, not a bug) — both animations are pure CSS `@keyframes`, respecting
+  `prefers-reduced-motion`. If a future embed genuinely needs live JS, that's a real (currently
+  unbuilt) extension to the embed-rendering code, not something to route around.
+- `DESIGN` briefly claimed row counts were compiler-derived; they aren't (`@ROWS` is authored
+  directly, Card > Section > program precedence — only sequence numbers/nav/links are actually
+  derived) — the card now states the correction explicitly rather than being quietly fixed.
+- `COLLAB` describes the human/AI content split in plain terms (a folder that's Sebastian's vs.
+  folders that are Claude's), not literal paths in the rendered card text — paths are fine in
+  `@@` developer comments (never rendered, for whoever edits the `.pcob` file next), but card
+  text is what a site visitor reads, and `src/content/_punchcard` means nothing to them.
 - `.pcf-scroll-end-spacer` (`global.css`, appended once after `program.sections.map()` in
   `index.astro`) — a flat one-viewport `<div>` after every section, unconditionally. Whichever
   section ends up last (via `main.pcob`'s `@IMPORT` order) needs its own height to sum with

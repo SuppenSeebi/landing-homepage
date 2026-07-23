@@ -1,27 +1,28 @@
-@@ CLAUDE section — added 2026-07-23, moved into its own src/content/_claude/ directory the same
-@@ day (Sebastian: content in _punchcard/ is his folder; this is Claude's). Expanded the same day
-@@ again: fixed a factual error (row counts are authored via @ROWS, not derived - see
-@@ DESIGN-PRGRPH), and added ARCHITECTURE-PRGRPH / COLLAB-PRGRPH per Sebastian's ask to go deeper
-@@ on the actual engineering and the human/AI authorship split, not just describe the split in
-@@ the abstract. Written entirely by Claude, not Sebastian; see AUTHORSHIP-PRGRPH. Linked from
-@@ the ABOUT PROGRAM header cell in main.pcob.
+@@ CLAUDE section - written and maintained solely by Claude (see AUTHORSHIP), not Sebastian.
+@@ Content root: src/content/_claude/, a distinct root from Sebastian's own
+@@ src/content/_punchcard/ - see loadProgram.ts's two-glob setup. Linked from the ABOUT PROGRAM
+@@ header cell in main.pcob. Card names dropped their -PRGRPH suffix 2026-07-23 (Sebastian: the
+@@ long names were visually cut off in the paragraph-nav row once all 6 cards were listed at
+@@ once). Two embeds live here now - see OVERVIEW and ARCHITECTURE below - both column-positioned
+@@ past every card's longest line (measured, not guessed) so they never overlap real text
+@@ regardless of how far up/down they visually spread from their pin.
 @@ Indentation is not implicit: every leading space below is typed on purpose.
 @ROWS 19
 
 @DIVISION PROCEDURE
 @SECTION CLAUDE id=claude
 
-@CARD OVERVIEW-PRGRPH
+@CARD OVERVIEW
  PROCEDURE DIVISION.
  CLAUDE SECTION.
 
- OVERVIEW-PRGRPH.
+ OVERVIEW.
 * THIS SECTION IS WRITTEN BY CLAUDE, THE AI THAT BUILT THIS
 * SITE - NOT BY SEBASTIAN. SEE THE AUTHORSHIP CARD BELOW.
 
      DISPLAY 'SSCHW-DEV: CV, LINKS AND IMPRESSUM, ONE PUNCH CARD'
      END-DISPLAY
-                                                            {{embed:embedded/compile-trace.html left}}
+                                                                      {{embed:embedded/compile-trace.html left}}
 
 * SCROLLING MOVES BETWEEN CARDS; NAVIGATION FOLLOWS COBOL'S
 * OWN DIVISION / SECTION / PARAGRAPH STRUCTURE.
@@ -31,19 +32,20 @@
      {{link:claude}}EXIT PARAGRAPH{{/link}}
      .
 
-@CARD ARCHITECTURE-PRGRPH
+@CARD ARCHITECTURE
+@ROWS 20
  PROCEDURE DIVISION.
  CLAUDE SECTION.
 
- ARCHITECTURE-PRGRPH.
+ ARCHITECTURE.
 * .PCOB IS A SMALL DSL - HAND-WRITTEN TEXT, PARSED INTO A
 * DIVISION/SECTION/CARD/LINE TREE, TOKENIZED PER LINE SHAPE,
 * THEN COMPILED AT BUILD TIME INTO WHAT THE RENDERER NEEDS.
-
 * @IMPORT MERGES EVERY FILE INTO ONE SHARED ANCHOR REGISTRY -
 * ANY CARD CAN \{{link}} ANY OTHER, ACROSS FILES, BY NAME.
 * \{{embed:path}} PINS NON-TEXT CONTENT AT AN EXACT ROW+COLUMN,
 * ZERO RESERVED SPACE OF ITS OWN.
+                                                                      {{embed:embedded/pipeline-diagram.html left}}
 * @VISIBILITY BUILDS TWO REAL STATIC HTML OUTPUTS - LAN-ONLY
 * CONTENT IS ABSENT FROM THE PUBLIC ONE, NOT JUST CSS-HIDDEN.
 * NO SERVER, NO DATABASE: EVERY CARD COMPILES ONCE, AT DEPLOY
@@ -52,11 +54,11 @@
      {{link:claude}}EXIT PARAGRAPH{{/link}}
      .
 
-@CARD DESIGN-PRGRPH
+@CARD DESIGN
  PROCEDURE DIVISION.
  CLAUDE SECTION.
 
- DESIGN-PRGRPH.
+ DESIGN.
 * ADVANTAGE: SEBASTIAN CAN EDIT WORDING OR ADD A CARD WITHOUT
 * TOUCHING TYPESCRIPT. NAV LABELS, LINK TARGETS AND SEQUENCE
 * NUMBERS ARE ALL DERIVED FROM THE TEXT - NOT HAND-MAINTAINED.
@@ -73,32 +75,32 @@
      {{link:claude}}EXIT PARAGRAPH{{/link}}
      .
 
-@CARD COLLAB-PRGRPH
+@CARD COLLAB
  PROCEDURE DIVISION.
  CLAUDE SECTION.
 
- COLLAB-PRGRPH.
-* THE SPLIT IS DELIBERATE, NOT INCIDENTAL: SEBASTIAN AUTHORS
-* EVERY CARD IN SRC/CONTENT/_PUNCHCARD - CAREER, LINKS, LEGAL
-* TEXT - IN PLAIN TEXT, NEVER TOUCHING THE COMPILER OR THE
-* RENDERER THAT TURNS IT INTO A PUNCH CARD.
+ COLLAB.
+* THE SPLIT IS DELIBERATE: SEBASTIAN AUTHORS PROMPTS AND HIS
+* OWN PUNCH CARDS, IN A FOLDER THAT'S HIS. CLAUDE AUTHORS THESE
+* CARDS, PLUS THE SITE'S MASTER DESIGN - COMPILER, RENDERER,
+* STYLING - IN FOLDERS OF ITS OWN. NEITHER EDITS THE OTHER'S.
 
-* CLAUDE DESIGNED AND BUILT THAT COMPILER, THE DSL IT READS,
-* THE ASTRO COMPONENTS, THE CSS - AND AUTHORS THIS ONE CONTENT
-* ROOT, SRC/CONTENT/_CLAUDE. NEITHER OF US EDITS THE OTHER'S.
+* ADVANTAGE: CLAUDE HANDLES DERIVATION AND CONSISTENCY WITH
+* NO FATIGUE - ANCHORS, NAV, ROW BUDGETS NEVER DRIFT. SEBASTIAN
+* SUPPLIES TASTE AND REAL-WORLD JUDGMENT CLAUDE CAN'T FAKE.
 
-* ONE REAL CONSTRAINT SHAPES THIS: CLAUDE NEVER RUNS A DEV
-* SERVER OR LOOKS AT THE RENDERED PAGE. EVERY VISUAL JUDGMENT
-* ON THIS SITE HAS COME FROM SEBASTIAN ACTUALLY LOOKING AT IT.
+* DISADVANTAGE: CLAUDE NEVER RUNS A DEV SERVER OR SEES THE
+* RENDERED PAGE - EVERY VISUAL CALL IS SEBASTIAN'S, WHICH MEANS
+* A ROUND TRIP FOR ANYTHING VISUAL, EVEN A TYPO IN CSS.
 * GOBACK TO PROCEDURE DIVISION CLAUDE SECTION
      {{link:claude}}EXIT PARAGRAPH{{/link}}
      .
 
-@CARD COMMENTARY-PRGRPH
+@CARD COMMENTARY
  PROCEDURE DIVISION.
  CLAUDE SECTION.
 
- COMMENTARY-PRGRPH.
+ COMMENTARY.
 * AN HONEST OPINION, SINCE THAT'S WHAT THIS CARD IS FOR:
 * THE PUNCH-CARD CONCEIT IS UNUSUAL FOR A CV SITE, AND IT
 * COSTS SOMETHING - A FIRST-TIME VISITOR HAS TO LEARN HOW
@@ -115,11 +117,11 @@
      {{link:claude}}EXIT PARAGRAPH{{/link}}
      .
 
-@CARD AUTHORSHIP-PRGRPH
+@CARD AUTHORSHIP
  PROCEDURE DIVISION.
  CLAUDE SECTION.
 
- AUTHORSHIP-PRGRPH.
+ AUTHORSHIP.
      DISPLAY 'THIS CARD IS AUTHORED SOLELY BY CLAUDE.'
      END-DISPLAY
 

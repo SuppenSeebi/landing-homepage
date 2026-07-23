@@ -104,6 +104,26 @@ deliberately unlike the aged-paper card around it. No `<script>` — embeds are 
 compiled `data-embeds` JSON (`col: 60, row: 9, corner: "left", cardIdx: 0`, matching the pin's
 placement exactly).
 
+A fifth round of feedback, deliberately framed as optional ("fix on your desire"): (1) `COLLAB`'s
+literal `src/content/_punchcard` path reference in rendered card text got reworded to plain
+terms (a folder that's Sebastian's vs. folders that are Claude's) — paths are fine in `@@`
+developer comments, not in text an actual visitor reads. (2) `COLLAB` gained explicit advantage/
+disadvantage bullets for the human/AI split, not just a description of it. (3) The compile-trace
+HUD was covering the word "CARD" at the end of `OVERVIEW`'s `DISPLAY` line — root cause was
+`corner="left"`'s vertical centering combined with col 60 sitting only ~4 characters past that
+line's actual text; measured every line in the card (max 65 chars) and moved the pin to col 70,
+comfortably clear regardless of how far the panel spreads vertically. (4) Sebastian explicitly
+lifted the requirement to follow COBOL-style card formatting for this section — used that to add
+a per-card `@ROWS 20` override on `ARCHITECTURE` without hesitation, same as `SOCIALS-PRGRPH` in
+`links.pcob` already does elsewhere. (5) Added a second embed, `pipeline-diagram.html` (col 70,
+same measured-not-guessed logic, longest line 62 chars) — a small parse→tokenize→compile→render
+flow diagram on `ARCHITECTURE`, visually related to `compile-trace.html` (shared dark-panel/
+gold-corner-bracket language) without sharing any CSS between the two files. (6) All 6 card names
+dropped their `-PRGRPH` suffix (`OVERVIEW`/`ARCHITECTURE`/`DESIGN`/`COLLAB`/`COMMENTARY`/
+`AUTHORSHIP`) — the long forms were clipping visually in the paragraph-nav row once all 6 showed
+at once (`.pcf-fh-nav` has no ellipsis, just `overflow: hidden`). `astro build` verified; both
+embeds' compiled `col`/`row` re-confirmed against the new pin positions.
+
 ---
 
 ## 2. Tools page redesign + embed
