@@ -4,7 +4,7 @@
 @@ self-contained - the two things this file carries are an ordered import manifest and the
 @@ 5 configurable form-header cells (shared across every card, everywhere).
 @HEADER-LEFT-FIRST   "PROGRAMMER"     "SEBASTIAN SCHWINN"
-@HEADER-LEFT-SECOND  "PROGRAM"        "SSCHW-DEV"
+@HEADER-LEFT-SECOND  "PROGRAM"        "{{link:claude}}SSCHW-DEV{{/link}}"
 @HEADER-LEFT-THIRD   "CURRENT SYSTEM" "RETROCODE GMBH"
 @HEADER-RIGHT-FIRST  "XREF"           "{{link:links}}SERVICES{{/link}}"
 @HEADER-RIGHT-SECOND "IDENTIFICATION" "{{link:impressum}}IMPRESSUM{{/link}}"
@@ -14,3 +14,4 @@
 @IMPORT work.pcob
 @IMPORT links.pcob
 @IMPORT impressum.pcob
+@IMPORT claude.pcob

@@ -15,7 +15,7 @@ all. Kept together here anyway since they're one connected roadmap Sebastian is 
 
 | # | Project | Repo | State |
 |---|---|---|---|
-| 1 | Claude's own section | landing-homepage | Not started |
+| 1 | Claude's own section | landing-homepage | **Done** (2026-07-23) |
 | 2 | Tools page redesign + embed | tool-homepage (+ landing-homepage for the embed point) | Not started |
 | 3 | AI tool-authoring pipeline | tool-homepage | Not started, deliberately deferred until after #2 |
 | 4 | Blog / projects write-ups | landing-homepage | Not started, needs a content-model discussion first |
@@ -38,8 +38,23 @@ edit it" concern doesn't apply.
   `{{link:name}}`), or something else?
 - Reachable from main nav like any other section, or more hidden?
 
-**Recommended next step:** short scoping conversation to answer the above, then write it as one
-self-contained session (small, no cross-cutting changes expected).
+**Done (2026-07-23).** `src/content/_punchcard/claude.pcob` — `@SECTION CLAUDE id=claude`,
+PROCEDURE division, 4 cards (`OVERVIEW-PRGRPH`, `DESIGN-PRGRPH`, `COMMENTARY-PRGRPH`,
+`AUTHORSHIP-PRGRPH`) covering what the page does, how it's designed (with tradeoffs), Claude's
+own commentary, and an explicit authorship/ownership statement. Answered the open questions by
+precedent: the `PROGRAM` header cell's existing value (`SSCHW-DEV`) now links to this section
+(`{{link:claude}}SSCHW-DEV{{/link}}` in `main.pcob`) — same pattern as `XREF`→`links` and
+`IDENTIFICATION`→`impressum` already use — and it's a normal section in nav (`proc` division),
+also matching precedent rather than being hidden.
+
+Surfaced a real gap while wiring the link: `PunchCard.astro` only had conditional `<a>`/`<div>`
+rendering for the *right* header cells — left cells (`PROGRAMMER`/`PROGRAM`/`CURRENT SYSTEM`)
+always rendered as plain `<div>`, silently ignoring any `href`, even though `CLAUDE.md`'s
+documented header-cell contract never scoped that behavior to right cells only. Fixed for all
+three left cells, in both `PunchCard.astro` templates — this was also a blocker waiting to happen
+for #2 below, since `CURRENT SYSTEM` (a left cell) is exactly the cell that project needs to link.
+`astro build` verified end-to-end (compiled HTML spot-checked: `PROGRAM` → `href="#claude"`, all
+4 cards present with correct `cardIdx` nav entries).
 
 ---
 

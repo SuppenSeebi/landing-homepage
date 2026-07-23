@@ -209,7 +209,10 @@ right column `XREF`/`IDENTIFICATION` — are `@HEADER-LEFT-FIRST|SECOND|THIRD "l
 required (missing one is a compile error, same rigor as `@ROWS`). A `value` may contain one
 `{{link:name}}...{{/link}}` — reuses `extractTags`/the same anchor registry card text resolves
 through, no separate tag-parsing path — and if present, `PunchCard.astro` renders the whole cell
-as an `<a>`; if absent, a plain `<div>`.
+as an `<a>`; if absent, a plain `<div>`. This applies uniformly to all 5 cells — left cells
+(`header.left[0..2]`) only gained the same conditional `<a>`/`<div>` branch right cells already
+had in 2026-07-23, when `PROGRAM` became the first left cell to actually carry a link (see
+"Established patterns" below); before that fix a left cell's `href` was silently ignored.
 
 The 3rd right cell, `DATE - VERSION`, is deliberately **not** part of this — it's computed build
 metadata (today's date + `git rev-parse --short HEAD`), not authored content, and stays inline in
@@ -233,7 +236,7 @@ level, instead of statically importing a config module — this is a build-time 
 not a hand-maintained file, so there's nothing left to import client-side. Shape (unchanged from
 the old hand-written version, just derived now):
 ```ts
-divisionMap = { data: ['top','aboutme','work'], proc: ['links','impressum'] }
+divisionMap = { data: ['top','aboutme','work'], proc: ['links','impressum','claude'] }
 
 parasBySection = {
   // each entry: { label, href, cardIdx } — cardIdx addresses a specific card within the section
@@ -242,6 +245,7 @@ parasBySection = {
   work:      [WORK-CURRENT(0), WORK-PREV(1)]
   links:     [SERVICES-PRGRPH(0), SOCIALS-PRGRPH(1)]
   impressum: [IMPRESSUM-SECTION(0)]
+  claude:    [OVERVIEW-PRGRPH(0), DESIGN-PRGRPH(1), COMMENTARY-PRGRPH(2), AUTHORSHIP-PRGRPH(3)]
 }
 ```
 (`top` has 6 entries, not 7 — `COMMUNITY` is a field inside `INTERESTS`'s card text, not its own
@@ -354,3 +358,7 @@ so a hyphen-joined form like `IMPRESSUM-SECTION.` is recognized the same as `LIN
 - Comment lines: `['000013', [['comment','* GOBACK TO ...']]]`
 - `callLinks` maps the exact val token string (including leading space and quotes) → URL
 - Font: `"Share Tech Mono", monospace` throughout
+- `src/content/_punchcard/claude.pcob` (added 2026-07-23, `@SECTION CLAUDE id=claude`, PROCEDURE
+  division, 4 cards) is authored solely by Claude, not Sebastian — the one section on the site
+  with that split. It's linked from the `PROGRAM` header cell (`SSCHW-DEV` → `#claude`), which is
+  what required the left-header-cell `<a>`/`<div>` fix noted under "Form-header cells" above.
