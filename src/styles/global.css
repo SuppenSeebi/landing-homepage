@@ -355,6 +355,7 @@ p {
 
 .pcf-div-item, .pcf-sec-item, .pcf-para-item {
     font-size: 0.78rem;
+    line-height: 1.15;
     color: #9B8050;
     white-space: nowrap;
     letter-spacing: 0.02em;
