@@ -181,12 +181,12 @@ just a pointer + summary, not the source of truth for this item.**
 
 Rework `tool.sschw.dev` (`D:\WRK\tool-homepage`): dark-HUD design (same visual language as this
 site's `compile-trace.html` embed, not a punch-card reskin), tag-based grouping, an
-auto-discovery registry backend (contract-first polyglot — Python tools in-process now, other
-languages join the same contract when actually needed), and per-tool language badge / setup
+auto-discovery registry backend (contract-first polyglot — every tool its own sandboxed
+container as of 2026-07-24, regardless of language), and per-tool language badge / setup
 view / source view, all driven by the same registry entry. Initial tool set (proposed, spanning
-4 languages) and a full security-notes section for #3 (still deferred) are both in the linked
-doc. Embed into this page as a link-out from the `CURRENT SYSTEM` header cell (not a true
-iframe), once the redesign exists.
+4 languages) and a full security-notes section for #3 (now underway, not deferred - see that
+repo's own doc) are both in the linked doc. Embed into this page as a link-out from the
+`CURRENT SYSTEM` header cell (not a true iframe), once the redesign exists.
 
 **Embed done (2026-07-24).** The cell itself changed, not just its link — `RETROCODE GMBH` was
 the only thing there before, and a link-out to a tools page reads as neither about nor named after
