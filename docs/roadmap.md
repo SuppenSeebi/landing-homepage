@@ -16,8 +16,8 @@ all. Kept together here anyway since they're one connected roadmap Sebastian is 
 | # | Project | Repo | State |
 |---|---|---|---|
 | 1 | Claude's own section | landing-homepage | **Done** (2026-07-23) |
-| 2 | Tools page redesign + embed | tool-homepage (+ landing-homepage for the embed point) | **In progress** — plan doc written, see `tool-homepage/docs/redesign-plan.md` |
-| 3 | AI tool-authoring pipeline | tool-homepage | Not started, deliberately deferred until after #2 |
+| 2 | Tools page redesign + embed | tool-homepage (+ landing-homepage for the embed point) | **Done** (2026-07-24) — every phase in `tool-homepage/docs/redesign-plan.md`'s Section G complete, including the old shared-VM deployment's decommission |
+| 3 | AI tool-authoring pipeline | tool-homepage | **Starting** (2026-07-24) — see `tool-homepage/docs/redesign-plan.md` Section F for the security-notes groundwork already laid |
 | 4 | Blog / projects write-ups | landing-homepage | Not started, needs a content-model discussion first |
 | 5 | 3D-printed lamp (design + PCB + firmware) | new, non-code project | Not started, intentionally last |
 
@@ -176,7 +176,7 @@ hardcoded design chrome — see `CLAUDE.md`'s "DIVISION nav" section for the set
 
 ## 2. Tools page redesign + embed
 
-**In progress — full plan lives in `D:\WRK\tool-homepage\docs\redesign-plan.md`, this is now
+**Done (2026-07-24) — full plan lives in `D:\WRK\tool-homepage\docs\redesign-plan.md`, this is
 just a pointer + summary, not the source of truth for this item.**
 
 Rework `tool.sschw.dev` (`D:\WRK\tool-homepage`): dark-HUD design (same visual language as this
