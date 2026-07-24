@@ -340,6 +340,13 @@ p {
     padding-bottom: 3px;
     transition: color 0.12s, border-color 0.12s, border-style 0.12s;
 }
+/* .pcf-fh-val is a direct child of .pcf-fh-cell, a column-direction flex container - flex's
+   default align-items:stretch makes it fill the cell's full cross-axis (width), so the
+   border-bottom above spans the whole cell instead of just the text. Nav items don't have this
+   problem: .pcf-fh-nav is row-direction, so stretch only affects height there, not width. */
+.pcf-fh-val.pcf-link {
+    align-self: flex-start;
+}
 .pcf-link:hover {
     color: var(--blue-primary);
     border-bottom-style: solid;
