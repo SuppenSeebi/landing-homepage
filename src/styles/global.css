@@ -350,6 +350,24 @@ p {
 }
 .pcf-fh-id:hover { background-color: rgba(195,168,64,0.12); }
 
+/* Static link affordance for header cells - reuses the same dashed-underline language
+   .pcf-div-item/.pcf-sec-item/.pcf-para-item already use for links elsewhere on the page, just
+   visible at rest instead of hover-only, since a header cell has no other context (like a nav
+   list) hinting it's clickable. text-decoration-* (not border-bottom) so the gap and dash/solid
+   swap are both trivial, and line-height is untouched. */
+.pcf-fh-id .pcf-fh-val {
+    text-decoration-line: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: #9B8050;
+    text-underline-offset: 4px;
+    transition: color 0.12s, text-decoration-color 0.12s, text-decoration-style 0.12s;
+}
+.pcf-fh-id:hover .pcf-fh-val {
+    color: var(--blue-primary);
+    text-decoration-style: solid;
+    text-decoration-color: var(--blue-primary);
+}
+
 /* ── CODING AREA ────────────────────────────────────────────────────────────── */
 .pcf-coding-area {
     display: flex;
