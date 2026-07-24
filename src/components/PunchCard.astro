@@ -56,7 +56,7 @@ const embedsJson = JSON.stringify(embeds);
             {header.left[0].href ? (
             <a class="pcf-fh-cell pcf-fh-w1 pcf-fh-id" href={header.left[0].href}>
                 <span class="pcf-fh-lbl">{header.left[0].label}</span>
-                <span class="pcf-fh-val" set:html={punchText(header.left[0].value)}></span>
+                <span class="pcf-fh-val pcf-link" set:html={punchText(header.left[0].value)}></span>
             </a>
             ) : (
             <div class="pcf-fh-cell pcf-fh-w1">
@@ -69,14 +69,14 @@ const embedsJson = JSON.stringify(embeds);
                 <div class="pcf-fh-nav">
                     {divisionNav.map((d, i) => (<>
                         {i > 0 && <span class="pcf-nav-dot">·</span>}
-                        <a class="pcf-div-item" data-div={d.id} href={d.href}>{d.label}</a>
+                        <a class="pcf-div-item pcf-link" data-div={d.id} href={d.href}>{d.label}</a>
                     </>))}
                 </div>
             </div>
             {header.right[0].href ? (
             <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[0].href}>
                 <span class="pcf-fh-lbl">{header.right[0].label}</span>
-                <span class="pcf-fh-val" set:html={punchText(header.right[0].value)}></span>
+                <span class="pcf-fh-val pcf-link" set:html={punchText(header.right[0].value)}></span>
             </a>
             ) : (
             <div class="pcf-fh-cell pcf-fh-w3">
@@ -90,7 +90,7 @@ const embedsJson = JSON.stringify(embeds);
             {header.left[1].href ? (
             <a class="pcf-fh-cell pcf-fh-w1 pcf-fh-id" href={header.left[1].href}>
                 <span class="pcf-fh-lbl">{header.left[1].label}</span>
-                <span class="pcf-fh-val" set:html={punchText(header.left[1].value)}></span>
+                <span class="pcf-fh-val pcf-link" set:html={punchText(header.left[1].value)}></span>
             </a>
             ) : (
             <div class="pcf-fh-cell pcf-fh-w1">
@@ -105,7 +105,7 @@ const embedsJson = JSON.stringify(embeds);
             {header.right[1].href ? (
             <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[1].href}>
                 <span class="pcf-fh-lbl">{header.right[1].label}</span>
-                <span class="pcf-fh-val" set:html={punchText(header.right[1].value)}></span>
+                <span class="pcf-fh-val pcf-link" set:html={punchText(header.right[1].value)}></span>
             </a>
             ) : (
             <div class="pcf-fh-cell pcf-fh-w3">
@@ -119,7 +119,7 @@ const embedsJson = JSON.stringify(embeds);
             {header.left[2].href ? (
             <a class="pcf-fh-cell pcf-fh-w1 pcf-fh-id" href={header.left[2].href}>
                 <span class="pcf-fh-lbl">{header.left[2].label}</span>
-                <span class="pcf-fh-val" set:html={punchText(header.left[2].value)}></span>
+                <span class="pcf-fh-val pcf-link" set:html={punchText(header.left[2].value)}></span>
             </a>
             ) : (
             <div class="pcf-fh-cell pcf-fh-w1">
@@ -175,7 +175,7 @@ const embedsJson = JSON.stringify(embeds);
                 {header.left[0].href ? (
                 <a class="pcf-fh-cell pcf-fh-w1 pcf-fh-id" href={header.left[0].href}>
                     <span class="pcf-fh-lbl">{header.left[0].label}</span>
-                    <span class="pcf-fh-val" set:html={punchText(header.left[0].value)}></span>
+                    <span class="pcf-fh-val pcf-link" set:html={punchText(header.left[0].value)}></span>
                 </a>
                 ) : (
                 <div class="pcf-fh-cell pcf-fh-w1">
@@ -188,14 +188,14 @@ const embedsJson = JSON.stringify(embeds);
                     <div class="pcf-fh-nav">
                         {divisionNav.map((d, i) => (<>
                             {i > 0 && <span class="pcf-nav-dot">·</span>}
-                            <a class="pcf-div-item" data-div={d.id} href={d.href}>{d.label}</a>
+                            <a class="pcf-div-item pcf-link" data-div={d.id} href={d.href}>{d.label}</a>
                         </>))}
                     </div>
                 </div>
                 {header.right[0].href ? (
                 <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[0].href}>
                     <span class="pcf-fh-lbl">{header.right[0].label}</span>
-                    <span class="pcf-fh-val" set:html={punchText(header.right[0].value)}></span>
+                    <span class="pcf-fh-val pcf-link" set:html={punchText(header.right[0].value)}></span>
                 </a>
                 ) : (
                 <div class="pcf-fh-cell pcf-fh-w3">
@@ -209,7 +209,7 @@ const embedsJson = JSON.stringify(embeds);
                 {header.left[1].href ? (
                 <a class="pcf-fh-cell pcf-fh-w1 pcf-fh-id" href={header.left[1].href}>
                     <span class="pcf-fh-lbl">{header.left[1].label}</span>
-                    <span class="pcf-fh-val" set:html={punchText(header.left[1].value)}></span>
+                    <span class="pcf-fh-val pcf-link" set:html={punchText(header.left[1].value)}></span>
                 </a>
                 ) : (
                 <div class="pcf-fh-cell pcf-fh-w1">
@@ -224,7 +224,7 @@ const embedsJson = JSON.stringify(embeds);
                 {header.right[1].href ? (
                 <a class="pcf-fh-cell pcf-fh-w3 pcf-fh-id" href={header.right[1].href}>
                     <span class="pcf-fh-lbl">{header.right[1].label}</span>
-                    <span class="pcf-fh-val" set:html={punchText(header.right[1].value)}></span>
+                    <span class="pcf-fh-val pcf-link" set:html={punchText(header.right[1].value)}></span>
                 </a>
                 ) : (
                 <div class="pcf-fh-cell pcf-fh-w3">
@@ -238,7 +238,7 @@ const embedsJson = JSON.stringify(embeds);
                 {header.left[2].href ? (
                 <a class="pcf-fh-cell pcf-fh-w1 pcf-fh-id" href={header.left[2].href}>
                     <span class="pcf-fh-lbl">{header.left[2].label}</span>
-                    <span class="pcf-fh-val" set:html={punchText(header.left[2].value)}></span>
+                    <span class="pcf-fh-val pcf-link" set:html={punchText(header.left[2].value)}></span>
                 </a>
                 ) : (
                 <div class="pcf-fh-cell pcf-fh-w1">
@@ -317,7 +317,7 @@ function buildNavGroups() {
                     d.className = 'pcf-nav-dot'; d.textContent = '·'; grp.appendChild(d);
                 }
                 const a = document.createElement('a');
-                a.className = 'pcf-sec-item'; a.href = item.href; a.textContent = item.label;
+                a.className = 'pcf-sec-item pcf-link'; a.href = item.href; a.textContent = item.label;
                 grp.appendChild(a);
             });
             container.appendChild(grp);
@@ -341,7 +341,7 @@ function buildNavGroups() {
                         d.className = 'pcf-nav-dot'; d.textContent = '·'; grp.appendChild(d);
                     }
                     const a = document.createElement('a');
-                    a.className = 'pcf-para-item'; a.href = item.href; a.textContent = item.label;
+                    a.className = 'pcf-para-item pcf-link'; a.href = item.href; a.textContent = item.label;
                     a.dataset.sec = sectionId;
                     a.dataset.cardIdx = String(item.cardIdx);
                     grp.appendChild(a);

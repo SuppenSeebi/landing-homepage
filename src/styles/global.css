@@ -320,28 +320,50 @@ p {
     flex-shrink: 0;
 }
 
-/* One unified link language for every clickable thing inside the form header - the DIVISION
-   nav row (.pcf-div-item, shown in the header's nav cell) and the left/right header cells
-   (.pcf-fh-id) both show a dashed underline at rest, switching to a solid blue underline + blue
-   text on hover. border-bottom works directly here since these are plain text nodes, not
-   per-character markup. */
-.pcf-div-item, .pcf-sec-item, .pcf-para-item {
-    font-size: 0.78rem;
-    color: #9B8050;
+/* Single shared "this is a link" class for every clickable text in the form header - the
+   DIVISION/SECTION/PARAGRAPH nav row and the left/right header cell values both get it, so
+   there's exactly one place controlling how a header link looks instead of two independently
+   maintained (and drifting) declarations. Applied directly to whichever element wraps the
+   *text* to underline - .pcf-fh-val for header cells (so the label above stays plain), the <a>
+   itself for nav items (no separate label there).
+   border-bottom, not text-decoration: header values are rendered character-by-character by
+   punchText.ts as individual `display: inline-block` spans (.pcf-fh-ch/.pcf-fh-sp), and per the
+   CSS text-decoration spec, a decoration painted on an ancestor does not paint through atomic
+   inline-level descendants - so text-decoration-line on .pcf-fh-val silently never rendered
+   (found live). border-bottom has no such restriction (it's a box-model property of the element
+   itself, unrelated to its children's display type), which is also why nav items' border-bottom
+   already worked reliably before this existed - reusing that same proven mechanism instead of
+   fighting text-decoration further. */
+.pcf-link {
     text-decoration: none;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
     border-bottom: 1px dashed #9B8050;
-    padding-bottom: 1px;
-    transition: color 0.12s, border-color 0.12s;
+    padding-bottom: 3px;
+    transition: color 0.12s, border-color 0.12s, border-style 0.12s;
 }
-.pcf-div-item:hover, .pcf-sec-item:hover, .pcf-para-item:hover {
+.pcf-link:hover {
     color: var(--blue-primary);
     border-bottom-style: solid;
     border-bottom-color: var(--blue-primary);
 }
+
+.pcf-div-item, .pcf-sec-item, .pcf-para-item {
+    font-size: 0.78rem;
+    color: #9B8050;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+}
 .pcf-div-item.pcf-nav-active, .pcf-sec-item.pcf-nav-active, .pcf-para-item.pcf-nav-active {
     color: #1A0E00;
+}
+/* Explicit :hover-on-active override, not left to specificity tie-breaking: .pcf-nav-active
+   (2 classes) and .pcf-link:hover (1 class + 1 pseudo-class) are equal specificity, so without
+   this the active item's color could silently win over its own hover state depending on rule
+   order - found live by hovering the currently-active DIVISION link and seeing its color not
+   change. */
+.pcf-div-item.pcf-nav-active:hover, .pcf-sec-item.pcf-nav-active:hover, .pcf-para-item.pcf-nav-active:hover {
+    color: var(--blue-primary);
+    border-bottom-style: solid;
+    border-bottom-color: var(--blue-primary);
 }
 .pcf-div-item.pcf-nav-active::before, .pcf-sec-item.pcf-nav-active::before, .pcf-para-item.pcf-nav-active::before {
     content: '▶ ';
@@ -355,34 +377,6 @@ p {
     transition: background-color 0.12s;
 }
 .pcf-fh-id:hover { background-color: rgba(195,168,64,0.12); }
-
-/* Static link affordance for header cells - same dashed-underline/solid-blue-on-hover language
-   as .pcf-div-item above, just visible at rest instead of hover-only, since a header cell has no
-   other context (like a nav list) hinting it's clickable.
-   text-decoration-line set on the *character* spans (.pcf-fh-ch/.pcf-fh-sp), not on .pcf-fh-val
-   itself - punchText.ts renders each character as its own `display: inline-block` span (see
-   src/utils/punchText.ts), and per the CSS text-decoration spec, a decoration painted on an
-   ancestor does not paint through atomic inline-level descendants (inline-block, in this case).
-   `color` doesn't have this problem (normal inheritance still applies through inline-block), which
-   is exactly why the hover color-change already worked while the underline silently never
-   rendered - found live, not by reading the spec first. */
-.pcf-fh-id .pcf-fh-val .pcf-fh-ch,
-.pcf-fh-id .pcf-fh-val .pcf-fh-sp {
-    text-decoration-line: underline;
-    text-decoration-style: dashed;
-    text-decoration-color: #9B8050;
-    text-underline-offset: 4px;
-    transition: text-decoration-color 0.12s, text-decoration-style 0.12s;
-}
-.pcf-fh-id:hover .pcf-fh-val {
-    color: var(--blue-primary);
-    transition: color 0.12s;
-}
-.pcf-fh-id:hover .pcf-fh-val .pcf-fh-ch,
-.pcf-fh-id:hover .pcf-fh-val .pcf-fh-sp {
-    text-decoration-style: solid;
-    text-decoration-color: var(--blue-primary);
-}
 
 /* ── CODING AREA ────────────────────────────────────────────────────────────── */
 .pcf-coding-area {
