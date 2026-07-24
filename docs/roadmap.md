@@ -188,6 +188,17 @@ view / source view, all driven by the same registry entry. Initial tool set (pro
 doc. Embed into this page as a link-out from the `CURRENT SYSTEM` header cell (not a true
 iframe), once the redesign exists.
 
+**Embed done (2026-07-24).** The cell itself changed, not just its link — `RETROCODE GMBH` was
+the only thing there before, and a link-out to a tools page reads as neither about nor named after
+your employer. Relabeled `CURRENT SYSTEM` → `SUBSYSTEM` (genuine COBOL term for a called/linked
+external system — accurately describes `tool-homepage`'s actual relationship to this page: a
+separate repo/backend/deploy, not a section within this one), value → linked `TOOL.SSCHW.DEV`
+(same `{{link:'https://...'}}` external-link mechanism `links.pcob`'s `KB.SSCHW.DEV` already
+uses). `RETROCODE GMBH` isn't lost from the site — it's independently stated in
+`top.pcob`/`aboutme.pcob`/`work.pcob`/the logo marquee. `CLAUDE.md`'s form-header-cells section
+updated to match. Verified via `astro build` + a grep of the compiled HTML for
+`href="https://tool.sschw.dev"`.
+
 Infra: moving to its own Proxmox CT, separate from the Vaultwarden/Wiki.js VM — isolates the one
 workload that will eventually run AI-generated code. Sebastian provisions this; doesn't block
 app-level work.

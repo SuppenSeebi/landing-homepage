@@ -234,7 +234,7 @@ scroll.
 
 ## Form-header cells (authored via `@HEADER-*` in `main.pcob`)
 
-The 5 configurable form-header cells — left column `PROGRAMMER`/`ABOUT PROGRAM`/`CURRENT SYSTEM`,
+The 5 configurable form-header cells — left column `PROGRAMMER`/`ABOUT PROGRAM`/`SUBSYSTEM`,
 right column `XREF`/`IDENTIFICATION` — are `@HEADER-LEFT-FIRST|SECOND|THIRD "label" "value"` /
 `@HEADER-RIGHT-FIRST|SECOND "label" "value"` directives in `main.pcob`, resolved once by
 `compile.ts`'s `resolveHeader`/`resolveHeaderCell` into `CompiledProgram.header`. All 5 are
